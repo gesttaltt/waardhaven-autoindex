@@ -11,3 +11,4 @@ yfinance==0.2.52
 pandas==2.2.2
 numpy==2.0.1
 requests==2.32.3
+email-validator==2.1.1
