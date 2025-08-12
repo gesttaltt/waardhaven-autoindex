@@ -1,0 +1,17 @@
+{
+  "name": "waardhaven-autoindex",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter @waardhaven/web dev",
+    "dev:api": "echo 'Run FastAPI manually: uvicorn app.main:app --reload'",
+    "build": "echo 'Use per-app builds'"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {}
+}

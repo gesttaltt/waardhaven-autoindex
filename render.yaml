@@ -1,0 +1,35 @@
+# Example Render blueprint (optional). You can also configure via UI.
+services:
+  - type: web
+    name: waardhaven-api
+    env: docker
+    buildCommand: ""
+    startCommand: ""
+    plan: starter
+    rootDir: apps/api
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: DAILY_DROP_THRESHOLD
+        value: "-0.01"
+      - key: ASSET_DEFAULT_START
+        value: "2018-01-01"
+      - key: SP500_TICKER
+        value: "^GSPC"
+
+  - type: web
+    name: waardhaven-web
+    env: docker
+    rootDir: apps/web
+    plan: starter
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+
+databases:
+  - name: waardhaven-db
+    plan: starter
