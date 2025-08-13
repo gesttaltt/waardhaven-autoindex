@@ -30,7 +30,7 @@ export default function LoginPage() {
           <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
           {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button className="btn w-full" type="submit">Log In</button>
+          <button className="btn-primary w-full" type="submit">Log In</button>
         </div>
       </form>
     </main>

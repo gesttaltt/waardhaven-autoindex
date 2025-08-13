@@ -11,25 +11,25 @@ const RefreshModeInfo = {
   auto: {
     name: "Auto",
     description: "Intelligently chooses the best strategy based on your API plan",
-    icon: "🤖",
+    icon: "AUTO",
     color: "blue"
   },
   minimal: {
     name: "Minimal",
     description: "Fetches only priority assets (optimized for free tier)",
-    icon: "⚡",
+    icon: "MIN",
     color: "green"
   },
   cached: {
     name: "Cached",
     description: "Uses cached data only (no API calls)",
-    icon: "💾",
+    icon: "CACHE",
     color: "gray"
   },
   full: {
     name: "Full",
     description: "Complete refresh with rate limiting protection",
-    icon: "🔄",
+    icon: "FULL",
     color: "purple"
   }
 };
@@ -104,7 +104,7 @@ export default function SmartRefresh({ onRefreshComplete }: SmartRefreshProps) {
     <div className="card">
       <div className="border-b border-white/10 pb-4">
         <h2 className="text-xl font-semibold gradient-text flex items-center gap-2">
-          🚀 Smart Market Data Refresh
+          Smart Market Data Refresh
         </h2>
         <p className="text-sm text-neutral-400 mt-1">
           Intelligent market data management with rate limiting protection
@@ -178,7 +178,7 @@ export default function SmartRefresh({ onRefreshComplete }: SmartRefreshProps) {
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{info.icon}</span>
+                <span className="text-xs font-mono bg-white/10 px-1.5 py-0.5 rounded">{info.icon}</span>
                 <span className="font-medium text-white">{info.name}</span>
               </div>
               <p className="text-xs text-neutral-400">{info.description}</p>
@@ -192,7 +192,7 @@ export default function SmartRefresh({ onRefreshComplete }: SmartRefreshProps) {
         <button
           onClick={handleSmartRefresh}
           disabled={isRefreshing}
-          className={`btn w-full ${
+          className={`btn-primary w-full ${
             isRefreshing
               ? 'opacity-50 cursor-not-allowed'
               : ''
@@ -204,22 +204,22 @@ export default function SmartRefresh({ onRefreshComplete }: SmartRefreshProps) {
               Refreshing in {RefreshModeInfo[selectedMode].name} mode...
             </span>
           ) : (
-            `${needsRefresh ? '⚡ ' : ''}Start ${RefreshModeInfo[selectedMode].name} Refresh`
+`Start ${RefreshModeInfo[selectedMode].name} Refresh`
           )}
         </button>
 
         <button
           onClick={loadStatus}
-          className="w-full py-2 px-4 text-sm text-neutral-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+          className="btn-ghost w-full btn-sm"
         >
-          🔄 Refresh Status
+Refresh Status
         </button>
       </div>
 
       {/* Results */}
       {lastRefreshResult && (
         <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-          <h4 className="font-medium text-green-400 mb-2">✅ Refresh Started</h4>
+          <h4 className="font-medium text-green-400 mb-2">Refresh Started</h4>
           <p className="text-sm text-green-300 mb-2">{lastRefreshResult.message}</p>
           <div className="text-xs text-green-400">
             <div><strong>Mode:</strong> {lastRefreshResult.mode}</div>
@@ -232,16 +232,16 @@ export default function SmartRefresh({ onRefreshComplete }: SmartRefreshProps) {
       {/* Error Display */}
       {error && (
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
-          <h4 className="font-medium text-red-400 mb-2">❌ Error</h4>
+          <h4 className="font-medium text-red-400 mb-2">Error</h4>
           <p className="text-sm text-red-300">{error}</p>
         </div>
       )}
 
       {/* Help Text */}
       <div className="text-xs text-neutral-500 space-y-1">
-        <p><strong>💡 Tip:</strong> Use "Minimal" mode for free TwelveData plans to avoid rate limits.</p>
-        <p><strong>⚡ Performance:</strong> Smart refresh automatically handles caching and rate limiting.</p>
-        <p><strong>🔄 Background:</strong> Refresh runs in the background - you can continue using the app.</p>
+        <p><strong>Tip:</strong> Use "Minimal" mode for free TwelveData plans to avoid rate limits.</p>
+        <p><strong>Performance:</strong> Smart refresh automatically handles caching and rate limiting.</p>
+        <p><strong>Background:</strong> Refresh runs in the background - you can continue using the app.</p>
       </div>
     </div>
   );

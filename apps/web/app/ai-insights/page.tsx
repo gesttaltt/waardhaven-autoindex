@@ -86,11 +86,11 @@ export default function AIInsightsPage() {
 
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
-      case 'recommendation': return '💡';
-      case 'analysis': return '📊';
-      case 'warning': return '⚠️';
-      case 'opportunity': return '🎯';
-      default: return '💬';
+      case 'recommendation': return 'REC';
+      case 'analysis': return 'ANA';
+      case 'warning': return 'WARN';
+      case 'opportunity': return 'OPP';
+      default: return 'INFO';
     }
   };
 
@@ -122,7 +122,7 @@ export default function AIInsightsPage() {
                 ← Back to Dashboard
               </button>
               <h1 className="text-xl font-semibold text-white flex items-center gap-2">
-                🤖 AI-Powered AutoIndex
+AI-Powered AutoIndex
               </h1>
             </div>
             
@@ -161,10 +161,10 @@ export default function AIInsightsPage() {
         <div className="flex justify-center mb-8">
           <div className="bg-white/5 rounded-lg p-1 flex">
             {[
-              { key: 'overview', label: '🎯 Overview', icon: '🎯' },
-              { key: 'reasons', label: '🧠 Investment Logic', icon: '🧠' },
-              { key: 'recommendations', label: '💡 AI Recommendations', icon: '💡' },
-              { key: 'sentiment', label: '📈 Market Sentiment', icon: '📈' }
+              { key: 'overview', label: 'Overview', icon: 'OVR' },
+              { key: 'reasons', label: 'Investment Logic', icon: 'LOGIC' },
+              { key: 'recommendations', label: 'AI Recommendations', icon: 'AI' },
+              { key: 'sentiment', label: 'Market Sentiment', icon: 'SENT' }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -427,7 +427,7 @@ export default function AIInsightsPage() {
                       </div>
                     ) : (
                       <div className="text-center py-12">
-                        <span className="text-6xl opacity-50">💡</span>
+                        <div className="text-6xl opacity-50 font-bold text-neutral-600">AI</div>
                         <p className="text-neutral-400 mt-4">Select a recommendation to see detailed analysis</p>
                       </div>
                     )}
@@ -444,9 +444,9 @@ export default function AIInsightsPage() {
                     <h3 className="text-xl font-semibold mb-6 gradient-text">Market Sentiment Analysis</h3>
                     
                     <div className="text-center mb-6">
-                      <div className={`text-6xl mb-3 ${getSentimentColor(marketSentiment.overall)}`}>
-                        {marketSentiment.overall === 'bullish' ? '🐂' : 
-                         marketSentiment.overall === 'bearish' ? '🐻' : '⚖️'}
+                      <div className={`text-4xl mb-3 font-bold ${getSentimentColor(marketSentiment.overall)}`}>
+                        {marketSentiment.overall === 'bullish' ? 'BULL' : 
+                         marketSentiment.overall === 'bearish' ? 'BEAR' : 'NEUTRAL'}
                       </div>
                       <p className={`text-2xl font-bold capitalize ${getSentimentColor(marketSentiment.overall)}`}>
                         {marketSentiment.overall}

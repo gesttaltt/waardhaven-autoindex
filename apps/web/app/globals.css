@@ -40,17 +40,37 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Modern button with gradient */
+/* Modern button system */
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-medium;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  transition: all 0.3s ease;
+  @apply inline-flex items-center justify-center font-medium transition-all duration-200;
+  @apply rounded-lg h-btn-md px-4 text-btn-md;
+  @apply bg-white/10 hover:bg-white/20 text-white;
+  @apply border border-white/20 hover:border-white/30;
   position: relative;
   overflow: hidden;
 }
 
-.btn::before {
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Primary button variant */
+.btn-primary {
+  @apply inline-flex items-center justify-center font-medium transition-all duration-200;
+  @apply rounded-lg h-btn-md px-4 text-btn-md;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  @apply text-white border-0;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -61,28 +81,70 @@ body {
   transition: left 0.5s;
 }
 
-.btn:hover::before {
+.btn-primary:hover::before {
   left: 100%;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
 }
 
-/* Glassmorphism input */
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Button sizes */
+.btn-sm, .btn-primary-sm {
+  @apply h-btn-sm px-3 text-btn-sm rounded-md;
+}
+
+.btn-lg, .btn-primary-lg {
+  @apply h-btn-lg px-6 text-btn-lg rounded-xl;
+}
+
+.btn-xl, .btn-primary-xl {
+  @apply h-btn-xl px-8 text-btn-xl rounded-2xl;
+}
+
+/* Secondary button variant */
+.btn-secondary {
+  @apply btn;
+  @apply bg-neutral-800/50 hover:bg-neutral-700/50;
+  @apply border-neutral-600/50 hover:border-neutral-500/50;
+}
+
+/* Ghost button variant */
+.btn-ghost {
+  @apply btn;
+  @apply bg-transparent hover:bg-white/5;
+  @apply border-transparent hover:border-white/10;
+}
+
+/* Modern input system */
 .input {
-  @apply w-full rounded-xl px-4 py-3 outline-none;
-  background: rgba(255, 255, 255, 0.08);
+  @apply w-full rounded-lg h-input-md px-4 outline-none text-sm;
+  @apply bg-white/[0.08] border border-white/10;
+  @apply transition-all duration-200;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
 }
 
 .input:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(102, 126, 234, 0.5);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  @apply bg-white/[0.12] border-purple-500/50;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.input:hover {
+  @apply bg-white/[0.10] border-white/20;
+}
+
+/* Input sizes */
+.input-sm {
+  @apply h-input-sm px-3 text-xs rounded-md;
+}
+
+.input-lg {
+  @apply h-input-lg px-5 text-base rounded-xl;
 }
 
 /* Glow effect */

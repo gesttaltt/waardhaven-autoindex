@@ -66,7 +66,7 @@ export default function RegisterPage() {
           <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
           {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button className="btn w-full" type="submit" disabled={loading}>
+          <button className="btn-primary w-full" type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
           <p className="text-xs text-neutral-500 mt-2">

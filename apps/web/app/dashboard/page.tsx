@@ -237,25 +237,27 @@ export default function Dashboard() {
               <h1 className="text-4xl font-bold mb-2 gradient-text">Dashboard</h1>
               <p className="text-neutral-400">Track your portfolio performance in real-time</p>
             </div>
-            <div className="flex items-center space-x-4 mt-2">
-              <button
+            <div className="flex items-center gap-3 mt-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => router.push("/ai-insights")}
-                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+                className="btn-primary text-sm px-4 py-2"
               >
-                🤖 AI Insights
-              </button>
+                AI Insights
+              </motion.button>
               <button
                 onClick={() => router.push("/admin")}
-                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+                className="btn-ghost btn-sm"
               >
-                🛠️ Admin Panel
+                Admin Panel
               </button>
               <button
                 onClick={() => {
                   localStorage.removeItem("token");
                   router.push("/login");
                 }}
-                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+                className="btn-ghost btn-sm"
               >
                 Logout
               </button>
@@ -290,9 +292,6 @@ export default function Dashboard() {
                 <p className="text-sm text-neutral-300">Active Assets</p>
                 <p className="text-3xl font-bold gradient-text">{allocations.length}</p>
               </div>
-              <div className="text-4xl">
-                💼
-              </div>
             </div>
           </motion.div>
 
@@ -309,9 +308,6 @@ export default function Dashboard() {
                   {indexSeries.length > 0 ? indexSeries[indexSeries.length - 1].value.toFixed(2) : "100"}
                 </p>
               </div>
-              <div className="text-4xl">
-                💎
-              </div>
             </div>
           </motion.div>
 
@@ -325,9 +321,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-neutral-300">Volatility (Annual)</p>
                 <p className="text-3xl font-bold gradient-text">{volatility.toFixed(1)}%</p>
-              </div>
-              <div className="text-4xl">
-                📊
               </div>
             </div>
           </motion.div>
@@ -406,9 +399,9 @@ export default function Dashboard() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowDataPanel(!showDataPanel)}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 transition-all hover:bg-purple-500/30"
+                className="btn-secondary btn-sm"
               >
-                📊 {showDataPanel ? "Hide" : "Show"} Data Options
+{showDataPanel ? "Hide" : "Show"} Data Options
               </motion.button>
             </div>
             
@@ -437,10 +430,7 @@ export default function Dashboard() {
                                 : "bg-white/10 text-neutral-400 hover:bg-white/20"
                             }`}
                           >
-                            <span>
-                              <span className="mr-2">📈</span>
-                              S&P 500 Benchmark
-                            </span>
+                            <span>S&P 500 Benchmark</span>
                             <span className={`w-2 h-2 rounded-full ${showComparison ? 'bg-white' : 'bg-neutral-600'}`}></span>
                           </button>
                         </div>
@@ -458,10 +448,7 @@ export default function Dashboard() {
                                 : "bg-white/10 text-neutral-400 hover:bg-white/20"
                             }`}
                           >
-                            <span>
-                              <span className="mr-2">📊</span>
-                              Volatility Bands
-                            </span>
+                            <span>Volatility Bands</span>
                             <span className={`w-2 h-2 rounded-full ${showVolatilityBands ? 'bg-white' : 'bg-neutral-600'}`}></span>
                           </button>
                           
@@ -473,10 +460,7 @@ export default function Dashboard() {
                                 : "bg-white/10 text-neutral-400 hover:bg-white/20"
                             }`}
                           >
-                            <span>
-                              <span className="mr-2">🎯</span>
-                              Moving Average (50)
-                            </span>
+                            <span>Moving Average (50)</span>
                             <span className={`w-2 h-2 rounded-full ${showMovingAverage ? 'bg-white' : 'bg-neutral-600'}`}></span>
                           </button>
                         </div>

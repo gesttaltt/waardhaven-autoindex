@@ -43,12 +43,12 @@ export default function AdminPage() {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="text-white/70 hover:text-white transition-colors"
+                className="btn-ghost btn-sm"
               >
                 ← Back to Dashboard
               </button>
               <h1 className="text-xl font-semibold text-white">
-                🛠️ Admin Panel
+                Admin Panel
               </h1>
             </div>
             
@@ -57,7 +57,7 @@ export default function AdminPage() {
                 localStorage.removeItem("token");
                 router.push("/login");
               }}
-              className="text-white/70 hover:text-white transition-colors"
+              className="btn-ghost btn-sm"
             >
               Logout
             </button>
@@ -71,7 +71,7 @@ export default function AdminPage() {
         {/* System Status Overview */}
         <div className="card">
           <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
-            📊 System Status
+            System Status
           </h2>
           
           {loading ? (
@@ -84,7 +84,7 @@ export default function AdminPage() {
               <p className="text-red-700">{error}</p>
               <button
                 onClick={loadDatabaseStatus}
-                className="mt-2 text-red-600 hover:text-red-800 underline"
+                className="btn-secondary btn-sm mt-2"
               >
                 Retry
               </button>
@@ -99,7 +99,7 @@ export default function AdminPage() {
                 <p className={`font-medium ${
                   databaseStatus.simulation_ready ? 'text-green-800' : 'text-yellow-800'
                 }`}>
-                  {databaseStatus.simulation_ready ? '✅ ' : '⚠️ '}
+{databaseStatus.simulation_ready ? '[OK] ' : '[WARN] '}
                   {databaseStatus.message}
                 </p>
               </div>
@@ -141,7 +141,7 @@ export default function AdminPage() {
         {/* API Information */}
         <div className="card">
           <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
-            🔗 API Endpoints
+            API Endpoints
           </h2>
           
           <div className="space-y-3 text-sm">
@@ -170,12 +170,12 @@ export default function AdminPage() {
         {/* Configuration Info */}
         <div className="card">
           <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
-            ⚙️ Configuration Tips
+            Configuration Tips
           </h2>
           
           <div className="space-y-4 text-sm text-neutral-300">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-800 mb-2">🆓 For Free Tier Users</h3>
+              <h3 className="font-medium text-blue-800 mb-2">For Free Tier Users</h3>
               <div className="space-y-1">
                 <div><code>REFRESH_MODE=minimal</code> - Fetches only 5 priority symbols</div>
                 <div><code>TWELVEDATA_RATE_LIMIT=8</code> - Respects free tier limits</div>
@@ -184,7 +184,7 @@ export default function AdminPage() {
             </div>
             
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-medium text-green-800 mb-2">💎 For Paid Plans</h3>
+              <h3 className="font-medium text-green-800 mb-2">For Paid Plans</h3>
               <div className="space-y-1">
                 <div><code>REFRESH_MODE=auto</code> - Smart mode selection</div>
                 <div><code>TWELVEDATA_RATE_LIMIT=800</code> - Higher limits (adjust based on plan)</div>
