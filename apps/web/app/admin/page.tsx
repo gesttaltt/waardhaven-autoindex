@@ -69,8 +69,8 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
         {/* System Status Overview */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <div className="card">
+          <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
             📊 System Status
           </h2>
           
@@ -122,9 +122,9 @@ export default function AdminPage() {
                     }`}>
                       {info.count.toLocaleString()}
                     </div>
-                    <div className="text-sm text-gray-600 capitalize">{table.replace('_', ' ')}</div>
+                    <div className="text-sm text-neutral-300 capitalize">{table.replace('_', ' ')}</div>
                     {info.latest_date && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-neutral-400 mt-1">
                         Latest: {new Date(info.latest_date).toLocaleDateString()}
                       </div>
                     )}
@@ -139,16 +139,16 @@ export default function AdminPage() {
         <SmartRefresh onRefreshComplete={loadDatabaseStatus} />
 
         {/* API Information */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <div className="card">
+          <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
             🔗 API Endpoints
           </h2>
           
           <div className="space-y-3 text-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="font-medium text-gray-700 mb-2">Market Data Management</h3>
-                <ul className="space-y-1 text-gray-600">
+                <h3 className="font-medium text-neutral-200 mb-2">Market Data Management</h3>
+                <ul className="space-y-1 text-neutral-300">
                   <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/smart-refresh</code></li>
                   <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/trigger-refresh</code></li>
                   <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/minimal-refresh</code></li>
@@ -156,8 +156,8 @@ export default function AdminPage() {
               </div>
               
               <div>
-                <h3 className="font-medium text-gray-700 mb-2">Diagnostics</h3>
-                <ul className="space-y-1 text-gray-600">
+                <h3 className="font-medium text-neutral-200 mb-2">Diagnostics</h3>
+                <ul className="space-y-1 text-neutral-300">
                   <li><code className="bg-gray-100 px-2 py-1 rounded">GET /api/v1/diagnostics/database-status</code></li>
                   <li><code className="bg-gray-100 px-2 py-1 rounded">GET /api/v1/diagnostics/refresh-status</code></li>
                   <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/diagnostics/test-refresh</code></li>
@@ -168,12 +168,12 @@ export default function AdminPage() {
         </div>
 
         {/* Configuration Info */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <div className="card">
+          <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
             ⚙️ Configuration Tips
           </h2>
           
-          <div className="space-y-4 text-sm text-gray-600">
+          <div className="space-y-4 text-sm text-neutral-300">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-medium text-blue-800 mb-2">🆓 For Free Tier Users</h3>
               <div className="space-y-1">
