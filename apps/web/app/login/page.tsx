@@ -9,7 +9,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  // Temporary hardcode while debugging env var issue
+  const API = 'https://waardhaven-api.onrender.com';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -10,7 +10,8 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  // Temporary hardcode while debugging env var issue
+  const API = 'https://waardhaven-api.onrender.com';
 
   // Debug environment
   console.log('Environment check:', {

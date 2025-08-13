@@ -35,7 +35,7 @@ services:
       - key: PORT
         value: "10000"
       - key: NEXT_PUBLIC_API_URL
-        sync: false
+        value: "https://waardhaven-api-backend.onrender.com"
 
 databases:
   - name: waardhaven-db

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Temporary hardcode while debugging env var issue
+const API_URL = 'https://waardhaven-api.onrender.com';
 
 export const api = axios.create({
   baseURL: API_URL,
