@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, TreeMap, Cell } from "recharts";
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Treemap, Cell } from "recharts";
 import api from "../utils/api";
 import { aiInsights, PortfolioAnalysis, AIInsight, MarketSentiment } from "../services/aiInsights";
 
@@ -237,48 +237,17 @@ export default function AIInsightsPage() {
                     <h3 className="text-xl font-semibent mb-4 gradient-text">Asset Allocation Map</h3>
                     <div className="h-80">
                       <ResponsiveContainer width="100%" height="100%">
-                        <TreeMap
+                        <Treemap
                           data={treemapData}
                           dataKey="size"
-                          ratio={4/3}
+                          aspectRatio={4/3}
                           stroke="rgba(255,255,255,0.2)"
-                          content={({ root, depth, x, y, width, height, index, name, size }) => (
-                            <g>
-                              <rect
-                                x={x}
-                                y={y}
-                                width={width}
-                                height={height}
-                                fill={treemapData[index]?.color || '#8b5cf6'}
-                                fillOpacity={0.7}
-                                stroke="rgba(255,255,255,0.2)"
-                              />
-                              {width > 50 && height > 30 && (
-                                <text
-                                  x={x + width / 2}
-                                  y={y + height / 2}
-                                  textAnchor="middle"
-                                  fill="white"
-                                  fontSize="12"
-                                  fontWeight="bold"
-                                >
-                                  {name}
-                                </text>
-                              )}
-                              {width > 60 && height > 50 && (
-                                <text
-                                  x={x + width / 2}
-                                  y={y + height / 2 + 15}
-                                  textAnchor="middle"
-                                  fill="rgba(255,255,255,0.8)"
-                                  fontSize="10"
-                                >
-                                  {size.toFixed(1)}%
-                                </text>
-                              )}
-                            </g>
-                          )}
-                        />
+                          fill="#8b5cf6"
+                        >
+                          {treemapData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Treemap>
                       </ResponsiveContainer>
                     </div>
                   </div>
