@@ -59,8 +59,9 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="card w-full max-w-md">
-        <h1 className="text-2xl font-semibold">Create Account</h1>
+      <form onSubmit={handleSubmit} className="card w-full max-w-md text-center">
+        <h1 className="text-2xl font-semibold gradient-text mb-2">Create Account</h1>
+        <p className="text-neutral-400 text-sm">Join the future of automated investing</p>
         <div className="mt-6 space-y-4">
           <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
@@ -68,8 +69,8 @@ export default function RegisterPage() {
           <button className="btn w-full" type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
-          <p className="text-xs text-gray-500 mt-2">
-            This platform still in development phase, use at your own risk
+          <p className="text-xs text-neutral-500 mt-2">
+            Platform in beta - Use at your own risk
           </p>
         </div>
       </form>

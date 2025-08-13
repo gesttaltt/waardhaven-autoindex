@@ -73,3 +73,12 @@ pip-delete-this-directory.txt
 *.crt
 secrets/
 credentials/
+
+# Strategy and business documents (keep internal)
+docs/FEATURE_IMPLEMENTATION_ROADMAP.md
+docs/MVP_5_DAY_SPRINT.md
+docs/BUSINESS_STRATEGY.md
+docs/COMPETITIVE_ANALYSIS.md
+docs/MONETIZATION_PLAN.md
+docs/ROADMAP_*.md
+docs/*_INTERNAL.md

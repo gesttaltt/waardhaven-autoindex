@@ -23,8 +23,9 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="card w-full max-w-md">
-        <h1 className="text-2xl font-semibold">Log In</h1>
+      <form onSubmit={handleSubmit} className="card w-full max-w-md text-center">
+        <h1 className="text-2xl font-semibold gradient-text mb-2">Log In</h1>
+        <p className="text-neutral-400 text-sm">Welcome back to Waardhaven</p>
         <div className="mt-6 space-y-4">
           <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
           <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />

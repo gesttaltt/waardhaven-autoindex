@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine, Brush } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
+import SmartRefresh from "../components/SmartRefresh";
 
 type SeriesPoint = { date: string; value: number };
 
@@ -24,6 +25,23 @@ export default function Dashboard() {
   const [chartTimeRange, setChartTimeRange] = useState<string>("all");
   const [showComparison, setShowComparison] = useState(true);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  
+  // Function to refresh dashboard data
+  const refreshDashboardData = async () => {
+    try {
+      const [indexRes, spRes, allocRes] = await Promise.all([
+        api.get('/api/v1/index/history'),
+        api.get('/api/v1/benchmark/sp500'),
+        api.get('/api/v1/index/current')
+      ]);
+      
+      setIndexSeries(indexRes.data.series);
+      setSpSeries(spRes.data.series);
+      setAllocations(allocRes.data.allocations);
+    } catch (err) {
+      console.error('Failed to refresh dashboard data:', err);
+    }
+  };
 
   // Chart colors for pie chart
   const COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7'];
@@ -117,8 +135,29 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Dashboard</h1>
-          <p className="text-neutral-400 mb-8">Track your portfolio performance in real-time</p>
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 gradient-text">Dashboard</h1>
+              <p className="text-neutral-400">Track your portfolio performance in real-time</p>
+            </div>
+            <div className="flex items-center space-x-4 mt-2">
+              <button
+                onClick={() => router.push("/admin")}
+                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+              >
+                🛠️ Admin Panel
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  router.push("/login");
+                }}
+                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         {/* Performance Cards */}
@@ -127,24 +166,16 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            whileHover={{ 
-              scale: 1.02, 
-              y: -2,
-              boxShadow: "0 8px 25px rgba(139,92,246,0.15)" 
-            }}
-            className="card cursor-pointer"
+            className="card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-400">Total Performance</p>
+                <p className="text-sm text-neutral-300">Total Performance</p>
                 <p className="text-3xl font-bold gradient-text">{currentPerformance}%</p>
               </div>
-              <motion.div 
-                className="text-4xl"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
+              <div className="text-4xl">
                 📈
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -152,24 +183,16 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            whileHover={{ 
-              scale: 1.02, 
-              y: -2,
-              boxShadow: "0 8px 25px rgba(236,72,153,0.15)" 
-            }}
-            className="card cursor-pointer"
+            className="card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-400">Active Assets</p>
+                <p className="text-sm text-neutral-300">Active Assets</p>
                 <p className="text-3xl font-bold gradient-text">{allocations.length}</p>
               </div>
-              <motion.div 
-                className="text-4xl"
-                whileHover={{ scale: 1.1, rotate: -5 }}
-              >
+              <div className="text-4xl">
                 💼
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -177,26 +200,18 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            whileHover={{ 
-              scale: 1.02, 
-              y: -2,
-              boxShadow: "0 8px 25px rgba(59,130,246,0.15)" 
-            }}
-            className="card cursor-pointer"
+            className="card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-400">Index Value</p>
+                <p className="text-sm text-neutral-300">Index Value</p>
                 <p className="text-3xl font-bold gradient-text">
                   {indexSeries.length > 0 ? indexSeries[indexSeries.length - 1].value.toFixed(2) : "100"}
                 </p>
               </div>
-              <motion.div 
-                className="text-4xl"
-                whileHover={{ scale: 1.1, rotate: 10 }}
-              >
+              <div className="text-4xl">
                 💎
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -204,24 +219,16 @@ export default function Dashboard() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            whileHover={{ 
-              scale: 1.02, 
-              y: -2,
-              boxShadow: "0 8px 25px rgba(16,185,129,0.15)" 
-            }}
-            className="card cursor-pointer"
+            className="card"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-400">Volatility (Annual)</p>
+                <p className="text-sm text-neutral-300">Volatility (Annual)</p>
                 <p className="text-3xl font-bold gradient-text">{volatility.toFixed(1)}%</p>
               </div>
-              <motion.div 
-                className="text-4xl"
-                whileHover={{ scale: 1.1, y: -2 }}
-              >
+              <div className="text-4xl">
                 📊
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -390,7 +397,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold mb-4 gradient-text">Investment Simulator</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm text-neutral-400">Amount</label>
+              <label className="text-sm text-neutral-300">Amount</label>
               <input 
                 className="input mt-1" 
                 type="number" 
@@ -399,7 +406,7 @@ export default function Dashboard() {
               />
             </div>
             <div>
-              <label className="text-sm text-neutral-400">Currency</label>
+              <label className="text-sm text-neutral-300">Currency</label>
               <select 
                 className="input mt-1" 
                 value={currency} 
@@ -411,7 +418,7 @@ export default function Dashboard() {
               </select>
             </div>
             <div>
-              <label className="text-sm text-neutral-400">Start date</label>
+              <label className="text-sm text-neutral-300">Start date</label>
               <input 
                 className="input mt-1" 
                 type="date" 
@@ -452,10 +459,7 @@ export default function Dashboard() {
                 className="mt-6 p-6 rounded-xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm"
               >
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <motion.div 
-                    className="text-center"
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <div className="text-center">
                     <p className="text-sm text-neutral-400 mb-1">Initial Investment</p>
                     <p className="text-xl font-bold text-white">
                       {simResult.currency} {amount.toLocaleString('en-US', { 
@@ -463,12 +467,9 @@ export default function Dashboard() {
                         maximumFractionDigits: 2 
                       })}
                     </p>
-                  </motion.div>
+                  </div>
                   
-                  <motion.div 
-                    className="text-center"
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <div className="text-center">
                     <p className="text-sm text-neutral-400 mb-1">Final Amount</p>
                     <p className="text-xl font-bold gradient-text">
                       {simResult.currency} {simResult.amount_final.toLocaleString('en-US', { 
@@ -476,22 +477,16 @@ export default function Dashboard() {
                         maximumFractionDigits: 2 
                       })}
                     </p>
-                  </motion.div>
+                  </div>
                   
-                  <motion.div 
-                    className="text-center"
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <div className="text-center">
                     <p className="text-sm text-neutral-400 mb-1">Total Return</p>
                     <p className={`text-xl font-bold ${simResult.roi_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {simResult.roi_pct > 0 ? '+' : ''}{simResult.roi_pct.toFixed(2)}%
                     </p>
-                  </motion.div>
+                  </div>
                   
-                  <motion.div 
-                    className="text-center"
-                    whileHover={{ scale: 1.05 }}
-                  >
+                  <div className="text-center">
                     <p className="text-sm text-neutral-400 mb-1">Profit/Loss</p>
                     <p className={`text-xl font-bold ${simResult.amount_final >= amount ? 'text-green-400' : 'text-red-400'}`}>
                       {simResult.amount_final >= amount ? '+' : ''}{simResult.currency} {(simResult.amount_final - amount).toLocaleString('en-US', { 
@@ -499,7 +494,7 @@ export default function Dashboard() {
                         maximumFractionDigits: 2 
                       })}
                     </p>
-                  </motion.div>
+                  </div>
                 </div>
                 
                 {/* Growth visualization bar */}
@@ -522,16 +517,22 @@ export default function Dashboard() {
           </AnimatePresence>
         </motion.section>
 
+        {/* Smart Market Data Refresh */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-8"
+        >
+          <SmartRefresh onRefreshComplete={refreshDashboardData} />
+        </motion.section>
+
         {/* Portfolio Allocation */}
         <div className="grid md:grid-cols-2 gap-6">
           <motion.section
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            whileHover={{ 
-              scale: 1.01,
-              boxShadow: "0 4px 20px rgba(139,92,246,0.1)" 
-            }}
             className="card"
           >
             <h2 className="text-xl font-semibold mb-4 gradient-text">Portfolio Allocation</h2>
@@ -590,10 +591,6 @@ export default function Dashboard() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.7 }}
-            whileHover={{ 
-              scale: 1.01,
-              boxShadow: "0 4px 20px rgba(236,72,153,0.1)" 
-            }}
             className="card"
           >
             <h2 className="text-xl font-semibold mb-4 gradient-text">Top Holdings</h2>
@@ -618,7 +615,6 @@ export default function Dashboard() {
                     }`}
                     onMouseEnter={() => setHoveredAsset(a.symbol)}
                     onMouseLeave={() => setHoveredAsset(null)}
-                    whileHover={{ scale: 1.02, x: 4 }}
                   >
                     <div className="flex items-center gap-3">
                       <motion.div 
