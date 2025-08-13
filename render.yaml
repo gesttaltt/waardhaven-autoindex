@@ -40,5 +40,5 @@ services:
 databases:
   - name: waardhaven-db
     plan: starter
-    databaseName: waardhaven
-    user: waardhaven_user
+    databaseName: waardhaven_db_5t62
+    user: waardhaven_db_5t62_user
