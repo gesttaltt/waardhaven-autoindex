@@ -4,7 +4,12 @@ from datetime import date, timedelta
 import pandas as pd
 from ..models import Asset, Price, IndexValue, Allocation
 from ..core.config import settings
-from .twelvedata import fetch_prices
+try:
+    from .twelvedata_optimized import fetch_prices_optimized as fetch_prices
+    use_optimized = True
+except ImportError:
+    from .twelvedata import fetch_prices
+    use_optimized = False
 from .strategy import compute_index_and_allocations
 
 DEFAULT_ASSETS = [
@@ -32,12 +37,21 @@ def ensure_assets(db: Session):
             db.add(Asset(symbol=sym, name=name, sector=sector))
     db.commit()
 
-def refresh_all(db: Session):
+def refresh_all(db: Session, smart_mode: bool = True):
     import logging
     logger = logging.getLogger(__name__)
     
+    # Use smart refresh if optimized module is available and enabled
+    if smart_mode and use_optimized:
+        try:
+            from .refresh_optimized import smart_refresh
+            logger.info("Using smart refresh with rate limit protection...")
+            return smart_refresh(db, mode=settings.REFRESH_MODE)
+        except ImportError:
+            logger.warning("Smart refresh not available, falling back to standard refresh")
+    
     try:
-        logger.info("Starting refresh process...")
+        logger.info("Starting standard refresh process...")
         
         # Step 1: Ensure assets exist
         logger.info("Ensuring assets...")

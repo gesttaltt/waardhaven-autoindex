@@ -10,13 +10,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY startup.sh ./
+COPY startup_smart.sh ./
 
-# Make startup script executable
-RUN chmod +x startup.sh
+# Make startup scripts executable
+RUN chmod +x startup.sh startup_smart.sh
 
 # Use PORT environment variable from Render
 ENV PORT=10000
 EXPOSE ${PORT}
 
-# Use startup script to initialize DB and start server
-CMD ["./startup.sh"]
+# Use smart startup script with rate limiting protection
+CMD ["./startup_smart.sh"]

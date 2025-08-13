@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import api from "../utils/api";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -10,27 +10,14 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-  // Debug environment
-  console.log('Environment check:', {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    API_BEING_USED: API,
-    NODE_ENV: process.env.NODE_ENV,
-    allEnv: Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC'))
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     
-    // Debug logging
-    console.log('API URL:', API);
-    console.log('Attempting registration to:', `${API}/api/v1/auth/register`);
-    
     try {
-      const res = await axios.post(`${API}/api/v1/auth/register`, { 
+      const res = await api.post('/api/v1/auth/register', { 
         email, 
         password 
       });
@@ -60,7 +47,7 @@ export default function RegisterPage() {
         setError(`Server error (${err.response.status}): ${detail}`);
       } else if (err.request) {
         // Request made but no response
-        setError(`Cannot connect to server at ${API}. Please check if the API is running.`);
+        setError('Cannot connect to server. Please check if the API is running.');
       } else {
         // Request setup error
         setError('Error setting up request: ' + err.message);

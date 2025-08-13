@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from ..core.database import get_db
-from ..models import IndexValue, Price, Asset
+from ..models import IndexValue, Price, Asset, User
 from ..schemas import BenchmarkResponse, SeriesPoint
+from ..utils.token_dep import get_current_user
 
 router = APIRouter()
 
 @router.get("/sp500", response_model=BenchmarkResponse)
-def sp500(db: Session = Depends(get_db)):
+def sp500(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     # S&P 500 is stored as an asset with symbol '^GSPC' in prices table for history
     sp500_asset = db.query(Asset).filter(Asset.symbol == "^GSPC").first()
     if not sp500_asset:

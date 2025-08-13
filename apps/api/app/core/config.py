@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     
     # TwelveData API configuration
     TWELVEDATA_API_KEY: str = Field(default="", env="TWELVEDATA_API_KEY")
+    TWELVEDATA_PLAN: str = Field(default="free", env="TWELVEDATA_PLAN")  # free, grow, pro, etc.
+    TWELVEDATA_RATE_LIMIT: int = Field(default=8, env="TWELVEDATA_RATE_LIMIT")  # Credits per minute
+    ENABLE_MARKET_DATA_CACHE: bool = Field(default=True, env="ENABLE_MARKET_DATA_CACHE")
+    REFRESH_MODE: str = Field(default="auto", env="REFRESH_MODE")  # auto, full, minimal, cached
 
     class Config:
         env_file = ".env"

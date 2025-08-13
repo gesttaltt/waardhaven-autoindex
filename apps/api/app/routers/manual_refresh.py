@@ -41,6 +41,46 @@ def trigger_manual_refresh(background_tasks: BackgroundTasks, db: Session = Depe
             "traceback": traceback.format_exc()
         }
 
+@router.post("/smart-refresh")
+def trigger_smart_refresh(background_tasks: BackgroundTasks, 
+                         mode: str = "auto", 
+                         db: Session = Depends(get_db)):
+    """
+    Trigger smart refresh with rate limiting protection.
+    
+    Modes: auto, full, minimal, cached
+    """
+    valid_modes = ["auto", "full", "minimal", "cached"]
+    if mode not in valid_modes:
+        return {
+            "status": "ERROR",
+            "error": f"Invalid mode. Must be one of: {valid_modes}"
+        }
+    
+    try:
+        # Add smart refresh to background tasks
+        background_tasks.add_task(run_smart_refresh_with_logging, db, mode)
+        
+        return {
+            "status": "SMART_REFRESH_STARTED",
+            "message": f"Smart refresh has been triggered in {mode} mode",
+            "mode": mode,
+            "features": [
+                "Rate limit protection",
+                "Caching support", 
+                "Fallback to cached data",
+                "API tier optimization"
+            ],
+            "note": "This refresh is optimized for your API plan and will avoid rate limits"
+        }
+    except Exception as e:
+        logger.error(f"Failed to trigger smart refresh: {str(e)}")
+        return {
+            "status": "ERROR",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
 def run_refresh_with_logging(db: Session):
     """Run refresh with detailed logging."""
     try:
@@ -57,6 +97,31 @@ def run_refresh_with_logging(db: Session):
         
     except Exception as e:
         logger.error(f"Refresh failed: {str(e)}")
+        logger.error(traceback.format_exc())
+
+def run_smart_refresh_with_logging(db: Session, mode: str = "auto"):
+    """Run smart refresh with detailed logging."""
+    try:
+        logger.info(f"Starting smart refresh in {mode} mode...")
+        
+        try:
+            from ..services.refresh_optimized import smart_refresh
+            result = smart_refresh(db, mode=mode)
+            logger.info(f"Smart refresh completed: {result}")
+        except ImportError:
+            logger.warning("Smart refresh not available, falling back to standard")
+            from ..services.refresh import refresh_all
+            refresh_all(db)
+            result = {"success": True, "mode": "fallback"}
+        
+        # Verify results
+        index_count = db.query(func.count()).select_from(IndexValue).scalar()
+        price_count = db.query(func.count()).select_from(Price).scalar()
+        
+        logger.info(f"Smart refresh result - Index values: {index_count}, Prices: {price_count}")
+        
+    except Exception as e:
+        logger.error(f"Smart refresh failed: {str(e)}")
         logger.error(traceback.format_exc())
 
 @router.post("/minimal-refresh")

@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date
 from ..core.database import get_db
-from ..models import Asset, Price, Allocation, IndexValue
+from ..models import Asset, Price, Allocation, IndexValue, User
 from ..schemas import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
 from ..services.currency import convert_amount, get_supported_currencies
+from ..utils.token_dep import get_current_user
 
 router = APIRouter()
 
 @router.get("/current", response_model=IndexCurrentResponse)
-def get_current_index(db: Session = Depends(get_db)):
+def get_current_index(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     # Latest allocation date
     latest_date = db.query(func.max(Allocation.date)).scalar()
     if latest_date is None:
@@ -22,14 +23,14 @@ def get_current_index(db: Session = Depends(get_db)):
     return IndexCurrentResponse(date=latest_date, allocations=items)
 
 @router.get("/history", response_model=IndexHistoryResponse)
-def get_history(db: Session = Depends(get_db)):
+def get_history(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     rows = db.query(IndexValue).order_by(IndexValue.date.asc()).all()
     if not rows:
         raise HTTPException(status_code=404, detail="No index history. Run tasks/refresh.")
     return IndexHistoryResponse(series=[SeriesPoint(date=r.date, value=r.value) for r in rows])
 
 @router.post("/simulate", response_model=SimulationResponse)
-def simulate(req: SimulationRequest, db: Session = Depends(get_db)):
+def simulate(req: SimulationRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     # Get index series
     q = db.query(IndexValue).order_by(IndexValue.date.asc())
     series = q.all()
@@ -77,6 +78,6 @@ def simulate(req: SimulationRequest, db: Session = Depends(get_db)):
     )
 
 @router.get("/currencies")
-def get_currencies():
+def get_currencies(user: User = Depends(get_current_user)):
     """Get list of supported currencies for simulation."""
     return get_supported_currencies()

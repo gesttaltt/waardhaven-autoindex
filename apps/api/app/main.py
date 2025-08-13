@@ -5,12 +5,16 @@ from .core.config import settings
 
 app = FastAPI(title="Waardhaven Autoindex API", version="0.1.0")
 
-# CORS
+# CORS - Configure allowed origins based on environment
+import os
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+# In production, should be: https://waardhaven-web.onrender.com
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten in prod
+    allow_origins=allowed_origins if os.getenv("NODE_ENV") == "production" else ["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
