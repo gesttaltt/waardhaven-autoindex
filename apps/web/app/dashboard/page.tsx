@@ -23,7 +23,9 @@ export default function Dashboard() {
   const [simulating, setSimulating] = useState(false);
   const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);
   const [chartTimeRange, setChartTimeRange] = useState<string>("all");
-  const [showComparison, setShowComparison] = useState(true);
+  const [showComparison, setShowComparison] = useState(true);  // Show S&P 500 by default
+  const [showDataPanel, setShowDataPanel] = useState(false);
+  const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(["autoindex", "sp500"]);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   
   // Function to refresh dashboard data
@@ -123,6 +125,30 @@ export default function Dashboard() {
   const volatility = calculateVolatility(indexSeries);
   const filteredIndexSeries = filterDataByRange(indexSeries);
   const filteredSpSeries = filterDataByRange(spSeries);
+  
+  // Calculate performance metrics
+  const calculatePerformanceMetrics = () => {
+    if (filteredIndexSeries.length === 0) return null;
+    
+    const indexStart = filteredIndexSeries[0]?.value || 100;
+    const indexEnd = filteredIndexSeries[filteredIndexSeries.length - 1]?.value || 100;
+    const spStart = filteredSpSeries[0]?.value || 100;
+    const spEnd = filteredSpSeries[filteredSpSeries.length - 1]?.value || 100;
+    
+    const indexReturn = ((indexEnd - indexStart) / indexStart) * 100;
+    const spReturn = ((spEnd - spStart) / spStart) * 100;
+    const outperformance = indexReturn - spReturn;
+    
+    return {
+      indexReturn,
+      spReturn,
+      outperformance,
+      indexValue: indexEnd,
+      spValue: spEnd
+    };
+  };
+  
+  const performanceMetrics = calculatePerformanceMetrics();
 
   return (
     <main className="min-h-screen relative">
@@ -240,8 +266,42 @@ export default function Dashboard() {
           transition={{ delay: 0.5 }}
           className="card mb-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <h2 className="text-xl font-semibold gradient-text mb-4 sm:mb-0">Performance History</h2>
+          {/* Header with Title and Metrics */}
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold gradient-text mb-2">Performance History</h2>
+                <p className="text-sm text-neutral-400">AutoIndex vs S&P 500 Benchmark Comparison</p>
+              </div>
+              
+              {/* Performance Metrics Display */}
+              {performanceMetrics && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex gap-4 mt-4 sm:mt-0"
+                >
+                  <div className="text-center">
+                    <p className="text-xs text-neutral-400">AutoIndex</p>
+                    <p className={`text-lg font-bold ${performanceMetrics.indexReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {performanceMetrics.indexReturn >= 0 ? '+' : ''}{performanceMetrics.indexReturn.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-neutral-400">S&P 500</p>
+                    <p className={`text-lg font-bold ${performanceMetrics.spReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {performanceMetrics.spReturn >= 0 ? '+' : ''}{performanceMetrics.spReturn.toFixed(2)}%
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-neutral-400">Outperformance</p>
+                    <p className={`text-lg font-bold ${performanceMetrics.outperformance >= 0 ? 'text-purple-400' : 'text-orange-400'}`}>
+                      {performanceMetrics.outperformance >= 0 ? '+' : ''}{performanceMetrics.outperformance.toFixed(2)}%
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
             
             <div className="flex flex-wrap gap-2">
               {/* Time Range Selector */}
@@ -267,20 +327,116 @@ export default function Dashboard() {
                 ))}
               </div>
               
-              {/* Comparison Toggle */}
+              {/* Data Panel Toggle */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setShowComparison(!showComparison)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  showComparison
-                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                    : "bg-white/5 text-neutral-400 hover:text-white"
-                }`}
+                onClick={() => setShowDataPanel(!showDataPanel)}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 transition-all hover:bg-purple-500/30"
               >
-                {showComparison ? "Hide" : "Show"} S&P 500
+                📊 {showDataPanel ? "Hide" : "Show"} Data Options
               </motion.button>
             </div>
+            
+            {/* Deployable Data Panel */}
+            <AnimatePresence>
+              {showDataPanel && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10"
+                >
+                  <div className="mb-3">
+                    <h3 className="text-sm font-medium text-neutral-300 mb-2">Available Data Series</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setShowComparison(!showComparison)}
+                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                          showComparison
+                            ? "bg-purple-500 text-white"
+                            : "bg-white/10 text-neutral-400 hover:bg-white/20"
+                        }`}
+                      >
+                        <span className="mr-2">📈</span>
+                        AutoIndex vs S&P 500
+                      </button>
+                      
+                      <button
+                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
+                      >
+                        <span className="mr-2">💹</span>
+                        Volume Data
+                      </button>
+                      
+                      <button
+                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
+                      >
+                        <span className="mr-2">📊</span>
+                        Volatility Bands
+                      </button>
+                      
+                      <button
+                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
+                      >
+                        <span className="mr-2">🎯</span>
+                        Moving Averages
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-neutral-400 mb-1">Data Points</p>
+                      <p className="font-medium text-white">{filteredIndexSeries.length}</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-neutral-400 mb-1">Date Range</p>
+                      <p className="font-medium text-white">
+                        {filteredIndexSeries[0]?.date ? new Date(filteredIndexSeries[0].date).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-neutral-400 mb-1">Update Status</p>
+                      <p className="font-medium text-green-400">Live</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-2">
+                      <p className="text-neutral-400 mb-1">Benchmark</p>
+                      <p className="font-medium text-white">S&P 500</p>
+                    </div>
+                  </div>
+                  
+                  {/* Legend with interactive elements */}
+                  <div className="mt-3 pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                          <span className="text-neutral-300">AutoIndex</span>
+                          <span className="text-green-400 font-medium">
+                            {performanceMetrics?.indexValue.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-pink-500"></div>
+                          <span className="text-neutral-300">S&P 500</span>
+                          <span className="text-neutral-400 font-medium">
+                            {performanceMetrics?.spValue.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setChartTimeRange("all")}
+                        className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                      >
+                        Reset View
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           {loading ? (
             <div className="h-96 skeleton rounded-xl" />
