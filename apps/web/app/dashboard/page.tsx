@@ -72,7 +72,7 @@ export default function Dashboard() {
         </div>
         {simResult && (
           <div className="mt-4 text-neutral-300">
-            <p>Final amount: <b>${"{:,.2f}".format(simResult.amount_final)}</b></p>
+            <p>Final amount: <b>${simResult.amount_final.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b></p>
             <p>ROI: <b>{simResult.roi_pct.toFixed(2)}%</b></p>
           </div>
         )}
