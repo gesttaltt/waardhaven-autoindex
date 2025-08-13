@@ -629,10 +629,19 @@ export default function Dashboard() {
                       day: 'numeric' 
                     });
                   }}
-                  formatter={(value: number, name: string) => [
-                    `${value.toFixed(2)}`,
-                    name === "value" ? "Autoindex" : "S&P 500"
-                  ]}
+                  formatter={(value: number, name: string) => {
+                    const labels = {
+                      value: "Autoindex",
+                      sp: "S&P 500",
+                      ma: "50-Day MA",
+                      upperBand: "Upper Band",
+                      lowerBand: "Lower Band"
+                    };
+                    return [
+                      value ? `${value.toFixed(2)}` : 'N/A',
+                      labels[name as keyof typeof labels] || name
+                    ];
+                  }}
                 />
                 <Legend />
                 
@@ -663,6 +672,46 @@ export default function Dashboard() {
                     dot={false}
                     activeDot={{ r: 6, stroke: '#ec4899', strokeWidth: 2, fill: '#1f1f23' }}
                   />
+                )}
+                
+                {/* Technical Indicators */}
+                {showMovingAverage && (
+                  <Line 
+                    type="monotone" 
+                    dataKey="ma" 
+                    name="50-Day MA" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    fill="none"
+                    activeDot={{ r: 4, stroke: '#10b981', strokeWidth: 2, fill: '#1f1f23' }}
+                  />
+                )}
+                
+                {showVolatilityBands && (
+                  <>
+                    <Line 
+                      type="monotone" 
+                      dataKey="upperBand" 
+                      name="Upper Band" 
+                      stroke="#3b82f6" 
+                      strokeWidth={1}
+                      strokeDasharray="3 3"
+                      dot={false}
+                      fill="none"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="lowerBand" 
+                      name="Lower Band" 
+                      stroke="#3b82f6" 
+                      strokeWidth={1}
+                      strokeDasharray="3 3"
+                      dot={false}
+                      fill="none"
+                    />
+                  </>
                 )}
                 
                 {/* Zoom and pan functionality */}
