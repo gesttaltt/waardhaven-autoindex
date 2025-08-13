@@ -26,6 +26,10 @@ export default function Dashboard() {
   const [showComparison, setShowComparison] = useState(true);  // Show S&P 500 by default
   const [showDataPanel, setShowDataPanel] = useState(false);
   const [selectedDataSeries, setSelectedDataSeries] = useState<string[]>(["autoindex", "sp500"]);
+  const [showVolume, setShowVolume] = useState(false);
+  const [showMovingAverage, setShowMovingAverage] = useState(false);
+  const [showVolatilityBands, setShowVolatilityBands] = useState(false);
+  const [individualAssets, setIndividualAssets] = useState<{[key: string]: boolean}>({});
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   
   // Function to refresh dashboard data
@@ -126,6 +130,28 @@ export default function Dashboard() {
   const filteredIndexSeries = filterDataByRange(indexSeries);
   const filteredSpSeries = filterDataByRange(spSeries);
   
+  // Create properly aligned dataset for chart rendering
+  const createAlignedChartData = () => {
+    if (filteredIndexSeries.length === 0) return [];
+    
+    // Create a map of SP500 data by date for efficient lookup
+    const spDataMap = new Map(
+      filteredSpSeries.map(point => [point.date, point.value])
+    );
+    
+    // Map index data and align SP500 values by date
+    return filteredIndexSeries.map(point => ({
+      date: point.date,
+      value: point.value,
+      sp: showComparison ? (spDataMap.get(point.date) || null) : undefined
+    })).filter(point => 
+      // Filter out points where we don't have matching SP500 data when comparison is enabled
+      !showComparison || point.sp !== null
+    );
+  };
+  
+  const alignedChartData = createAlignedChartData();
+  
   // Calculate performance metrics
   const calculatePerformanceMetrics = () => {
     if (filteredIndexSeries.length === 0) return null;
@@ -167,6 +193,12 @@ export default function Dashboard() {
               <p className="text-neutral-400">Track your portfolio performance in real-time</p>
             </div>
             <div className="flex items-center space-x-4 mt-2">
+              <button
+                onClick={() => router.push("/ai-insights")}
+                className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
+              >
+                🤖 AI Insights
+              </button>
               <button
                 onClick={() => router.push("/admin")}
                 className="text-neutral-400 hover:text-white transition-colors text-sm px-3 py-2 rounded-lg hover:bg-white/5"
@@ -443,10 +475,7 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={400}>
               <AreaChart 
-                data={filteredIndexSeries.map((p,i) => ({
-                  ...p, 
-                  sp: showComparison ? filteredSpSeries[i]?.value : undefined
-                }))}
+                data={alignedChartData}
                 margin={{ top: 10, right: 30, left: 0, bottom: 40 }}
               >
                 <defs>
