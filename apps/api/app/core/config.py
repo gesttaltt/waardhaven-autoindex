@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
@@ -7,6 +8,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
     DATABASE_URL: str
+    
+    # Port configuration for Render
+    PORT: int = Field(default=10000, env="PORT")
 
     ADMIN_TOKEN: str = ""
     DAILY_DROP_THRESHOLD: float = -0.01

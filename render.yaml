@@ -1,13 +1,14 @@
-# Example Render blueprint (optional). You can also configure via UI.
 services:
   - type: web
     name: waardhaven-api
     env: docker
-    buildCommand: ""
-    startCommand: ""
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: starter
     rootDir: apps/api
     envVars:
+      - key: PORT
+        value: "10000"
       - key: SECRET_KEY
         sync: false
       - key: DATABASE_URL
@@ -24,9 +25,13 @@ services:
   - type: web
     name: waardhaven-web
     env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     rootDir: apps/web
     plan: starter
     envVars:
+      - key: PORT
+        value: "10000"
       - key: NEXT_PUBLIC_API_URL
         sync: false
 
