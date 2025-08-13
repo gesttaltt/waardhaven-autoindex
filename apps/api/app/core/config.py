@@ -3,11 +3,11 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 
 class Settings(BaseSettings):
-    SECRET_KEY: str
+    SECRET_KEY: str = Field(..., env="SECRET_KEY")  # Required in production
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
-    DATABASE_URL: str
+    DATABASE_URL: str = Field(..., env="DATABASE_URL")  # Required in production
     
     # Port configuration for Render
     PORT: int = Field(default=10000, env="PORT")
