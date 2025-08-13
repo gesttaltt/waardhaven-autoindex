@@ -7,8 +7,8 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://waardhaven-api-backend.onrender.com}
 
 # Copy package files
-COPY package.json package-lock.json* ./
-RUN npm ci || npm install
+COPY package.json ./
+RUN npm install
 
 # Copy application files
 COPY . .
@@ -25,7 +25,6 @@ ENV PORT=10000
 
 # Copy necessary files from builder
 COPY --from=builder /app/package.json ./
-COPY --from=builder /app/package-lock.json* ./
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 # Copy public directory if it exists
