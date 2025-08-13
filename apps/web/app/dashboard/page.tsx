@@ -179,17 +179,20 @@ export default function Dashboard() {
     const volatilityBands = showVolatilityBands ? calculateVolatilityBands(filteredIndexSeries, 20, 2) : [];
     
     // Map index data and align SP500 values by date
-    return filteredIndexSeries.map((point, index) => ({
+    const alignedData = filteredIndexSeries.map((point, index) => ({
       date: point.date,
       value: point.value,
       sp: showComparison ? (spDataMap.get(point.date) || null) : undefined,
       ma: showMovingAverage ? movingAverage[index] : undefined,
       upperBand: showVolatilityBands ? volatilityBands[index]?.upper : undefined,
       lowerBand: showVolatilityBands ? volatilityBands[index]?.lower : undefined
-    })).filter(point => 
-      // Filter out points where we don't have matching SP500 data when comparison is enabled
-      !showComparison || point.sp !== null
-    );
+    }));
+    
+    // Instead of filtering out data points without S&P 500 matches,
+    // just return all data points. The chart will handle null/undefined values gracefully
+    const filteredAlignedData = alignedData;
+    
+    return filteredAlignedData;
   };
   
   const alignedChartData = createAlignedChartData();
@@ -272,9 +275,6 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-neutral-300">Total Performance</p>
                 <p className="text-3xl font-bold gradient-text">{currentPerformance}%</p>
-              </div>
-              <div className="text-4xl">
-                📈
               </div>
             </div>
           </motion.div>
