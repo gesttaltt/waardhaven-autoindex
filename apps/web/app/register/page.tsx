@@ -10,12 +10,12 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  // Temporary hardcode while debugging env var issue
-  const API = 'https://waardhaven-api.onrender.com';
+  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   // Debug environment
   console.log('Environment check:', {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    API_BEING_USED: API,
     NODE_ENV: process.env.NODE_ENV,
     allEnv: Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC'))
   });
@@ -40,16 +40,27 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch (err: any) {
       console.error('Registration error:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        response: err.response?.data,
+        status: err.response?.status,
+        headers: err.response?.headers,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+          baseURL: err.config?.baseURL
+        }
+      });
       
       // More detailed error handling
       if (err.response) {
         // Server responded with error
-        console.error('Error response:', err.response.data);
-        setError(err.response.data?.detail || `Server error: ${err.response.status}`);
+        const detail = err.response.data?.detail || err.response.data?.message || 'Unknown server error';
+        setError(`Server error (${err.response.status}): ${detail}`);
       } else if (err.request) {
         // Request made but no response
-        console.error('No response from server');
-        setError('Cannot connect to server. Check if API URL is correct and server is running.');
+        setError(`Cannot connect to server at ${API}. Please check if the API is running.`);
       } else {
         // Request setup error
         setError('Error setting up request: ' + err.message);
