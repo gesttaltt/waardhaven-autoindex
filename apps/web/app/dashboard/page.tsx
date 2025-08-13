@@ -30,6 +30,8 @@ export default function Dashboard() {
   const [showMovingAverage, setShowMovingAverage] = useState(false);
   const [showVolatilityBands, setShowVolatilityBands] = useState(false);
   const [individualAssets, setIndividualAssets] = useState<{[key: string]: boolean}>({});
+  const [assetSeriesData, setAssetSeriesData] = useState<{[key: string]: SeriesPoint[]}>({});
+  const [loadingAssets, setLoadingAssets] = useState<{[key: string]: boolean}>({});
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   
   // Function to refresh dashboard data
@@ -49,6 +51,27 @@ export default function Dashboard() {
     }
   };
 
+  // Function to fetch individual asset data
+  const fetchAssetData = async (symbol: string) => {
+    if (assetSeriesData[symbol] || loadingAssets[symbol]) return; // Already loaded or loading
+    
+    setLoadingAssets(prev => ({ ...prev, [symbol]: true }));
+    
+    try {
+      const response = await api.get(`/api/v1/index/assets/${symbol}/history`);
+      setAssetSeriesData(prev => ({ 
+        ...prev, 
+        [symbol]: response.data.series 
+      }));
+    } catch (err) {
+      console.error(`Failed to fetch data for ${symbol}:`, err);
+      // Remove from individual assets if fetch fails
+      setIndividualAssets(prev => ({ ...prev, [symbol]: false }));
+    } finally {
+      setLoadingAssets(prev => ({ ...prev, [symbol]: false }));
+    }
+  };
+
   // Chart colors for pie chart
   const COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7'];
 
@@ -61,7 +84,10 @@ export default function Dashboard() {
     // Fetch all data in parallel
     Promise.all([
       api.get('/api/v1/index/history').then(r => setIndexSeries(r.data.series)),
-      api.get('/api/v1/benchmark/sp500').then(r => setSpSeries(r.data.series)),
+      api.get('/api/v1/benchmark/sp500').then(r => setSpSeries(r.data.series)).catch(spErr => {
+        console.warn('S&P 500 benchmark data not available:', spErr.response?.status);
+        setSpSeries([]);
+      }),
       api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations)),
       api.get('/api/v1/index/currencies').then(r => setCurrencies(r.data))
     ]).catch(err => {
@@ -70,6 +96,15 @@ export default function Dashboard() {
       setLoading(false);
     });
   }, [token, router]);
+
+  // Fetch asset data when individual assets are selected
+  useEffect(() => {
+    Object.entries(individualAssets).forEach(([symbol, isSelected]) => {
+      if (isSelected) {
+        fetchAssetData(symbol);
+      }
+    });
+  }, [individualAssets, assetSeriesData, loadingAssets]);
 
   const runSimulation = async () => {
     setSimulating(true);
@@ -174,25 +209,41 @@ export default function Dashboard() {
       filteredSpSeries.map(point => [point.date, point.value])
     );
     
+    // Create maps for individual asset data by date
+    const assetDataMaps = new Map();
+    Object.entries(individualAssets).forEach(([symbol, isSelected]) => {
+      if (isSelected && assetSeriesData[symbol]) {
+        const filteredAssetData = filterDataByRange(assetSeriesData[symbol]);
+        assetDataMaps.set(symbol, new Map(
+          filteredAssetData.map(point => [point.date, point.value])
+        ));
+      }
+    });
+    
     // Calculate technical indicators
     const movingAverage = showMovingAverage ? calculateMovingAverage(filteredIndexSeries, 50) : [];
     const volatilityBands = showVolatilityBands ? calculateVolatilityBands(filteredIndexSeries, 20, 2) : [];
     
-    // Map index data and align SP500 values by date
-    const alignedData = filteredIndexSeries.map((point, index) => ({
-      date: point.date,
-      value: point.value,
-      sp: showComparison ? (spDataMap.get(point.date) || null) : undefined,
-      ma: showMovingAverage ? movingAverage[index] : undefined,
-      upperBand: showVolatilityBands ? volatilityBands[index]?.upper : undefined,
-      lowerBand: showVolatilityBands ? volatilityBands[index]?.lower : undefined
-    }));
+    // Map index data and align all data by date
+    const alignedData = filteredIndexSeries.map((point, index) => {
+      const dataPoint: any = {
+        date: point.date,
+        value: point.value,
+        sp: showComparison ? (spDataMap.get(point.date) || null) : undefined,
+        ma: showMovingAverage ? movingAverage[index] : undefined,
+        upperBand: showVolatilityBands ? volatilityBands[index]?.upper : undefined,
+        lowerBand: showVolatilityBands ? volatilityBands[index]?.lower : undefined
+      };
+      
+      // Add individual asset data
+      assetDataMaps.forEach((assetMap, symbol) => {
+        dataPoint[symbol] = assetMap.get(point.date) || null;
+      });
+      
+      return dataPoint;
+    });
     
-    // Instead of filtering out data points without S&P 500 matches,
-    // just return all data points. The chart will handle null/undefined values gracefully
-    const filteredAlignedData = alignedData;
-    
-    return filteredAlignedData;
+    return alignedData;
   };
   
   const alignedChartData = createAlignedChartData();
@@ -354,18 +405,30 @@ export default function Dashboard() {
                       {performanceMetrics.indexReturn >= 0 ? '+' : ''}{performanceMetrics.indexReturn.toFixed(2)}%
                     </p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-neutral-400">S&P 500</p>
-                    <p className={`text-lg font-bold ${performanceMetrics.spReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {performanceMetrics.spReturn >= 0 ? '+' : ''}{performanceMetrics.spReturn.toFixed(2)}%
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-neutral-400">Outperformance</p>
-                    <p className={`text-lg font-bold ${performanceMetrics.outperformance >= 0 ? 'text-purple-400' : 'text-orange-400'}`}>
-                      {performanceMetrics.outperformance >= 0 ? '+' : ''}{performanceMetrics.outperformance.toFixed(2)}%
-                    </p>
-                  </div>
+                  
+                  {filteredSpSeries.length > 0 ? (
+                    <>
+                      <div className="text-center">
+                        <p className="text-xs text-neutral-400">S&P 500</p>
+                        <p className={`text-lg font-bold ${performanceMetrics.spReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {performanceMetrics.spReturn >= 0 ? '+' : ''}{performanceMetrics.spReturn.toFixed(2)}%
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-neutral-400">Outperformance</p>
+                        <p className={`text-lg font-bold ${performanceMetrics.outperformance >= 0 ? 'text-purple-400' : 'text-orange-400'}`}>
+                          {performanceMetrics.outperformance >= 0 ? '+' : ''}{performanceMetrics.outperformance.toFixed(2)}%
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-xs text-neutral-400">S&P 500 Comparison</p>
+                      <p className="text-sm text-neutral-500">
+                        Data not available
+                      </p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
@@ -428,10 +491,16 @@ export default function Dashboard() {
                               showComparison
                                 ? "bg-purple-500 text-white"
                                 : "bg-white/10 text-neutral-400 hover:bg-white/20"
-                            }`}
+                            } ${filteredSpSeries.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={filteredSpSeries.length === 0}
                           >
-                            <span>S&P 500 Benchmark</span>
-                            <span className={`w-2 h-2 rounded-full ${showComparison ? 'bg-white' : 'bg-neutral-600'}`}></span>
+                            <span className="flex items-center gap-2">
+                              <span>S&P 500 Benchmark</span>
+                              {filteredSpSeries.length === 0 && (
+                                <span className="text-xs opacity-75">(No Data)</span>
+                              )}
+                            </span>
+                            <span className={`w-2 h-2 rounded-full ${showComparison && filteredSpSeries.length > 0 ? 'bg-white' : 'bg-neutral-600'}`}></span>
                           </button>
                         </div>
                       </div>
@@ -480,18 +549,22 @@ export default function Dashboard() {
                               ...prev,
                               [asset.symbol]: !prev[asset.symbol]
                             }))}
+                            disabled={loadingAssets[asset.symbol]}
                             className={`px-2 py-1 rounded text-xs transition-all flex items-center justify-between ${
                               individualAssets[asset.symbol]
                                 ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                                 : "bg-white/10 text-neutral-400 hover:bg-white/20"
-                            }`}
+                            } ${loadingAssets[asset.symbol] ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             <span className="flex items-center">
                               <div 
                                 className="w-2 h-2 rounded-full mr-2" 
-                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                style={{ backgroundColor: COLORS[(index + 2) % COLORS.length] }}
                               />
                               {asset.symbol}
+                              {loadingAssets[asset.symbol] && (
+                                <div className="ml-1 w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
+                              )}
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${
                               individualAssets[asset.symbol] ? 'bg-white' : 'bg-neutral-600'
@@ -505,7 +578,7 @@ export default function Dashboard() {
                         )}
                       </div>
                       <p className="text-xs text-neutral-500 mt-2">
-                        Individual asset data requires additional API calls
+                        Click assets to overlay their performance on the chart for comparison
                       </p>
                     </div>
                   )}
@@ -534,7 +607,7 @@ export default function Dashboard() {
                   {/* Legend with interactive elements */}
                   <div className="mt-3 pt-3 border-t border-white/10">
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-purple-500"></div>
                           <span className="text-neutral-300">AutoIndex</span>
@@ -542,13 +615,36 @@ export default function Dashboard() {
                             {performanceMetrics?.indexValue.toFixed(2)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-pink-500"></div>
-                          <span className="text-neutral-300">S&P 500</span>
-                          <span className="text-neutral-400 font-medium">
-                            {performanceMetrics?.spValue.toFixed(2)}
-                          </span>
-                        </div>
+                        {showComparison && filteredSpSeries.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full bg-pink-500"></div>
+                            <span className="text-neutral-300">S&P 500</span>
+                            <span className="text-neutral-400 font-medium">
+                              {performanceMetrics?.spValue.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {/* Individual Assets in Legend */}
+                        {Object.entries(individualAssets).map(([symbol, isSelected], index) => {
+                          if (!isSelected || !assetSeriesData[symbol]) return null;
+                          
+                          const assetData = assetSeriesData[symbol];
+                          const currentValue = assetData[assetData.length - 1]?.value;
+                          const color = COLORS[(index + 2) % COLORS.length];
+                          
+                          return (
+                            <div key={symbol} className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-neutral-300">{symbol}</span>
+                              <span className="text-neutral-400 font-medium">
+                                {currentValue?.toFixed(2) || 'N/A'}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                       <button
                         onClick={() => setChartTimeRange("all")}
@@ -621,9 +717,11 @@ export default function Dashboard() {
                       upperBand: "Upper Band",
                       lowerBand: "Lower Band"
                     };
+                    // For individual assets, use the symbol as the label
+                    const label = labels[name as keyof typeof labels] || name;
                     return [
                       value ? `${value.toFixed(2)}` : 'N/A',
-                      labels[name as keyof typeof labels] || name
+                      label
                     ];
                   }}
                 />
@@ -697,6 +795,27 @@ export default function Dashboard() {
                     />
                   </>
                 )}
+                
+                {/* Individual Asset Lines */}
+                {Object.entries(individualAssets).map(([symbol, isSelected], index) => {
+                  if (!isSelected || !assetSeriesData[symbol]) return null;
+                  
+                  const color = COLORS[(index + 2) % COLORS.length]; // Offset to avoid conflicts with AutoIndex and S&P 500
+                  
+                  return (
+                    <Line 
+                      key={symbol}
+                      type="monotone" 
+                      dataKey={symbol} 
+                      name={symbol} 
+                      stroke={color} 
+                      strokeWidth={2}
+                      dot={false}
+                      fill="none"
+                      activeDot={{ r: 4, stroke: color, strokeWidth: 2, fill: '#1f1f23' }}
+                    />
+                  );
+                })}
                 
                 {/* Zoom and pan functionality */}
                 <Brush 

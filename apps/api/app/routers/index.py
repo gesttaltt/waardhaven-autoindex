@@ -81,3 +81,19 @@ def simulate(req: SimulationRequest, db: Session = Depends(get_db), user: User =
 def get_currencies(user: User = Depends(get_current_user)):
     """Get list of supported currencies for simulation."""
     return get_supported_currencies()
+
+@router.get("/assets/{symbol}/history", response_model=IndexHistoryResponse)
+def get_asset_history(symbol: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Get price history for a specific asset, normalized to base 100."""
+    asset = db.query(Asset).filter(Asset.symbol == symbol).first()
+    if not asset:
+        raise HTTPException(status_code=404, detail=f"Asset {symbol} not found")
+    
+    rows = db.query(Price).filter(Price.asset_id == asset.id).order_by(Price.date.asc()).all()
+    if not rows:
+        raise HTTPException(status_code=404, detail=f"No price history for {symbol}")
+    
+    # Normalize to base 100 (same approach as AutoIndex and S&P 500)
+    base = rows[0].close
+    series = [SeriesPoint(date=r.date, value=(r.close / base) * 100.0) for r in rows]
+    return IndexHistoryResponse(series=series)

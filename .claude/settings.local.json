@@ -13,7 +13,10 @@
       "Bash(npm install:*)",
       "Bash(python:*)",
       "Bash(mkdir:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
