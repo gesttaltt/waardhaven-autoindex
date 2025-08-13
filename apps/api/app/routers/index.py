@@ -5,6 +5,7 @@ from datetime import date
 from ..core.database import get_db
 from ..models import Asset, Price, Allocation, IndexValue
 from ..schemas import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
+from ..services.currency import convert_amount, get_supported_currencies
 
 router = APIRouter()
 
@@ -41,7 +42,25 @@ def simulate(req: SimulationRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Start date out of range")
     end = series[-1]
 
-    amount_final = req.amount * (end.value / start.value)
+    # Convert input amount to USD if necessary
+    amount_usd = req.amount
+    if req.currency != "USD":
+        amount_usd = convert_amount(req.amount, req.currency, "USD")
+        if amount_usd is None:
+            raise HTTPException(status_code=400, detail=f"Cannot convert from {req.currency} to USD")
+    
+    # Calculate in USD
+    amount_final_usd = amount_usd * (end.value / start.value)
+    
+    # Convert back to requested currency if necessary
+    amount_final = amount_final_usd
+    if req.currency != "USD":
+        amount_final = convert_amount(amount_final_usd, "USD", req.currency)
+        if amount_final is None:
+            # Fallback to USD if conversion fails
+            amount_final = amount_final_usd
+            req.currency = "USD"
+    
     roi_pct = (amount_final / req.amount - 1.0) * 100.0
 
     resp_series = [SeriesPoint(date=r.date, value=r.value) for r in series if r.date >= req.start_date]
@@ -53,5 +72,11 @@ def simulate(req: SimulationRequest, db: Session = Depends(get_db)):
         amount_initial=req.amount,
         amount_final=amount_final,
         roi_pct=roi_pct,
-        series=resp_series
+        series=resp_series,
+        currency=req.currency
     )
+
+@router.get("/currencies")
+def get_currencies():
+    """Get list of supported currencies for simulation."""
+    return get_supported_currencies()

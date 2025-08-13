@@ -13,8 +13,10 @@ export default function Dashboard() {
   const [spSeries, setSpSeries] = useState<SeriesPoint[]>([]);
   const [allocations, setAllocations] = useState<{symbol:string; weight:number;}[]>([]);
   const [amount, setAmount] = useState(10000);
+  const [currency, setCurrency] = useState("USD");
+  const [currencies, setCurrencies] = useState<{[key: string]: string}>({});
   const [startDate, setStartDate] = useState<string>("2019-01-01");
-  const [simResult, setSimResult] = useState<{amount_final:number; roi_pct:number} | null>(null);
+  const [simResult, setSimResult] = useState<{amount_final:number; roi_pct:number; currency:string} | null>(null);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
@@ -27,7 +29,8 @@ export default function Dashboard() {
     Promise.all([
       api.get('/api/v1/index/history').then(r => setIndexSeries(r.data.series)),
       api.get('/api/v1/benchmark/sp500').then(r => setSpSeries(r.data.series)),
-      api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations))
+      api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations)),
+      api.get('/api/v1/index/currencies').then(r => setCurrencies(r.data))
     ]).catch(err => {
       console.error('Failed to fetch dashboard data:', err);
     });
@@ -35,8 +38,16 @@ export default function Dashboard() {
 
   const runSimulation = async () => {
     try {
-      const r = await api.post('/api/v1/index/simulate', { amount, start_date: startDate });
-      setSimResult({ amount_final: r.data.amount_final, roi_pct: r.data.roi_pct });
+      const r = await api.post('/api/v1/index/simulate', { 
+        amount, 
+        start_date: startDate,
+        currency: currency 
+      });
+      setSimResult({ 
+        amount_final: r.data.amount_final, 
+        roi_pct: r.data.roi_pct,
+        currency: r.data.currency 
+      });
     } catch (error) {
       console.error('Simulation failed:', error);
       alert('Failed to run simulation. Please try again.');
@@ -66,10 +77,18 @@ export default function Dashboard() {
 
       <section className="card mt-6">
         <h2 className="text-xl font-semibold">Simulation</h2>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="text-sm text-neutral-400">Amount</label>
             <input className="input mt-1" type="number" value={amount} onChange={e=>setAmount(parseFloat(e.target.value))} />
+          </div>
+          <div>
+            <label className="text-sm text-neutral-400">Currency</label>
+            <select className="input mt-1" value={currency} onChange={e=>setCurrency(e.target.value)}>
+              {Object.entries(currencies).map(([code, name]) => (
+                <option key={code} value={code}>{code} - {name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="text-sm text-neutral-400">Start date</label>
@@ -81,7 +100,7 @@ export default function Dashboard() {
         </div>
         {simResult && (
           <div className="mt-4 text-neutral-300">
-            <p>Final amount: <b>${simResult.amount_final.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b></p>
+            <p>Final amount: <b>{simResult.currency} {simResult.amount_final.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b></p>
             <p>ROI: <b>{simResult.roi_pct.toFixed(2)}%</b></p>
           </div>
         )}

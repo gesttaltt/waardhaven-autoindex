@@ -38,6 +38,7 @@ class IndexHistoryResponse(BaseModel):
 class SimulationRequest(BaseModel):
     amount: float
     start_date: date
+    currency: str = "USD"  # Default to USD
 
 class SimulationResponse(BaseModel):
     start_date: date
@@ -48,6 +49,7 @@ class SimulationResponse(BaseModel):
     amount_final: float
     roi_pct: float
     series: List[SeriesPoint]
+    currency: str  # Currency used for amounts
 
 # Orders
 class OrderRequest(BaseModel):
