@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import date, timedelta
 import pandas as pd
 from ..models import Asset, Price, IndexValue, Allocation
@@ -32,29 +33,70 @@ def ensure_assets(db: Session):
     db.commit()
 
 def refresh_all(db: Session):
-    ensure_assets(db)
-
-    # Load asset list
-    assets = db.query(Asset).all()
-    symbols = [a.symbol for a in assets]
-
-    # Fetch prices since start
-    start = pd.to_datetime(settings.ASSET_DEFAULT_START).date()
-    price_df = fetch_prices(symbols, start=start)
-
-    # Store prices
-    # Clear existing prices for simplicity (MVP)
-    db.query(Price).delete()
-    db.commit()
-
-    for sym in price_df.columns.levels[0]:
-        asset = db.query(Asset).filter(Asset.symbol == sym).first()
-        if not asset:
-            continue
-        series = price_df[sym]["Close"].dropna()
-        for idx, val in series.items():
-            db.add(Price(asset_id=asset.id, date=idx.date(), close=float(val)))
-    db.commit()
-
-    # Compute index + allocations
-    compute_index_and_allocations(db)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        logger.info("Starting refresh process...")
+        
+        # Step 1: Ensure assets exist
+        logger.info("Ensuring assets...")
+        ensure_assets(db)
+        
+        # Load asset list
+        assets = db.query(Asset).all()
+        symbols = [a.symbol for a in assets]
+        logger.info(f"Found {len(symbols)} assets to refresh: {symbols}")
+        
+        # Step 2: Fetch prices
+        logger.info("Fetching price data from Yahoo Finance...")
+        start = pd.to_datetime(settings.ASSET_DEFAULT_START).date()
+        
+        try:
+            price_df = fetch_prices(symbols, start=start)
+            logger.info(f"Fetched {len(price_df)} price records")
+        except Exception as e:
+            logger.error(f"Failed to fetch prices: {e}")
+            # Try fetching with a shorter period as fallback
+            from datetime import timedelta
+            fallback_start = date.today() - timedelta(days=90)
+            logger.info(f"Trying fallback period from {fallback_start}")
+            price_df = fetch_prices(symbols, start=fallback_start)
+        
+        if price_df.empty:
+            logger.error("No price data fetched!")
+            raise ValueError("Unable to fetch any price data")
+        
+        # Step 3: Store prices
+        logger.info("Storing prices in database...")
+        # Clear existing prices for simplicity (MVP)
+        db.query(Price).delete()
+        db.commit()
+        
+        price_count = 0
+        for sym in price_df.columns.levels[0]:
+            asset = db.query(Asset).filter(Asset.symbol == sym).first()
+            if not asset:
+                logger.warning(f"Asset {sym} not found in database")
+                continue
+            series = price_df[sym]["Close"].dropna()
+            for idx, val in series.items():
+                db.add(Price(asset_id=asset.id, date=idx.date(), close=float(val)))
+                price_count += 1
+        
+        db.commit()
+        logger.info(f"Stored {price_count} price records")
+        
+        # Step 4: Compute index + allocations
+        logger.info("Computing index and allocations...")
+        compute_index_and_allocations(db)
+        
+        # Verify results
+        index_count = db.query(func.count()).select_from(IndexValue).scalar()
+        logger.info(f"Refresh completed successfully. Index values: {index_count}")
+        
+    except Exception as e:
+        logger.error(f"Refresh failed: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
