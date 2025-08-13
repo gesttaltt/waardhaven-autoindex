@@ -12,7 +12,9 @@ services:
       - key: SECRET_KEY
         sync: false
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: waardhaven-db
+          property: connectionString
       - key: ADMIN_TOKEN
         sync: false
       - key: DAILY_DROP_THRESHOLD
@@ -38,3 +40,5 @@ services:
 databases:
   - name: waardhaven-db
     plan: starter
+    databaseName: waardhaven
+    user: waardhaven_user

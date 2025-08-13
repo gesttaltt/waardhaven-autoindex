@@ -9,10 +9,14 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY startup.sh ./
+
+# Make startup script executable
+RUN chmod +x startup.sh
 
 # Use PORT environment variable from Render
 ENV PORT=10000
 EXPOSE ${PORT}
 
-# Start command using environment variable for port
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+# Use startup script to initialize DB and start server
+CMD ["./startup.sh"]
