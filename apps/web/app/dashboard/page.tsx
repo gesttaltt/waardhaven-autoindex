@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import api from "../utils/api";
 
 type SeriesPoint = { date: string; value: number };
 
 export default function Dashboard() {
-  const API = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
   const [indexSeries, setIndexSeries] = useState<SeriesPoint[]>([]);
   const [spSeries, setSpSeries] = useState<SeriesPoint[]>([]);
@@ -23,15 +22,25 @@ export default function Dashboard() {
       router.push("/login");
       return;
     }
-    const headers = { Authorization: `Bearer ${token}` };
-    axios.get(`${API}/api/v1/index/history`).then(r => setIndexSeries(r.data.series));
-    axios.get(`${API}/api/v1/benchmark/sp500`).then(r => setSpSeries(r.data.series));
-    axios.get(`${API}/api/v1/index/current`).then(r => setAllocations(r.data.allocations));
-  }, []);
+    
+    // Fetch all data in parallel
+    Promise.all([
+      api.get('/api/v1/index/history').then(r => setIndexSeries(r.data.series)),
+      api.get('/api/v1/benchmark/sp500').then(r => setSpSeries(r.data.series)),
+      api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations))
+    ]).catch(err => {
+      console.error('Failed to fetch dashboard data:', err);
+    });
+  }, [token, router]);
 
   const runSimulation = async () => {
-    const r = await axios.post(`${API}/api/v1/index/simulate`, { amount, start_date: startDate });
-    setSimResult({ amount_final: r.data.amount_final, roi_pct: r.data.roi_pct });
+    try {
+      const r = await api.post('/api/v1/index/simulate', { amount, start_date: startDate });
+      setSimResult({ amount_final: r.data.amount_final, roi_pct: r.data.roi_pct });
+    } catch (error) {
+      console.error('Simulation failed:', error);
+      alert('Failed to run simulation. Please try again.');
+    }
   };
 
   return (
