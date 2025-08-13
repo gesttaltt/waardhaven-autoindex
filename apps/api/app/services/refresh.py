@@ -4,7 +4,7 @@ from datetime import date, timedelta
 import pandas as pd
 from ..models import Asset, Price, IndexValue, Allocation
 from ..core.config import settings
-from .yahoo import fetch_prices
+from .twelvedata import fetch_prices
 from .strategy import compute_index_and_allocations
 
 DEFAULT_ASSETS = [
@@ -49,7 +49,7 @@ def refresh_all(db: Session):
         logger.info(f"Found {len(symbols)} assets to refresh: {symbols}")
         
         # Step 2: Fetch prices
-        logger.info("Fetching price data from Yahoo Finance...")
+        logger.info("Fetching price data from TwelveData...")
         start = pd.to_datetime(settings.ASSET_DEFAULT_START).date()
         
         try:

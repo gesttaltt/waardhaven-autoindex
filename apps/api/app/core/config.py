@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     ASSET_DEFAULT_START: str = "2018-01-01"
     SP500_TICKER: str = "^GSPC"
+    
+    # TwelveData API configuration
+    TWELVEDATA_API_KEY: str = Field(default="", env="TWELVEDATA_API_KEY")
 
     class Config:
         env_file = ".env"

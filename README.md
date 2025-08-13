@@ -2,7 +2,7 @@
 
 Minimal MVP for a long-term investment autoindex platform.
 
-- Backend: FastAPI (Python), SQLAlchemy, JWT, yfinance
+- Backend: FastAPI (Python), SQLAlchemy, JWT, TwelveData
 - Frontend: Next.js 14 (App Router), TypeScript, TailwindCSS, Recharts
 - DB: PostgreSQL
 - Deploy target: Render (Docker for API & Web), Render PostgreSQL
@@ -22,6 +22,11 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
+**Important**: Get your TwelveData API key from https://twelvedata.com/account/api-keys and add it to `apps/api/.env`:
+```
+TWELVEDATA_API_KEY=your_api_key_here
+```
+
 ### Backend (API)
 ```bash
 cd apps/api
@@ -31,6 +36,8 @@ pip install -r requirements.txt
 python -m app.db_init
 # (Optional) Seed assets
 python -m app.seed_assets
+# Test TwelveData integration (optional)
+python test_twelvedata.py
 # Refresh prices + compute index
 python -m app.tasks_refresh
 # Run API
@@ -59,5 +66,8 @@ Open: http://localhost:3000
 - The index logic is simple by design for MVP: filter assets with daily return below threshold and rebalance equally.
 - The history endpoint returns precomputed index values (base = 100) and the benchmark (S&P 500) for comparison.
 - Simulation uses index history to compute ROI given a start date and amount.
+- Market data is provided by TwelveData API, offering professional-grade financial data with real-time updates.
+- Supports multi-currency simulations with automatic exchange rate conversion.
 
 Build date: 2025-08-12
+Updated: 2025-08-13 - Migrated from Yahoo Finance to TwelveData API

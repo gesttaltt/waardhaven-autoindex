@@ -125,7 +125,7 @@ def test_refresh_process(db: Session = Depends(get_db)):
         })
         
         # Step 2: Test price fetching for one symbol
-        from ..services.yahoo import fetch_prices
+        from ..services.twelvedata import fetch_prices
         import pandas as pd
         from datetime import date, timedelta
         

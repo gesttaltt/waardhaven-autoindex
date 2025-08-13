@@ -66,7 +66,7 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
     """
     try:
         from ..services.refresh import ensure_assets
-        from ..services.yahoo import fetch_prices
+        from ..services.twelvedata import fetch_prices
         from ..models import Asset, Price, IndexValue
         from datetime import date, timedelta
         import pandas as pd

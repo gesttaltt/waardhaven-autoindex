@@ -7,7 +7,7 @@ pydantic-settings==2.4.0
 passlib[bcrypt]==1.7.4
 python-jose==3.3.0
 python-multipart==0.0.9
-yfinance==0.2.52
+twelvedata==1.2.14
 pandas==2.2.2
 numpy==2.0.1
 requests==2.32.3

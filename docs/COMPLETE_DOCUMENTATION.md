@@ -24,14 +24,14 @@
 - **Performance Tracking**: Real-time comparison with S&P 500 benchmark
 - **Investment Simulation**: Historical backtesting capabilities
 - **Secure Authentication**: JWT-based user authentication system
-- **Real-time Data**: Integration with Yahoo Finance for live market data
+- **Real-time Data**: Integration with TwelveData for professional-grade market data
 
 ### Technology Stack
 - **Backend**: FastAPI (Python 3.11+), SQLAlchemy ORM, PostgreSQL
 - **Frontend**: Next.js 14 (App Router), TypeScript, TailwindCSS
 - **Visualization**: Recharts for interactive data visualization
 - **Authentication**: JWT with secure password hashing (bcrypt)
-- **Market Data**: yfinance API integration
+- **Market Data**: TwelveData API integration
 - **Deployment**: Docker containers on Render.com
 
 ---
@@ -51,7 +51,7 @@
         │                         ▼                          
         │                 ┌─────────────────┐               
         │                 │                 │               
-        └────────────────►│  Yahoo Finance  │               
+        └────────────────►│   TwelveData    │               
                           │      API        │               
                           │                 │               
                           └─────────────────┘               
@@ -75,7 +75,8 @@ waardhaven-autoindex/
 │   │   │   │   └── tasks.py    # Background tasks
 │   │   │   ├── services/       # Business logic
 │   │   │   │   ├── strategy.py # Index strategy
-│   │   │   │   ├── yahoo.py    # Market data
+│   │   │   │   ├── twelvedata.py # Market data
+│   │   │   │   ├── currency.py # Currency exchange
 │   │   │   │   └── refresh.py  # Data refresh
 │   │   │   ├── utils/          # Utilities
 │   │   │   ├── models.py       # Database models
@@ -153,6 +154,9 @@ source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Test TwelveData integration (recommended)
+python test_twelvedata.py
 
 # Initialize database
 python -m app.db_init
@@ -257,10 +261,16 @@ The index strategy implements a sophisticated filtering mechanism:
 - Manages portfolio rebalancing
 - Calculates index values
 
-**Yahoo Service** (`services/yahoo.py`)
-- Fetches real-time market data
-- Handles data validation
-- Manages API rate limits
+**TwelveData Service** (`services/twelvedata.py`)
+- Fetches real-time and historical market data
+- Provides currency exchange rates
+- Handles professional-grade financial data
+- Manages API credits and rate limits
+
+**Currency Service** (`services/currency.py`)
+- Currency exchange rate conversion
+- Cross-currency calculations
+- Supports 20+ major currencies
 
 **Refresh Service** (`services/refresh.py`)
 - Orchestrates daily updates
@@ -487,6 +497,7 @@ plan: starter
 | DATABASE_URL | PostgreSQL connection | (from database) |
 | SECRET_KEY | JWT signing key | (generate secure) |
 | ADMIN_TOKEN | Admin API access | (custom token) |
+| TWELVEDATA_API_KEY | TwelveData API key | (get from twelvedata.com) |
 
 **Web Service Variables**
 | Variable | Description | Example |
@@ -751,6 +762,10 @@ DAILY_DROP_THRESHOLD=-0.01  # Asset filter threshold (-1%)
 ASSET_DEFAULT_START=2018-01-01  # Historical data start date
 SP500_TICKER=^GSPC          # S&P 500 ticker symbol
 
+# Market Data API
+TWELVEDATA_API_KEY=         # TwelveData API key for market data
+                           # Get from: https://twelvedata.com/account/api-keys
+
 # Server
 PORT=10000                  # API server port
 ```
@@ -831,7 +846,8 @@ systemctl status postgresql
 **Problem**: Market data not updating
 
 **Solutions**:
-- Check Yahoo Finance API availability
+- Check TwelveData API key is configured
+- Verify API credits/limits at https://twelvedata.com
 - Verify ADMIN_TOKEN is set
 - Review refresh service logs
 - Manually trigger refresh endpoint
@@ -1064,6 +1080,45 @@ jobs:
    - Cryptocurrency support
    - International markets
    - Tax reporting
+
+---
+
+## TwelveData Migration (2025-08-13)
+
+### Migration Overview
+The project has been migrated from Yahoo Finance to TwelveData for improved reliability and professional-grade market data access.
+
+### Key Changes
+- **Market Data Provider**: Switched from `yfinance` to `twelvedata` Python package
+- **API Authentication**: Now requires TwelveData API key (free tier available)
+- **Enhanced Features**: Access to technical indicators, WebSocket streaming, and more comprehensive data
+- **Currency Support**: Improved foreign exchange rate handling with dedicated forex endpoints
+
+### Migration Steps for Existing Deployments
+1. **Get TwelveData API Key**
+   - Sign up at https://twelvedata.com
+   - Navigate to https://twelvedata.com/account/api-keys
+   - Copy your API key
+
+2. **Update Environment Variables**
+   ```bash
+   TWELVEDATA_API_KEY=your_api_key_here
+   ```
+
+3. **Update Dependencies**
+   ```bash
+   pip install twelvedata==1.2.14
+   # Remove old dependency
+   pip uninstall yfinance
+   ```
+
+4. **Test Integration**
+   ```bash
+   python apps/api/test_twelvedata.py
+   ```
+
+### API Compatibility
+All existing API endpoints maintain backward compatibility. The frontend requires no changes.
 
 ---
 

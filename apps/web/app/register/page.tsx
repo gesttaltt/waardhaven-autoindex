@@ -81,9 +81,8 @@ export default function RegisterPage() {
           <button className="btn w-full" type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Sign Up'}
           </button>
-          {/* Debug info - remove in production */}
           <p className="text-xs text-gray-500 mt-2">
-            API: {API || 'Not set'}
+            This platform still in development phase, use at your own risk
           </p>
         </div>
       </form>
