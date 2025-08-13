@@ -138,6 +138,47 @@ export default function AdminPage() {
         {/* Smart Refresh Panel */}
         <SmartRefresh onRefreshComplete={loadDatabaseStatus} />
 
+        {/* AutoIndex Recalculation */}
+        <div className="card">
+          <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">
+            AutoIndex Management
+          </h2>
+          
+          <div className="space-y-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h3 className="font-medium text-yellow-800 mb-2">⚠️ Fix AutoIndex Normalization</h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                If AutoIndex values appear extremely large compared to individual assets, 
+                this indicates a normalization issue that can be fixed by recalculating.
+              </p>
+              <button
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const response = await marketDataApi.recalculateIndex();
+                    console.log('Recalculation result:', response.data);
+                    if (response.data.status === 'success') {
+                      alert('AutoIndex recalculated successfully! Values should now be normalized to base 100.');
+                      loadDatabaseStatus();
+                    } else {
+                      alert('Recalculation failed: ' + response.data.error);
+                    }
+                  } catch (err: any) {
+                    console.error('Recalculation error:', err);
+                    alert('Failed to recalculate: ' + (err.response?.data?.detail || err.message));
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="btn-secondary btn-sm"
+              >
+                {loading ? 'Recalculating...' : 'Recalculate AutoIndex'}
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* API Information */}
         <div className="card">
           <h2 className="text-xl font-semibold gradient-text mb-4 flex items-center gap-2">

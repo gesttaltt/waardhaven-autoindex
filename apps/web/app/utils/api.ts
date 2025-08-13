@@ -58,6 +58,9 @@ export const marketDataApi = {
   
   // Check refresh requirements and status
   getRefreshStatus: () => api.get('/api/v1/diagnostics/refresh-status'),
+  
+  // Recalculate AutoIndex with proper normalization
+  recalculateIndex: () => api.post('/api/v1/diagnostics/recalculate-index'),
 };
 
 // Types for API responses

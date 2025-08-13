@@ -183,3 +183,53 @@ def test_refresh_process(db: Session = Depends(get_db)):
         results["traceback"] = traceback.format_exc()
     
     return results
+
+@router.post("/recalculate-index")
+def recalculate_autoindex(db: Session = Depends(get_db)):
+    """Recalculate the AutoIndex with proper normalization."""
+    try:
+        from ..services.strategy import compute_index_and_allocations
+        
+        result = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "starting"
+        }
+        
+        # Get counts before
+        before_index_count = db.query(func.count()).select_from(IndexValue).scalar()
+        before_allocation_count = db.query(func.count()).select_from(Allocation).scalar()
+        
+        # Recalculate
+        compute_index_and_allocations(db)
+        
+        # Get counts after
+        after_index_count = db.query(func.count()).select_from(IndexValue).scalar()
+        after_allocation_count = db.query(func.count()).select_from(Allocation).scalar()
+        
+        # Get sample values
+        sample_values = db.query(IndexValue).order_by(IndexValue.date.desc()).limit(5).all()
+        
+        result.update({
+            "status": "success",
+            "before": {
+                "index_values": before_index_count,
+                "allocations": before_allocation_count
+            },
+            "after": {
+                "index_values": after_index_count,
+                "allocations": after_allocation_count
+            },
+            "sample_recent_values": [
+                {"date": str(iv.date), "value": iv.value} for iv in sample_values
+            ]
+        })
+        
+        return result
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }

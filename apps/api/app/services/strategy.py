@@ -28,7 +28,7 @@ def compute_index_and_allocations(db: Session):
     index_values = []
     allocations = []
 
-    value = 100.0
+    value = 1.0  # Start at 1.0 for compounding
     for dt, row in rets.iterrows():
         # Filter assets where daily return >= threshold
         included = row[row >= threshold].index.tolist()
@@ -47,12 +47,19 @@ def compute_index_and_allocations(db: Session):
             if asset:
                 allocations.append((dt, asset.id, w))
 
+    # Normalize index values to base 100 (consistent with individual assets and benchmarks)
+    if index_values:
+        first_value = index_values[0][1]  # First calculated value
+        normalized_index_values = [(dt, (val / first_value) * 100.0) for dt, val in index_values]
+    else:
+        normalized_index_values = []
+
     # Clear and store
     db.query(IndexValue).delete()
     db.query(Allocation).delete()
     db.commit()
 
-    for dt, val in index_values:
+    for dt, val in normalized_index_values:
         db.add(IndexValue(date=dt, value=val))
     for dt, aid, w in allocations:
         db.add(Allocation(date=dt, asset_id=aid, weight=w))
