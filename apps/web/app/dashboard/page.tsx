@@ -130,6 +130,41 @@ export default function Dashboard() {
   const filteredIndexSeries = filterDataByRange(indexSeries);
   const filteredSpSeries = filterDataByRange(spSeries);
   
+  // Calculate technical indicators
+  const calculateMovingAverage = (data: SeriesPoint[], period: number = 50) => {
+    if (data.length < period) return [];
+    
+    return data.map((point, index) => {
+      if (index < period - 1) return null;
+      
+      const sum = data.slice(index - period + 1, index + 1)
+        .reduce((acc, p) => acc + p.value, 0);
+      
+      return sum / period;
+    });
+  };
+
+  const calculateVolatilityBands = (data: SeriesPoint[], period: number = 20, multiplier: number = 2) => {
+    const ma = calculateMovingAverage(data, period);
+    
+    return data.map((point, index) => {
+      if (index < period - 1) return { upper: null, lower: null };
+      
+      const periodData = data.slice(index - period + 1, index + 1);
+      const avg = ma[index];
+      if (!avg) return { upper: null, lower: null };
+      
+      const variance = periodData.reduce((sum, p) => 
+        sum + Math.pow(p.value - avg, 2), 0) / period;
+      const stdDev = Math.sqrt(variance);
+      
+      return {
+        upper: avg + (stdDev * multiplier),
+        lower: avg - (stdDev * multiplier)
+      };
+    });
+  };
+
   // Create properly aligned dataset for chart rendering
   const createAlignedChartData = () => {
     if (filteredIndexSeries.length === 0) return [];
@@ -139,11 +174,18 @@ export default function Dashboard() {
       filteredSpSeries.map(point => [point.date, point.value])
     );
     
+    // Calculate technical indicators
+    const movingAverage = showMovingAverage ? calculateMovingAverage(filteredIndexSeries, 50) : [];
+    const volatilityBands = showVolatilityBands ? calculateVolatilityBands(filteredIndexSeries, 20, 2) : [];
+    
     // Map index data and align SP500 values by date
-    return filteredIndexSeries.map(point => ({
+    return filteredIndexSeries.map((point, index) => ({
       date: point.date,
       value: point.value,
-      sp: showComparison ? (spDataMap.get(point.date) || null) : undefined
+      sp: showComparison ? (spDataMap.get(point.date) || null) : undefined,
+      ma: showMovingAverage ? movingAverage[index] : undefined,
+      upperBand: showVolatilityBands ? volatilityBands[index]?.upper : undefined,
+      lowerBand: showVolatilityBands ? volatilityBands[index]?.lower : undefined
     })).filter(point => 
       // Filter out points where we don't have matching SP500 data when comparison is enabled
       !showComparison || point.sp !== null
@@ -380,43 +422,109 @@ export default function Dashboard() {
                   transition={{ duration: 0.3 }}
                   className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10"
                 >
-                  <div className="mb-3">
-                    <h3 className="text-sm font-medium text-neutral-300 mb-2">Available Data Series</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setShowComparison(!showComparison)}
-                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                          showComparison
-                            ? "bg-purple-500 text-white"
-                            : "bg-white/10 text-neutral-400 hover:bg-white/20"
-                        }`}
-                      >
-                        <span className="mr-2">📈</span>
-                        AutoIndex vs S&P 500
-                      </button>
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-neutral-300 mb-3">Chart Display Options</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Primary Data Series */}
+                      <div>
+                        <p className="text-xs text-neutral-400 mb-2">Primary Data</p>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => setShowComparison(!showComparison)}
+                            className={`w-full px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${
+                              showComparison
+                                ? "bg-purple-500 text-white"
+                                : "bg-white/10 text-neutral-400 hover:bg-white/20"
+                            }`}
+                          >
+                            <span>
+                              <span className="mr-2">📈</span>
+                              S&P 500 Benchmark
+                            </span>
+                            <span className={`w-2 h-2 rounded-full ${showComparison ? 'bg-white' : 'bg-neutral-600'}`}></span>
+                          </button>
+                        </div>
+                      </div>
                       
-                      <button
-                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
-                      >
-                        <span className="mr-2">💹</span>
-                        Volume Data
-                      </button>
-                      
-                      <button
-                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
-                      >
-                        <span className="mr-2">📊</span>
-                        Volatility Bands
-                      </button>
-                      
-                      <button
-                        className="px-3 py-2 rounded-lg text-sm bg-white/10 text-neutral-400 hover:bg-white/20 transition-all"
-                      >
-                        <span className="mr-2">🎯</span>
-                        Moving Averages
-                      </button>
+                      {/* Technical Indicators */}
+                      <div>
+                        <p className="text-xs text-neutral-400 mb-2">Technical Indicators</p>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => setShowVolatilityBands(!showVolatilityBands)}
+                            className={`w-full px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${
+                              showVolatilityBands
+                                ? "bg-blue-500 text-white"
+                                : "bg-white/10 text-neutral-400 hover:bg-white/20"
+                            }`}
+                          >
+                            <span>
+                              <span className="mr-2">📊</span>
+                              Volatility Bands
+                            </span>
+                            <span className={`w-2 h-2 rounded-full ${showVolatilityBands ? 'bg-white' : 'bg-neutral-600'}`}></span>
+                          </button>
+                          
+                          <button
+                            onClick={() => setShowMovingAverage(!showMovingAverage)}
+                            className={`w-full px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${
+                              showMovingAverage
+                                ? "bg-green-500 text-white"
+                                : "bg-white/10 text-neutral-400 hover:bg-white/20"
+                            }`}
+                          >
+                            <span>
+                              <span className="mr-2">🎯</span>
+                              Moving Average (50)
+                            </span>
+                            <span className={`w-2 h-2 rounded-full ${showMovingAverage ? 'bg-white' : 'bg-neutral-600'}`}></span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Individual Assets Section */}
+                  {allocations.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="text-sm font-medium text-neutral-300 mb-3">Individual Assets</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
+                        {allocations.slice(0, 6).map((asset, index) => (
+                          <button
+                            key={asset.symbol}
+                            onClick={() => setIndividualAssets(prev => ({
+                              ...prev,
+                              [asset.symbol]: !prev[asset.symbol]
+                            }))}
+                            className={`px-2 py-1 rounded text-xs transition-all flex items-center justify-between ${
+                              individualAssets[asset.symbol]
+                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                : "bg-white/10 text-neutral-400 hover:bg-white/20"
+                            }`}
+                          >
+                            <span className="flex items-center">
+                              <div 
+                                className="w-2 h-2 rounded-full mr-2" 
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                              />
+                              {asset.symbol}
+                            </span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              individualAssets[asset.symbol] ? 'bg-white' : 'bg-neutral-600'
+                            }`}></span>
+                          </button>
+                        ))}
+                        {allocations.length > 6 && (
+                          <div className="px-2 py-1 text-xs text-neutral-500 flex items-center">
+                            +{allocations.length - 6} more
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-2">
+                        Individual asset data requires additional API calls
+                      </p>
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                     <div className="bg-white/5 rounded-lg p-2">
