@@ -63,6 +63,28 @@ export const marketDataApi = {
   recalculateIndex: () => api.post('/api/v1/diagnostics/recalculate-index'),
 };
 
+// API client methods for strategy management
+export const strategyApi = {
+  // Get current strategy configuration
+  getConfig: () => api.get<StrategyConfig>('/api/v1/strategy/config'),
+  
+  // Update strategy configuration
+  updateConfig: (config: Partial<StrategyConfig>, recompute: boolean = true) => 
+    api.put('/api/v1/strategy/config', config, { params: { recompute } }),
+  
+  // Apply AI-suggested adjustments
+  aiAdjust: (adjustments: Partial<StrategyConfig>, reason: string, confidence: number) =>
+    api.post('/api/v1/strategy/config/ai-adjust', { adjustments, reason, confidence }),
+  
+  // Get risk metrics
+  getRiskMetrics: (limit: number = 30) => 
+    api.get<RiskMetricsResponse>('/api/v1/strategy/risk-metrics', { params: { limit } }),
+  
+  // Trigger rebalancing
+  triggerRebalance: (force: boolean = false) =>
+    api.post('/api/v1/strategy/rebalance', null, { params: { force } }),
+};
+
 // Types for API responses
 export interface DatabaseStatus {
   timestamp: string;
@@ -99,6 +121,44 @@ export interface RefreshStatusResponse {
     needs_update: boolean;
   };
   recommendation: string;
+}
+
+export interface StrategyConfig {
+  momentum_weight: number;
+  market_cap_weight: number;
+  risk_parity_weight: number;
+  min_price_threshold: number;
+  max_daily_return: number;
+  min_daily_return: number;
+  max_forward_fill_days: number;
+  outlier_std_threshold: number;
+  rebalance_frequency: 'daily' | 'weekly' | 'monthly';
+  daily_drop_threshold: number;
+  ai_adjusted?: boolean;
+  ai_adjustment_reason?: string;
+  ai_confidence_score?: number;
+  last_rebalance?: string;
+  updated_at?: string;
+}
+
+export interface RiskMetric {
+  date: string;
+  total_return: number;
+  annualized_return?: number;
+  sharpe_ratio: number;
+  sortino_ratio: number;
+  max_drawdown: number;
+  current_drawdown: number;
+  volatility?: number;
+  var_95?: number;
+  var_99?: number;
+  beta_sp500?: number;
+  correlation_sp500?: number;
+}
+
+export interface RiskMetricsResponse {
+  metrics: RiskMetric[];
+  message?: string;
 }
 
 export default api;

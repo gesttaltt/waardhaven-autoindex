@@ -26,13 +26,16 @@ def fetch_prices(symbols: List[str], start: date) -> pd.DataFrame:
         try:
             logger.info(f"Fetching data for {symbol}")
             
-            # Fetch time series data
+            # Fetch time series data with proper parameters
             ts = client.time_series(
                 symbol=symbol,
                 interval="1day",
                 start_date=start.strftime("%Y-%m-%d"),
                 outputsize=5000,  # Max historical data
-                timezone="America/New_York"
+                timezone="America/New_York",
+                order="asc",  # Ensure chronological order
+                adjust="splits",  # Adjust for stock splits
+                dp=4  # 4 decimal places for precision
             )
             
             # Convert to pandas DataFrame
@@ -49,9 +52,29 @@ def fetch_prices(symbols: List[str], start: date) -> pd.DataFrame:
                     'volume': 'Volume'
                 })
                 
+                # Ensure data quality
+                # 1. Remove any rows where Close price is null or <= 0
+                initial_len = len(df)
+                df = df[df['Close'].notna() & (df['Close'] > 0)]
+                
+                if len(df) < initial_len:
+                    logger.warning(f"{symbol}: Removed {initial_len - len(df)} invalid price rows")
+                
+                # 2. Sort by date to ensure chronological order (even though we request asc)
+                df = df.sort_index()
+                
+                # 3. Log any large price jumps that might indicate data issues
+                if len(df) > 1:
+                    returns = df['Close'].pct_change()
+                    extreme_returns = returns[(returns > 0.5) | (returns < -0.5)]
+                    if len(extreme_returns) > 0:
+                        logger.warning(f"{symbol}: {len(extreme_returns)} extreme price movements detected (>50%)")
+                        for date, ret in extreme_returns.items():
+                            logger.debug(f"  {date}: {ret:.2%} change")
+                
                 # Store in dictionary with symbol as key
                 all_data[symbol] = df
-                logger.info(f"Fetched {len(df)} records for {symbol}")
+                logger.info(f"Fetched {len(df)} valid records for {symbol}")
             else:
                 logger.warning(f"No data returned for {symbol}")
                 

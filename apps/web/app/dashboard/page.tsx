@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine, Brush } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import api from "../utils/api";
+import api, { strategyApi, RiskMetric } from "../utils/api";
 import SmartRefresh from "../components/SmartRefresh";
 
 type SeriesPoint = { date: string; value: number };
@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [individualAssets, setIndividualAssets] = useState<{[key: string]: boolean}>({});
   const [assetSeriesData, setAssetSeriesData] = useState<{[key: string]: SeriesPoint[]}>({});
   const [loadingAssets, setLoadingAssets] = useState<{[key: string]: boolean}>({});
+  const [riskMetrics, setRiskMetrics] = useState<RiskMetric | null>(null);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   
   // Function to refresh dashboard data
@@ -89,7 +90,14 @@ export default function Dashboard() {
         setSpSeries([]);
       }),
       api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations)),
-      api.get('/api/v1/index/currencies').then(r => setCurrencies(r.data))
+      api.get('/api/v1/index/currencies').then(r => setCurrencies(r.data)),
+      strategyApi.getRiskMetrics(1).then(r => {
+        if (r.data.metrics && r.data.metrics.length > 0) {
+          setRiskMetrics(r.data.metrics[0]);
+        }
+      }).catch(err => {
+        console.warn('Risk metrics not available:', err);
+      })
     ]).catch(err => {
       console.error('Failed to fetch dashboard data:', err);
     }).finally(() => {
@@ -354,9 +362,14 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-300">Index Value</p>
+                <p className="text-sm text-neutral-300">
+                  {riskMetrics ? "Sharpe Ratio" : "Index Value"}
+                </p>
                 <p className="text-3xl font-bold gradient-text">
-                  {indexSeries.length > 0 ? indexSeries[indexSeries.length - 1].value.toFixed(2) : "100"}
+                  {riskMetrics 
+                    ? riskMetrics.sharpe_ratio.toFixed(2)
+                    : (indexSeries.length > 0 ? indexSeries[indexSeries.length - 1].value.toFixed(2) : "100")
+                  }
                 </p>
               </div>
             </div>
@@ -370,8 +383,17 @@ export default function Dashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-300">Volatility (Annual)</p>
-                <p className="text-3xl font-bold gradient-text">{volatility.toFixed(1)}%</p>
+                <p className="text-sm text-neutral-300">
+                  {riskMetrics ? "Max Drawdown" : "Volatility (Annual)"}
+                </p>
+                <p className={`text-3xl font-bold ${
+                  riskMetrics ? "text-orange-400" : "gradient-text"
+                }`}>
+                  {riskMetrics 
+                    ? `${(riskMetrics.max_drawdown * 100).toFixed(1)}%`
+                    : `${volatility.toFixed(1)}%`
+                  }
+                </p>
               </div>
             </div>
           </motion.div>

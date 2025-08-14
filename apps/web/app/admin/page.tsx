@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SmartRefresh from "../components/SmartRefresh";
+import StrategyConfig from "../components/StrategyConfig";
 import { marketDataApi, DatabaseStatus } from "../utils/api";
 
 export default function AdminPage() {
@@ -137,6 +138,9 @@ export default function AdminPage() {
 
         {/* Smart Refresh Panel */}
         <SmartRefresh onRefreshComplete={loadDatabaseStatus} />
+
+        {/* Strategy Configuration */}
+        <StrategyConfig />
 
         {/* AutoIndex Recalculation */}
         <div className="card">
