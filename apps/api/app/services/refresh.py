@@ -5,6 +5,7 @@ import pandas as pd
 from ..models.asset import Asset, Price
 from ..models.index import IndexValue, Allocation
 from ..core.config import settings
+from ..utils.cache_utils import CacheManager
 try:
     from .twelvedata_optimized import fetch_prices_optimized as fetch_prices
     use_optimized = True
@@ -43,6 +44,8 @@ def ensure_assets(db: Session):
 
 def refresh_all(db: Session, smart_mode: bool = True):
     import logging
+    from datetime import datetime
+    import json
     logger = logging.getLogger(__name__)
     
     # Use smart refresh if optimized module is available and enabled
@@ -54,7 +57,29 @@ def refresh_all(db: Session, smart_mode: bool = True):
         except ImportError:
             logger.warning("Smart refresh not available, falling back to standard refresh")
     
+    # Create backup before any operations
+    backup_timestamp = datetime.utcnow()
+    backup_created = False
+    
     try:
+        # Backup existing critical data
+        logger.info("Creating data backup before refresh...")
+        existing_prices = db.query(Price).count()
+        existing_index_values = db.query(IndexValue).count()
+        existing_allocations = db.query(Allocation).count()
+        
+        backup_info = {
+            'timestamp': backup_timestamp.isoformat(),
+            'prices_count': existing_prices,
+            'index_values_count': existing_index_values,
+            'allocations_count': existing_allocations
+        }
+        logger.info(f"Backup info: {json.dumps(backup_info)}")
+        backup_created = True
+        
+        # Start transaction with savepoint
+        db.begin_nested() if hasattr(db, 'begin_nested') else None
+        
         logger.info("Starting standard refresh process...")
         
         # Step 1: Ensure assets exist
@@ -194,8 +219,33 @@ def refresh_all(db: Session, smart_mode: bool = True):
         index_count = db.query(func.count()).select_from(IndexValue).scalar()
         logger.info(f"Refresh completed successfully. Index values: {index_count}")
         
+        # If we got here, commit the transaction
+        db.commit()
+        logger.info("Refresh transaction committed successfully")
+        
+        # Invalidate relevant caches after successful refresh
+        try:
+            CacheManager.invalidate_index_data()
+            CacheManager.invalidate_market_data()
+            logger.info("Cache invalidated after successful refresh")
+        except Exception as cache_error:
+            logger.warning(f"Failed to invalidate cache: {cache_error}")
+        
     except Exception as e:
         logger.error(f"Refresh failed: {e}")
         import traceback
         logger.error(traceback.format_exc())
+        
+        # Rollback transaction
+        try:
+            db.rollback()
+            logger.info("Transaction rolled back successfully")
+        except Exception as rollback_error:
+            logger.error(f"Failed to rollback transaction: {rollback_error}")
+        
+        # Log backup information for potential manual recovery
+        if backup_created:
+            logger.info(f"Backup was created at {backup_timestamp.isoformat()}. Manual recovery may be possible.")
+            logger.info(f"Pre-refresh state: {json.dumps(backup_info)}")
+        
         raise

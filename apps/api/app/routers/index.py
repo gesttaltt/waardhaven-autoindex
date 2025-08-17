@@ -9,18 +9,13 @@ from ..models.user import User
 from ..schemas.index import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
 from ..services.currency import convert_amount, get_supported_currencies
 from ..utils.token_dep import get_current_user
-from ..utils.cache import cache, cached
+from ..utils.cache_utils import cache_for_5min, cache_for_1hour, CacheManager
 
 router = APIRouter()
 
 @router.get("/current", response_model=IndexCurrentResponse)
+@cache_for_5min(CacheManager.CACHE_PREFIXES['index_current'])
 def get_current_index(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    # Check cache first
-    cache_key = "index:current"
-    cached_result = cache.get(cache_key)
-    if cached_result:
-        return IndexCurrentResponse(**cached_result)
-    
     # Latest allocation date
     latest_date = db.query(func.max(Allocation.date)).scalar()
     if latest_date is None:
@@ -30,14 +25,10 @@ def get_current_index(db: Session = Depends(get_db), user: User = Depends(get_cu
     for alloc, asset in allocations:
         items.append(AllocationItem(symbol=asset.symbol, name=asset.name, sector=asset.sector, weight=alloc.weight))
     
-    result = IndexCurrentResponse(date=latest_date, allocations=items)
-    
-    # Cache for 5 minutes
-    cache.set(cache_key, result.dict(), ttl=300)
-    
-    return result
+    return IndexCurrentResponse(date=latest_date, allocations=items)
 
 @router.get("/history", response_model=IndexHistoryResponse)
+@cache_for_1hour(CacheManager.CACHE_PREFIXES['index_history'])
 def get_history(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     rows = db.query(IndexValue).order_by(IndexValue.date.asc()).all()
     if not rows:

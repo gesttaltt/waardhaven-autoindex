@@ -346,19 +346,45 @@ def calculate_portfolio_metrics(db: Session, lookback_days: Optional[int] = None
                 "excess_return": metrics["total_return"] - ((benchmark_values[-1] / benchmark_values[0]) - 1) * 100
             })
         
+        # Calculate current drawdown
+        current_drawdown = 0.0
+        if len(portfolio_values) > 0:
+            current_value = portfolio_values[-1]
+            running_max = max(portfolio_values)
+            if running_max > 0:
+                current_drawdown = ((current_value - running_max) / running_max) * 100
+        
+        # Calculate correlation with S&P 500
+        correlation_sp500 = 0.0
+        if benchmark_returns is not None and len(benchmark_returns) > 1 and len(portfolio_returns) > 1:
+            try:
+                min_len = min(len(portfolio_returns), len(benchmark_returns))
+                if min_len > 1:
+                    correlation_matrix = np.corrcoef(portfolio_returns[:min_len], benchmark_returns[:min_len])
+                    correlation_sp500 = float(correlation_matrix[0, 1])
+                    if np.isnan(correlation_sp500):
+                        correlation_sp500 = 0.0
+            except Exception as e:
+                logger.warning(f"Failed to calculate correlation: {e}")
+                correlation_sp500 = 0.0
+        
         # Store metrics in database
         risk_metrics = RiskMetrics(
             date=date.today(),
             sharpe_ratio=metrics["sharpe_ratio"],
             sortino_ratio=metrics["sortino_ratio"],
             max_drawdown=max_dd / 100,  # Store as decimal (0.20 for 20%)
-            current_drawdown=0.0,  # TODO: Calculate current drawdown
+            current_drawdown=current_drawdown / 100,  # Store as decimal
             volatility=metrics["volatility"],
             beta_sp500=metrics.get("beta", 1.0),
-            correlation_sp500=0.0,  # TODO: Calculate correlation
+            correlation_sp500=correlation_sp500,
             total_return=metrics["total_return"],
             annualized_return=metrics.get("annualized_return", 0.0)
         )
+        
+        # Add to returned metrics
+        metrics["current_drawdown"] = current_drawdown
+        metrics["correlation_sp500"] = correlation_sp500
         
         # Update or create today's metrics
         existing = db.query(RiskMetrics).filter(RiskMetrics.date == date.today()).first()

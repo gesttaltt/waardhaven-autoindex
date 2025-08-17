@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     TWELVEDATA_RATE_LIMIT: int = Field(default=8, env="TWELVEDATA_RATE_LIMIT")  # Credits per minute
     ENABLE_MARKET_DATA_CACHE: bool = Field(default=True, env="ENABLE_MARKET_DATA_CACHE")
     REFRESH_MODE: str = Field(default="auto", env="REFRESH_MODE")  # auto, full, minimal, cached
+    
+    # Redis configuration
+    REDIS_URL: str = Field(default="", env="REDIS_URL")  # redis://localhost:6379/0
+    CACHE_TTL_SECONDS: int = Field(default=300, env="CACHE_TTL_SECONDS")  # 5 minutes default
+    CACHE_TTL_LONG_SECONDS: int = Field(default=3600, env="CACHE_TTL_LONG_SECONDS")  # 1 hour
+    
+    # Debug mode
+    DEBUG: bool = Field(default=False, env="DEBUG")
 
     class Config:
         env_file = ".env"

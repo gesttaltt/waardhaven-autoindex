@@ -6,6 +6,8 @@ from ..core.database import get_db
 from ..models.asset import Asset, Price
 from ..models.index import IndexValue, Allocation
 from ..models.user import User
+from ..utils.cache_utils import CacheManager
+from ..core.redis_client import get_redis_client
 import traceback
 
 router = APIRouter()
@@ -102,6 +104,74 @@ def check_refresh_requirements(db: Session = Depends(get_db)):
     except Exception as e:
         return {
             "status": "ERROR",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+@router.get("/cache-status")
+def check_cache_status():
+    """Check Redis cache status and statistics."""
+    try:
+        redis_client = get_redis_client()
+        
+        # Basic connection check
+        is_connected = redis_client.health_check()
+        
+        if not is_connected:
+            return {
+                "timestamp": datetime.utcnow().isoformat(),
+                "status": "disconnected",
+                "message": "Redis cache is not available. Running without cache.",
+                "stats": {}
+            }
+        
+        # Get detailed stats
+        stats = CacheManager.get_cache_stats()
+        
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "connected",
+            "stats": stats,
+            "message": f"Cache is operational with {stats.get('total_entries', 0)} entries"
+        }
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+@router.post("/cache-invalidate")
+def invalidate_cache(pattern: str = "*"):
+    """Invalidate cache entries matching pattern."""
+    try:
+        if pattern == "*":
+            count = CacheManager.invalidate_all()
+            message = f"Invalidated all {count} cache entries"
+        elif pattern == "index":
+            count = CacheManager.invalidate_index_data()
+            message = f"Invalidated {count} index-related cache entries"
+        elif pattern == "market":
+            count = CacheManager.invalidate_market_data()
+            message = f"Invalidated {count} market data cache entries"
+        else:
+            from ..utils.cache_utils import invalidate_pattern
+            count = invalidate_pattern(pattern)
+            message = f"Invalidated {count} entries matching pattern: {pattern}"
+        
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "success",
+            "invalidated_count": count,
+            "message": message
+        }
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "error",
             "error": str(e),
             "traceback": traceback.format_exc()
         }

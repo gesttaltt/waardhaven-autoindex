@@ -495,20 +495,92 @@ def compute_index_and_allocations(db: Session, config: Optional[Dict] = None):
     else:
         normalized_index_values = []
     
-    # Clear and store in database
-    db.query(IndexValue).delete()
-    db.query(Allocation).delete()
-    db.commit()
+    # Safe upsert with transaction and backup
+    from contextlib import contextmanager
+    import json
+    from datetime import datetime
     
-    # Store index values
-    for dt, val in normalized_index_values:
-        db.add(IndexValue(date=dt, value=val))
+    # Create backup of existing data before modifications
+    existing_index_values = db.query(IndexValue).all()
+    existing_allocations = db.query(Allocation).all()
     
-    # Store allocations
-    for dt, asset_id, weight in allocations:
-        db.add(Allocation(date=dt, asset_id=asset_id, weight=weight))
+    backup_data = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'index_values': [(iv.date.isoformat(), iv.value) for iv in existing_index_values],
+        'allocations': [(a.date.isoformat(), a.asset_id, a.weight) for a in existing_allocations]
+    }
     
-    db.commit()
+    # Log backup for recovery if needed
+    logger.info(f"Backed up {len(existing_index_values)} index values and {len(existing_allocations)} allocations")
+    
+    try:
+        # Begin transaction
+        db.begin_nested() if hasattr(db, 'begin_nested') else None
+        
+        # Track dates for cleanup
+        new_dates = set()
+        
+        # Upsert index values
+        for dt, val in normalized_index_values:
+            new_dates.add(dt)
+            existing = db.query(IndexValue).filter(IndexValue.date == dt).first()
+            if existing:
+                existing.value = val
+            else:
+                db.add(IndexValue(date=dt, value=val))
+        
+        # Upsert allocations
+        allocation_dates = set()
+        for dt, asset_id, weight in allocations:
+            allocation_dates.add(dt)
+            existing = db.query(Allocation).filter(
+                Allocation.date == dt,
+                Allocation.asset_id == asset_id
+            ).first()
+            if existing:
+                existing.weight = weight
+            else:
+                db.add(Allocation(date=dt, asset_id=asset_id, weight=weight))
+        
+        # Optional: Remove outdated entries (older than strategy start date)
+        if normalized_index_values:
+            oldest_date = min(new_dates)
+            # Only remove very old data (>1 year before oldest new date)
+            cutoff_date = oldest_date - timedelta(days=365)
+            db.query(IndexValue).filter(IndexValue.date < cutoff_date).delete()
+            db.query(Allocation).filter(Allocation.date < cutoff_date).delete()
+        
+        db.commit()
+        
+    except Exception as e:
+        logger.error(f"Failed to update index/allocations: {e}")
+        db.rollback()
+        
+        # Attempt to restore from backup if critical failure
+        logger.info("Attempting to restore from backup...")
+        try:
+            # Clear corrupted data
+            db.query(IndexValue).delete()
+            db.query(Allocation).delete()
+            
+            # Restore from backup
+            for date_str, value in backup_data['index_values']:
+                db.add(IndexValue(date=datetime.fromisoformat(date_str).date(), value=value))
+            
+            for date_str, asset_id, weight in backup_data['allocations']:
+                db.add(Allocation(
+                    date=datetime.fromisoformat(date_str).date(),
+                    asset_id=asset_id,
+                    weight=weight
+                ))
+            
+            db.commit()
+            logger.info("Successfully restored from backup")
+        except Exception as restore_error:
+            logger.critical(f"Failed to restore from backup: {restore_error}")
+            db.rollback()
+        
+        raise e
     
     logger.info(f"Index computation complete. {len(normalized_index_values)} values, {len(allocations)} allocations")
     

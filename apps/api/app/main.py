@@ -2,17 +2,36 @@ from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from .routers import root, auth, index, benchmark, tasks, diagnostics, manual_refresh, strategy
+from .routers import root, auth, index, benchmark, tasks, diagnostics, manual_refresh, strategy, background
 from .core.config import settings
 import time
 from typing import Dict
 from collections import defaultdict
 import asyncio
+import logging
 
 # Import models to ensure they're registered with SQLAlchemy
 from . import models
 
+logger = logging.getLogger(__name__)
 app = FastAPI(title="Waardhaven Autoindex API", version="0.1.0")
+
+# Run migrations on startup
+@app.on_event("startup")
+async def startup_event():
+    """Run database migrations and other startup tasks."""
+    try:
+        from .utils.run_migrations import run_all_migrations
+        logger.info("Running database migrations on startup...")
+        if run_all_migrations():
+            logger.info("Database migrations completed successfully")
+        else:
+            logger.warning("Some database migrations failed - check logs")
+    except Exception as e:
+        logger.error(f"Failed to run startup migrations: {e}")
+        # Don't fail startup on migration errors in production
+        if settings.DEBUG:
+            raise
 
 # CORS - Secure configuration
 import os
@@ -108,3 +127,4 @@ app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(diagnostics.router, prefix="/api/v1/diagnostics", tags=["diagnostics"])
 app.include_router(manual_refresh.router, prefix="/api/v1/manual", tags=["manual"])
 app.include_router(strategy.router, prefix="/api/v1/strategy", tags=["strategy"])
+app.include_router(background.router, prefix="/api/v1/background", tags=["background"])

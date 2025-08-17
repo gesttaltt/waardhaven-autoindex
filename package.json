@@ -6,9 +6,16 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:web": "pnpm --filter @waardhaven/web dev",
-    "dev:api": "echo 'Run FastAPI manually: uvicorn app.main:app --reload'",
-    "build": "echo 'Use per-app builds'"
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev:api": "echo 'Run FastAPI manually: cd apps/api && uvicorn app.main:app --reload'",
+    "build:web": "npm run build --workspace=apps/web",
+    "build": "npm run build:web",
+    "install:all": "npm install && cd apps/web && npm install && cd ../api && pip install -r requirements.txt",
+    "test:api": "cd apps/api && python -m pytest",
+    "test:api:coverage": "cd apps/api && python -m pytest --cov=app --cov-report=html",
+    "test:api:unit": "cd apps/api && python -m pytest -m unit",
+    "test:api:integration": "cd apps/api && python -m pytest -m integration",
+    "test": "npm run test:api"
   },
   "engines": {
     "node": ">=20.0.0"
