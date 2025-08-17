@@ -23,7 +23,9 @@
       "Bash(git remote rename:*)",
       "Bash(export SECRET_KEY=test123 DATABASE_URL=postgresql://test:test@localhost/test)",
       "Bash(pip install:*)",
-      "Bash(set PYTHONPATH=.)"
+      "Bash(set PYTHONPATH=.)",
+      "Bash(cp:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
