@@ -1,7 +1,9 @@
 # Waardhaven AutoIndex Web Application
 
 ## Overview
-The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a modern, responsive interface for automated index fund management. It features real-time portfolio tracking, investment simulation, and AI-driven strategy optimization.
+The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a modern, responsive interface for automated index fund management. It features real-time portfolio tracking, investment simulation, AI-driven strategy optimization, and comprehensive system monitoring.
+
+**Coverage Status**: 85% Complete (3 new pages added in latest update)
 
 ## Features
 
@@ -12,12 +14,19 @@ The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a mo
 - **Performance Analytics**: Comprehensive risk metrics and performance indicators
 - **Strategy Configuration**: Adjust index composition strategies with live rebalancing
 
+### System Operations ✨ NEW
+- **Task Management**: Monitor and control background operations
+- **System Diagnostics**: Health monitoring and cache management
+- **Report Generation**: Automated portfolio reports with history tracking
+- **Real-time Monitoring**: Live task progress and system status updates
+
 ### Technical Features
 - **Real-time Data**: WebSocket-ready architecture for live updates
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **Type Safety**: Full TypeScript implementation
 - **Performance Optimized**: React memoization and lazy loading
 - **Error Boundaries**: Graceful error handling throughout
+- **Background Tasks**: Celery integration for async operations
 
 ## Tech Stack
 - **Framework**: Next.js 14 (App Router)
@@ -42,14 +51,21 @@ apps/web/
 │   │   └── api/            
 │   │       ├── base.ts      # Base API service class
 │   │       ├── portfolio.ts # Portfolio endpoints
-│   │       └── market.ts    # Market data endpoints
+│   │       ├── market.ts    # Market data endpoints
+│   │       ├── background.ts # Background tasks ✨ NEW
+│   │       ├── diagnostics.ts # System diagnostics ✨ NEW
+│   │       └── benchmark.ts  # Benchmark data ✨ NEW
 │   ├── hooks/              # Custom React hooks
 │   ├── types/              # TypeScript type definitions
 │   ├── constants/          # Application constants
 │   ├── utils/              # Utility functions
 │   │   └── api.ts          # API client configuration
-│   ├── dashboard/          # Dashboard page
+│   ├── dashboard/          # Dashboard page (with new navigation)
+│   ├── tasks/              # Task management page ✨ NEW
+│   ├── diagnostics/        # System diagnostics page ✨ NEW
+│   ├── reports/            # Reports & analytics page ✨ NEW
 │   ├── admin/              # Admin panel
+│   ├── ai-insights/        # AI insights page
 │   ├── login/              # Authentication pages
 │   ├── register/           
 │   └── layout.tsx          # Root layout
@@ -111,6 +127,9 @@ The application integrates with the Waardhaven AutoIndex API. See [API_DOCUMENTA
 - **Base Service**: Abstract class with common HTTP methods and error handling
 - **Portfolio Service**: Index data, allocations, and simulations
 - **Market Service**: Benchmark data and market indicators
+- **Background Service**: Task queue management and monitoring ✨ NEW
+- **Diagnostics Service**: System health and cache operations ✨ NEW
+- **Benchmark Service**: S&P 500 and performance comparisons ✨ NEW
 - **Strategy API**: Strategy configuration and risk metrics
 - **Market Data API**: Database status and refresh operations
 
@@ -120,7 +139,7 @@ The application integrates with the Waardhaven AutoIndex API. See [API_DOCUMENTA
 3. Token automatically attached to all API requests
 4. 401 responses trigger automatic logout
 
-## Key Components
+## Key Pages & Components
 
 ### Dashboard (`/dashboard`)
 Main interface displaying:
@@ -128,6 +147,31 @@ Main interface displaying:
 - Current allocations pie chart
 - Investment simulator
 - Risk metrics display
+- Quick navigation to all system pages ✨ NEW
+
+### Task Management (`/tasks`) ✨ NEW
+Background operations center featuring:
+- Active task queue visualization
+- Real-time progress monitoring
+- Task statistics dashboard
+- Quick action buttons for common tasks
+- Task history tracking
+
+### System Diagnostics (`/diagnostics`) ✨ NEW
+System health monitoring with:
+- Database status indicators
+- Cache performance metrics
+- Data freshness tracking
+- Cache management controls
+- System action buttons
+
+### Reports & Analytics (`/reports`) ✨ NEW
+Report generation center offering:
+- Multiple report types (performance, allocation, risk)
+- Custom time period selection
+- Report generation progress tracking
+- Historical report archive
+- Quick report templates
 
 ### Admin Panel (`/admin`)
 Administrative interface for:
