@@ -20,7 +20,6 @@ on:
 env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
-  PNPM_VERSION: '8'
 
 jobs:
   setup:
@@ -45,7 +44,7 @@ jobs:
             web:
               - 'apps/web/**'
               - 'package.json'
-              - 'pnpm-lock.yaml'
+              - 'package-lock.json'
             docs:
               - 'docs/**'
               - '**.md'
@@ -73,11 +72,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
+      - name: Setup npm cache
         if: matrix.component == 'web'
-        uses: pnpm/action-setup@v2
+        uses: actions/cache@v3
         with:
-          version: ${{ env.PNPM_VERSION }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Lint Python (API)
         if: matrix.component == 'api'
@@ -92,9 +92,9 @@ jobs:
         if: matrix.component == 'web'
         working-directory: ./apps/web
         run: |
-          pnpm install --frozen-lockfile
-          pnpm run lint || true
-          pnpm run type-check || true
+          npm ci
+          npm run lint || true
+          npm run type-check || true
 
   test-api:
     name: Test API
@@ -128,7 +128,7 @@ jobs:
         working-directory: ./apps/api
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio httpx
+          pip install pytest pytest-cov pytest-asyncio httpx celery redis "passlib[bcrypt]"
 
       - name: Run tests
         working-directory: ./apps/api
@@ -160,20 +160,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Install dependencies
         working-directory: ./apps/web
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
         working-directory: ./apps/web
         run: |
-          pnpm run test || true
-          pnpm run test:e2e || true
+          npm run test || true
+          npm run test:e2e || true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -224,20 +219,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Install dependencies
         working-directory: ./apps/web
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build application
         working-directory: ./apps/web
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
-        run: pnpm run build
+        run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3

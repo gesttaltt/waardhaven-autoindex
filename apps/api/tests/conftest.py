@@ -17,7 +17,7 @@ os.environ["DEBUG"] = "true"
 from app.main import app
 from app.core.database import Base
 from app.models import User, Asset, Price, IndexValue, Allocation, StrategyConfig
-from app.core.security import get_password_hash
+from app.utils.security import get_password_hash
 
 
 @pytest.fixture(scope="function")

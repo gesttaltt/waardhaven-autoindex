@@ -1,14 +1,23 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import QueuePool, StaticPool
 import os
 
 from .config import settings
 
-# Connection pool configuration for production
+# Determine if we're using SQLite (for testing)
+is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
+# Connection pool configuration
 pool_config = {}
 
-if os.getenv("RENDER"):  # Production on Render
+if is_sqlite:
+    # SQLite configuration for testing
+    pool_config = {
+        "connect_args": {"check_same_thread": False},
+        "poolclass": StaticPool,
+    }
+elif os.getenv("RENDER"):  # Production on Render
     pool_config = {
         "poolclass": QueuePool,
         "pool_size": 20,  # Number of connections to maintain in pool
@@ -17,14 +26,14 @@ if os.getenv("RENDER"):  # Production on Render
         "pool_recycle": 3600,  # Recycle connections after 1 hour
         "pool_pre_ping": True,  # Test connections before using
     }
-else:  # Local development
+else:  # Local development with PostgreSQL
     pool_config = {
         "pool_size": 5,
         "max_overflow": 10,
         "pool_pre_ping": True,
     }
 
-# Create engine with connection pooling
+# Create engine with appropriate configuration
 engine = create_engine(
     settings.DATABASE_URL,
     **pool_config,

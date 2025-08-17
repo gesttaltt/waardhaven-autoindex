@@ -33,9 +33,16 @@ class Settings(BaseSettings):
     
     # Debug mode
     DEBUG: bool = Field(default=False, env="DEBUG")
+    
+    # Frontend URL for CORS
+    FRONTEND_URL: str = Field(default="", env="FRONTEND_URL")
+    
+    # Skip startup refresh
+    SKIP_STARTUP_REFRESH: bool = Field(default=False, env="SKIP_STARTUP_REFRESH")
 
     class Config:
         env_file = ".env"
+        extra = "ignore"  # Ignore extra fields in .env file
 
 settings = Settings()
 

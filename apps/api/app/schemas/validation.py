@@ -1,6 +1,6 @@
 """Enhanced validation schemas with security constraints."""
-from pydantic import BaseModel, Field, validator, root_validator
-from typing import Optional, Dict, Any
+from pydantic import BaseModel, Field, field_validator, model_validator
+from typing import Optional, Dict, Any, Self
 from datetime import date, datetime
 import re
 
@@ -76,21 +76,22 @@ class SecureStrategyConfig(BaseModel):
         description="Daily drop threshold for alerts"
     )
     
-    @root_validator
-    def validate_weights(cls, values):
+    @model_validator(mode='after')
+    def validate_weights(self) -> Self:
         """Ensure weights sum to approximately 1.0."""
-        momentum = values.get('momentum_weight', 0)
-        market_cap = values.get('market_cap_weight', 0)
-        risk_parity = values.get('risk_parity_weight', 0)
+        momentum = self.momentum_weight
+        market_cap = self.market_cap_weight
+        risk_parity = self.risk_parity_weight
         
         total = momentum + market_cap + risk_parity
         
         if abs(total - 1.0) > 0.001:  # Allow small floating point errors
             raise ValueError(f"Strategy weights must sum to 1.0, got {total}")
         
-        return values
+        return self
     
-    @validator('rebalance_frequency')
+    @field_validator('rebalance_frequency')
+    @classmethod
     def validate_frequency(cls, v):
         """Validate rebalancing frequency."""
         allowed = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly']
@@ -98,12 +99,13 @@ class SecureStrategyConfig(BaseModel):
             raise ValueError(f"Rebalance frequency must be one of {allowed}")
         return v.lower()
     
-    @validator('max_daily_return', 'min_daily_return')
-    def validate_return_bounds(cls, v, field):
+    @field_validator('max_daily_return', 'min_daily_return')
+    @classmethod
+    def validate_return_bounds(cls, v, info):
         """Ensure return bounds are reasonable."""
-        if field.name == 'max_daily_return' and v <= 0:
+        if info.field_name == 'max_daily_return' and v <= 0:
             raise ValueError("Max daily return must be positive")
-        if field.name == 'min_daily_return' and v >= 0:
+        if info.field_name == 'min_daily_return' and v >= 0:
             raise ValueError("Min daily return must be negative")
         return v
 
@@ -118,7 +120,8 @@ class SecureAssetSymbol(BaseModel):
         description="Asset ticker symbol"
     )
     
-    @validator('symbol')
+    @field_validator('symbol')
+    @classmethod
     def validate_symbol(cls, v):
         """Validate symbol format to prevent injection."""
         # Only allow alphanumeric, dots, and hyphens (common in tickers)
@@ -154,7 +157,8 @@ class SecureSimulationRequest(BaseModel):
         description="Simulation start date"
     )
     
-    @validator('currency')
+    @field_validator('currency')
+    @classmethod
     def validate_currency(cls, v):
         """Validate currency code."""
         # Only allow uppercase letters for currency codes
@@ -162,7 +166,8 @@ class SecureSimulationRequest(BaseModel):
             raise ValueError("Currency must be a 3-letter code")
         return v.upper()
     
-    @validator('start_date')
+    @field_validator('start_date')
+    @classmethod
     def validate_date(cls, v):
         """Validate date is reasonable."""
         if v:
@@ -186,7 +191,8 @@ class SecureRefreshMode(BaseModel):
         description="Refresh mode"
     )
     
-    @validator('mode')
+    @field_validator('mode')
+    @classmethod
     def validate_mode(cls, v):
         """Validate refresh mode."""
         allowed_modes = ['smart', 'full', 'minimal', 'cached', 'incremental']
@@ -210,7 +216,8 @@ class SecureReportRequest(BaseModel):
         description="Period in days for the report"
     )
     
-    @validator('report_type')
+    @field_validator('report_type')
+    @classmethod
     def validate_report_type(cls, v):
         """Validate report type."""
         allowed_types = ['performance', 'allocation', 'risk', 'summary', 'detailed']

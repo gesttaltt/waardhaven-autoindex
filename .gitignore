@@ -5,6 +5,10 @@
 .env.development.local
 .env.test.local
 *.env
+apps/api/.env
+apps/web/.env
+apps/api/.env.*
+apps/web/.env.*
 
 # Dependencies
 node_modules/
@@ -83,3 +87,6 @@ docs/MONETIZATION_PLAN.md
 docs/PROJECT_AUDIT_COMPREHENSIVE.md
 docs/ROADMAP_*.md
 docs/*_INTERNAL.md
+
+# AI Assistant context (contains project specifics)
+CLAUDE.md
