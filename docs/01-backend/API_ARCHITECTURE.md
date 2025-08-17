@@ -10,8 +10,10 @@ The Waardhaven AutoIndex API is built with FastAPI and follows a modular, domain
 apps/api/
 ├── app/
 │   ├── core/           # Core functionality and configuration
-│   │   ├── config.py   # Application settings
-│   │   └── database.py # Database connection and session management
+│   │   ├── config.py   # Application settings (Pydantic v2)
+│   │   ├── database.py # Database connection and session management
+│   │   ├── redis_client.py # Redis caching configuration
+│   │   └── celery_app.py # Background task configuration
 │   │
 │   ├── models/         # SQLAlchemy ORM models (domain-organized)
 │   │   ├── __init__.py # Model exports and Base
@@ -25,13 +27,17 @@ apps/api/
 │   │   ├── auth.py     # Authentication schemas
 │   │   ├── index.py    # Index management schemas
 │   │   ├── benchmark.py# Benchmark comparison schemas
-│   │   └── strategy.py # Strategy configuration schemas
+│   │   ├── strategy.py # Strategy configuration schemas
+│   │   └── validation.py # Enhanced validation with security constraints
 │   │
 │   ├── routers/        # API endpoint routers
+│   │   ├── root.py     # Root and health check endpoints
 │   │   ├── auth.py     # Authentication endpoints
 │   │   ├── index.py    # Index data endpoints
 │   │   ├── benchmark.py# Benchmark comparison endpoints
 │   │   ├── strategy.py # Strategy management endpoints
+│   │   ├── background.py# Background task endpoints
+│   │   ├── tasks.py    # Task management endpoints
 │   │   ├── diagnostics.py # System health endpoints
 │   │   └── manual_refresh.py # Manual data refresh endpoints
 │   │
@@ -39,14 +45,50 @@ apps/api/
 │   │   ├── currency.py # Currency conversion service
 │   │   ├── performance.py # Performance metrics calculation
 │   │   ├── refresh.py  # Data refresh orchestration
+│   │   ├── refresh_optimized.py # Optimized refresh with rate limiting
 │   │   ├── strategy.py # Strategy implementation
-│   │   └── twelvedata.py # Market data integration
+│   │   ├── twelvedata.py # Market data integration
+│   │   └── twelvedata_optimized.py # Optimized TwelveData with caching
+│   │
+│   ├── tasks/          # Background tasks (Celery)
+│   │   ├── __init__.py
+│   │   └── background_tasks.py # Async task definitions
 │   │
 │   ├── utils/          # Utility functions
 │   │   ├── security.py # Password hashing and JWT
-│   │   └── token_dep.py# Authentication dependencies
+│   │   ├── token_dep.py# Authentication dependencies
+│   │   ├── cache.py    # Cache management utilities
+│   │   ├── cache_utils.py # Cache helper functions
+│   │   ├── password_validator.py # Password strength validation
+│   │   ├── create_indexes.py # Database index creation
+│   │   └── run_migrations.py # Database migration runner
 │   │
+│   ├── db_init.py      # Database initialization
+│   ├── seed_assets.py  # Initial asset seeding
+│   ├── tasks_refresh.py# Task refresh utilities
 │   └── main.py         # FastAPI application entry point
+│
+├── migrations/         # SQL migration scripts
+│   ├── add_composite_indexes.sql
+│   └── add_performance_indexes.sql
+│
+├── scripts/            # Startup and deployment scripts
+│   ├── startup.sh      # Unified startup script
+│   ├── start_worker.sh # Celery worker script
+│   ├── start_beat.sh   # Celery beat script
+│   └── start_flower.sh # Flower monitoring script
+│
+├── tests/              # Test suite
+│   ├── conftest.py     # Test configuration
+│   ├── test_api.py     # API endpoint tests
+│   ├── test_performance.py # Performance tests
+│   ├── test_refresh.py # Refresh logic tests
+│   └── test_strategy.py # Strategy tests
+│
+├── requirements.txt    # Python dependencies (Pydantic 2.11.7)
+├── requirements-test.txt # Test dependencies
+├── pytest.ini          # Pytest configuration
+└── Dockerfile          # Docker configuration
 ```
 
 ## Architecture Layers
@@ -278,19 +320,79 @@ Trigger → StrategyConfig → Calculate Weights → New Allocations → Update 
 
 ### Environment Variables
 Required environment variables:
-- `DATABASE_URL`: PostgreSQL connection string
-- `SECRET_KEY`: JWT signing key
+- `DATABASE_URL`: PostgreSQL connection string (auto-provided on Render)
+- `SECRET_KEY`: JWT signing key (minimum 32 characters)
+- `ADMIN_TOKEN`: Admin access token (minimum 32 characters)
 - `TWELVEDATA_API_KEY`: Market data API key
+- `PORT`: Server port (default: 10000)
+- `FRONTEND_URL`: Frontend URL for CORS configuration
+- `SKIP_STARTUP_REFRESH`: Skip initial data refresh (recommended: true)
+
+Optional environment variables:
+- `REDIS_URL`: Redis connection for caching
+- `DEBUG`: Debug mode (default: false)
+- `CACHE_TTL_SECONDS`: Cache TTL (default: 300)
+- `TWELVEDATA_PLAN`: API plan level (default: free)
+- `TWELVEDATA_RATE_LIMIT`: Credits per minute (default: 8)
+
+### Database Configuration
+- PostgreSQL with connection pooling
+- Pool size: 20 (production), 5 (development)
+- Max overflow: 40 (production), 10 (development)
+- Connection recycling: 1 hour
+- Pre-ping enabled for connection health
+- Automatic retry logic (30 attempts on startup)
+- Graceful degradation if database unavailable
+
+### Dependency Management
+- Python 3.11 runtime
+- Pydantic 2.11.7 (critical for deployment)
+- FastAPI 0.112.0
+- SQLAlchemy 2.0.32
+- Requirements pinned for reproducibility
 
 ### Database Migrations
-- Alembic for schema migrations
-- Backward compatibility
-- Rollback procedures
+- SQL migration scripts in `/migrations`
+- Automatic index creation on startup
+- Composite indexes for performance
+- Run via `run_migrations.py` utility
 
 ### Monitoring
-- Health check endpoints
-- Metrics collection
-- Alert thresholds
+- Health check endpoint: `/health`
+- System diagnostics: `/api/v1/diagnostics/system`
+- Database status: `/api/v1/diagnostics/database-status`
+- Cache status: `/api/v1/diagnostics/cache-status`
+- Refresh status: `/api/v1/diagnostics/refresh-status`
+
+### Deployment Process (Render.com)
+1. Docker build with Dockerfile
+2. Dependencies installed from requirements.txt
+3. Startup script (`scripts/startup.sh`) executes:
+   - Environment variable validation
+   - Database connection check with retries
+   - Table initialization if needed
+   - Asset seeding
+   - Optional market data refresh
+4. Uvicorn server starts on configured PORT
+5. Health checks validate service readiness
+
+### Known Deployment Issues and Solutions
+
+#### Pydantic Version Compatibility
+- **Issue**: `@root_validator` deprecation error
+- **Solution**: Use Pydantic 2.11.7, ensure `@model_validator(mode='after')` syntax
+
+#### Build Cache Issues
+- **Issue**: Old code deployed despite new commits
+- **Solution**: Clear Render build cache, force manual deploy
+
+#### Port Binding
+- **Issue**: "No open ports detected" warning
+- **Solution**: Properly bind to `0.0.0.0:$PORT`
+
+#### Database Timeouts
+- **Issue**: Connection fails during startup
+- **Solution**: Implemented retry logic with graceful degradation
 
 ## Future Enhancements
 

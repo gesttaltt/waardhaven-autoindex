@@ -210,3 +210,111 @@ For questions or issues related to this migration:
 2. Review the API architecture documentation
 3. Check error logs for import issues
 4. Test with the provided test scripts
+
+## Deployment Troubleshooting
+
+### Common Deployment Issues
+
+#### 1. Pydantic Version Errors
+**Error**: `PydanticUserError: If you use @root_validator with pre=False...`
+
+**Cause**: Version mismatch between Pydantic 2.8.x and 2.11.x
+
+**Solution**:
+- Ensure `requirements.txt` specifies `pydantic==2.11.7`
+- Use `@model_validator(mode='after')` instead of `@root_validator`
+- Clear deployment cache if updating from older version
+
+#### 2. Import Errors on Deployment
+**Error**: `ModuleNotFoundError` or import failures
+
+**Cause**: Python cache files or missing dependencies
+
+**Solution**:
+```bash
+# Clear Python cache
+find . -name "__pycache__" -type d -exec rm -rf {} +
+find . -name "*.pyc" -delete
+
+# Verify all imports locally
+python -c "from app.main import app; print('OK')"
+```
+
+#### 3. Database Connection Failures
+**Error**: Database connection timeout during startup
+
+**Solution**:
+- Set `SKIP_STARTUP_REFRESH=true` to skip initial data load
+- Verify `DATABASE_URL` is correctly formatted
+- Check database is accessible from deployment environment
+- Startup script includes 30 retry attempts with backoff
+
+#### 4. Port Binding Issues
+**Error**: "No open ports detected" on Render
+
+**Solution**:
+- Ensure `PORT` environment variable is set
+- Uvicorn must bind to `0.0.0.0:$PORT`
+- Verify Dockerfile exposes correct port
+
+#### 5. Build Cache Issues
+**Error**: Old code deployed despite new commits
+
+**Solution**:
+1. Clear build cache in Render dashboard
+2. Force manual deploy from specific commit
+3. Verify commit hash in deployment logs
+4. Check that correct branch is being deployed
+
+### Environment Variable Checklist
+
+Required for production:
+- [ ] `DATABASE_URL` - PostgreSQL connection string
+- [ ] `SECRET_KEY` - JWT secret (32+ characters)
+- [ ] `ADMIN_TOKEN` - Admin access (32+ characters)
+- [ ] `TWELVEDATA_API_KEY` - Market data API key
+- [ ] `FRONTEND_URL` - Frontend URL for CORS
+- [ ] `PORT` - Server port (usually 10000)
+
+Recommended for production:
+- [ ] `SKIP_STARTUP_REFRESH=true` - Faster startup
+- [ ] `REDIS_URL` - If using caching
+- [ ] `DEBUG=false` - Disable debug mode
+
+### Verification Commands
+
+```bash
+# Test imports
+cd apps/api
+python -c "from app.main import app; print('✓ Main app')"
+python -c "from app.schemas.validation import SecureStrategyConfig; print('✓ Validation')"
+python -c "from app.routers import strategy; print('✓ Routers')"
+
+# Check Pydantic version
+python -c "import pydantic; print(f'Pydantic: {pydantic.__version__}')"
+
+# Test database connection
+python -c "from app.core.database import engine; engine.connect(); print('✓ Database')"
+
+# Run local server
+uvicorn app.main:app --reload --port 8000
+```
+
+### Deployment Logs Analysis
+
+Key things to check in deployment logs:
+1. Python and package versions installed
+2. Environment variables detected
+3. Database connection status
+4. Table initialization success
+5. Port binding confirmation
+6. Health check responses
+
+### Recovery Procedures
+
+If deployment fails:
+1. Check deployment logs for specific error
+2. Verify environment variables are set
+3. Test locally with production-like config
+4. Clear build cache and redeploy
+5. Roll back to last known good commit if needed
