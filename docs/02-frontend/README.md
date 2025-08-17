@@ -37,41 +37,216 @@ The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a mo
 - **HTTP Client**: Axios
 - **State Management**: React Hooks
 
-## Project Structure
+## Clean Architecture Structure
+
+The frontend follows a clean architecture pattern with clear separation of concerns:
 
 ```
 apps/web/
 ├── app/
-│   ├── components/          # Reusable UI components
-│   │   ├── dashboard/       # Dashboard-specific components
-│   │   ├── shared/          # Shared components
-│   │   ├── SmartRefresh.tsx # Smart data refresh component
-│   │   └── StrategyConfig.tsx # Strategy configuration panel
-│   ├── services/            # API service layer
-│   │   └── api/            
-│   │       ├── base.ts      # Base API service class
-│   │       ├── portfolio.ts # Portfolio endpoints
-│   │       ├── market.ts    # Market data endpoints
-│   │       ├── background.ts # Background tasks ✨ NEW
-│   │       ├── diagnostics.ts # System diagnostics ✨ NEW
-│   │       └── benchmark.ts  # Benchmark data ✨ NEW
-│   ├── hooks/              # Custom React hooks
-│   ├── types/              # TypeScript type definitions
-│   ├── constants/          # Application constants
-│   ├── utils/              # Utility functions
-│   │   └── api.ts          # API client configuration
-│   ├── dashboard/          # Dashboard page (with new navigation)
-│   ├── tasks/              # Task management page ✨ NEW
-│   ├── diagnostics/        # System diagnostics page ✨ NEW
-│   ├── reports/            # Reports & analytics page ✨ NEW
-│   ├── admin/              # Admin panel
-│   ├── ai-insights/        # AI insights page
-│   ├── login/              # Authentication pages
-│   ├── register/           
-│   └── layout.tsx          # Root layout
-├── public/                 # Static assets
-└── API_DOCUMENTATION.md    # API reference
+│   ├── components/          # Presentation Layer
+│   │   ├── ui/            # Pure UI components (buttons, cards, inputs)
+│   │   │   ├── Button/
+│   │   │   ├── Card/
+│   │   │   ├── Input/
+│   │   │   └── Modal/
+│   │   ├── features/      # Feature-specific components
+│   │   │   ├── dashboard/
+│   │   │   ├── portfolio/
+│   │   │   ├── tasks/
+│   │   │   └── reports/
+│   │   └── layouts/       # Layout components
+│   │       ├── Header/
+│   │       ├── Sidebar/
+│   │       └── Footer/
+│   │
+│   ├── hooks/              # Business Logic Layer
+│   │   ├── api/           # API-related hooks
+│   │   ├── state/         # State management hooks
+│   │   └── utils/         # Utility hooks
+│   │
+│   ├── services/           # Data Access Layer
+│   │   └── api/           # API service classes
+│   │       ├── base.ts
+│   │       ├── portfolio.ts
+│   │       ├── background.ts
+│   │       └── diagnostics.ts
+│   │
+│   ├── lib/               # Core Business Logic
+│   │   ├── calculations/ # Business calculations
+│   │   ├── validators/   # Input validation
+│   │   └── formatters/   # Data formatting
+│   │
+│   ├── types/             # Type Definitions
+│   │   ├── api/          # API response types
+│   │   ├── domain/       # Domain models
+│   │   └── ui/           # UI component props
+│   │
+│   ├── styles/            # Styling
+│   │   ├── components/   # Component-specific styles
+│   │   ├── themes/       # Theme definitions
+│   │   └── globals.css   # Global styles
+│   │
+│   ├── constants/         # Application Constants
+│   │   ├── config.ts
+│   │   ├── routes.ts
+│   │   └── theme.ts
+│   │
+│   └── [pages]/          # Page Components (Smart Components)
+│       ├── dashboard/
+│       ├── tasks/
+│       ├── diagnostics/
+│       └── reports/
+├── public/               # Static assets
+└── tests/               # Test files
 
+```
+
+### Architecture Principles
+
+#### 1. Separation of Concerns
+- **UI Components**: Pure, reusable components with no business logic
+- **Hooks**: Encapsulate business logic and state management
+- **Services**: Handle external API communication
+- **Lib**: Core business logic independent of React
+
+#### 2. Component Categories
+
+**Presentational Components (Dumb)**
+- Located in `components/ui/`
+- Pure functions with props
+- No direct API calls
+- Fully reusable across features
+- Example:
+```typescript
+// components/ui/Button/Button.tsx
+interface ButtonProps {
+  variant: 'primary' | 'secondary';
+  size: 'sm' | 'md' | 'lg';
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+export function Button({ variant, size, onClick, children }: ButtonProps) {
+  return (
+    <button className={buttonStyles({ variant, size })} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+```
+
+**Container Components (Smart)**
+- Located in page directories
+- Connect to hooks and services
+- Handle data fetching and state
+- Compose presentational components
+- Example:
+```typescript
+// app/dashboard/page.tsx
+export default function DashboardPage() {
+  const { data, loading, error } = usePortfolioData();
+  const { refresh } = useDataRefresh();
+  
+  if (loading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  
+  return (
+    <DashboardLayout>
+      <PerformanceChart data={data} />
+      <RefreshButton onClick={refresh} />
+    </DashboardLayout>
+  );
+}
+```
+
+#### 3. Custom Hooks Pattern
+
+**API Hooks**
+```typescript
+// hooks/api/usePortfolioData.ts
+export function usePortfolioData() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    portfolioService.getHistory()
+      .then(setData)
+      .catch(setError)
+      .finally(() => setLoading(false));
+  }, []);
+  
+  return { data, loading, error };
+}
+```
+
+**Business Logic Hooks**
+```typescript
+// hooks/usePortfolioCalculations.ts
+export function usePortfolioCalculations(data: PortfolioData) {
+  const returns = useMemo(() => calculateReturns(data), [data]);
+  const risk = useMemo(() => calculateRisk(data), [data]);
+  const sharpe = useMemo(() => calculateSharpeRatio(returns, risk), [returns, risk]);
+  
+  return { returns, risk, sharpe };
+}
+```
+
+#### 4. Styling Strategy
+
+**Component Styles**
+```typescript
+// styles/components/Button.styles.ts
+export const buttonStyles = cva(
+  "rounded-lg font-medium transition-all",
+  {
+    variants: {
+      variant: {
+        primary: "bg-purple-500 text-white hover:bg-purple-600",
+        secondary: "bg-white/10 text-white hover:bg-white/20"
+      },
+      size: {
+        sm: "px-3 py-1 text-sm",
+        md: "px-4 py-2",
+        lg: "px-6 py-3 text-lg"
+      }
+    }
+  }
+);
+```
+
+#### 5. Type Safety
+
+**Domain Types**
+```typescript
+// types/domain/portfolio.ts
+export interface Portfolio {
+  id: string;
+  userId: string;
+  allocations: Allocation[];
+  value: number;
+  lastUpdated: Date;
+}
+
+export interface Allocation {
+  assetId: string;
+  symbol: string;
+  weight: number;
+  value: number;
+}
+```
+
+**API Types**
+```typescript
+// types/api/portfolio.ts
+export interface PortfolioResponse {
+  data: {
+    portfolio: Portfolio;
+    performance: PerformanceMetrics;
+  };
+  timestamp: string;
+}
 ```
 
 ## Getting Started
@@ -210,6 +385,67 @@ Dynamic strategy adjustment with:
 - **Validation**: Client-side validation before API calls
 - **Error Boundaries**: Prevent entire app crashes
 
+## Clean Architecture Best Practices
+
+### File Naming Conventions
+- **Components**: PascalCase (e.g., `Button.tsx`, `PerformanceChart.tsx`)
+- **Hooks**: camelCase with 'use' prefix (e.g., `usePortfolio.ts`)
+- **Services**: camelCase with suffix (e.g., `portfolioService.ts`)
+- **Types**: PascalCase for interfaces/types (e.g., `Portfolio.ts`)
+- **Constants**: UPPER_SNAKE_CASE for values, camelCase for objects
+- **Utilities**: camelCase (e.g., `formatCurrency.ts`)
+
+### Component Structure
+Each component should have its own folder with:
+```
+components/ui/Button/
+├── Button.tsx          # Component logic
+├── Button.styles.ts    # Styled components or style utilities
+├── Button.types.ts     # TypeScript interfaces
+├── Button.test.tsx     # Unit tests
+└── index.ts           # Public API export
+```
+
+### Data Flow Pattern
+```
+User Action → Page Component → Custom Hook → Service → API
+                     ↓              ↓           ↓        ↓
+                  UI Update ← State Update ← Transform ← Response
+```
+
+### State Management Rules
+1. **Local State**: Use for UI-only state (modals, toggles)
+2. **Hook State**: Use for feature-specific state
+3. **Context**: Use sparingly for truly global state (auth, theme)
+4. **URL State**: Use for sharable state (filters, pagination)
+
+### Error Handling Pattern
+```typescript
+// hooks/api/useApiCall.ts
+export function useApiCall<T>(apiCall: () => Promise<T>) {
+  const [state, setState] = useState({
+    data: null as T | null,
+    loading: true,
+    error: null as Error | null
+  });
+
+  useEffect(() => {
+    apiCall()
+      .then(data => setState({ data, loading: false, error: null }))
+      .catch(error => setState({ data: null, loading: false, error }));
+  }, []);
+
+  return state;
+}
+```
+
+### Performance Optimization
+1. **Memoization**: Use `useMemo` for expensive calculations
+2. **Code Splitting**: Lazy load pages and heavy components
+3. **Virtualization**: Use for long lists
+4. **Debouncing**: For search and filter inputs
+5. **Image Optimization**: Use Next.js Image component
+
 ## Testing
 
 ```bash
@@ -222,6 +458,12 @@ npm run test:watch
 # Coverage report
 npm run test:coverage
 ```
+
+### Testing Strategy
+- **Unit Tests**: For utilities and business logic
+- **Component Tests**: For UI components with React Testing Library
+- **Integration Tests**: For API hooks and services
+- **E2E Tests**: For critical user flows
 
 ## Deployment
 

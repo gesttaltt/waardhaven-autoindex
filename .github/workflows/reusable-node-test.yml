@@ -7,10 +7,7 @@ on:
         required: false
         type: string
         default: '20'
-      pnpm-version:
-        required: false
-        type: string
-        default: '8'
+      # pnpm-version removed - project uses npm
       working-directory:
         required: false
         type: string
@@ -18,11 +15,11 @@ on:
       build-command:
         required: false
         type: string
-        default: 'pnpm run build'
+        default: 'npm run build'
       test-command:
         required: false
         type: string
-        default: 'pnpm run test'
+        default: 'npm run test'
     secrets:
       NEXT_PUBLIC_API_URL:
         required: false
@@ -38,34 +35,23 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+      - name: Setup npm cache
+        uses: actions/cache@v4
         with:
-          version: ${{ inputs.pnpm-version }}
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
         working-directory: ${{ inputs.working-directory }}
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run linting
         working-directory: ${{ inputs.working-directory }}
         run: |
-          pnpm run lint || true
-          pnpm run type-check || true
+          npm run lint || true
+          npm run type-check || true
 
       - name: Build application
         working-directory: ${{ inputs.working-directory }}
@@ -79,7 +65,7 @@ jobs:
 
       - name: Upload test coverage
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: ${{ inputs.working-directory }}/coverage

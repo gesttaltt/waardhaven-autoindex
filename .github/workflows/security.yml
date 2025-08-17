@@ -34,7 +34,7 @@ jobs:
           npx snyk test --json > snyk-report.json || true
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports-${{ matrix.component }}
           path: |
@@ -138,7 +138,7 @@ jobs:
             p/react
 
       - name: Upload SAST results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sast-results
           path: semgrep.sarif
@@ -166,7 +166,7 @@ jobs:
     if: always()
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Generate consolidated report
         run: |
@@ -179,7 +179,7 @@ jobs:
           # Add report generation logic here
 
       - name: Upload final report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-report
           path: security-report.md
