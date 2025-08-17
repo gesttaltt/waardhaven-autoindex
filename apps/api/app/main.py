@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from .routers import auth, index, broker, benchmark, tasks, diagnostics, manual_refresh, strategy
+from .routers import auth, index, broker, benchmark, tasks, diagnostics, manual_refresh, strategy, admin_setup
 from .core.config import settings
 import time
 from typing import Dict
@@ -111,3 +111,4 @@ app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(diagnostics.router, prefix="/api/v1/diagnostics", tags=["diagnostics"])
 app.include_router(manual_refresh.router, prefix="/api/v1/manual", tags=["manual"])
 app.include_router(strategy.router, prefix="/api/v1/strategy", tags=["strategy"])
+app.include_router(admin_setup.router, prefix="/api/v1/admin", tags=["admin"])  # TEMPORARY - DELETE AFTER USE
