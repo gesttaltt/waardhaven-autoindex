@@ -61,13 +61,39 @@ Open: http://localhost:3000
 - Set environment variables from `.env.example` files.
 - Optionally schedule a daily cron (on Render) calling `/api/v1/tasks/refresh` with `X-Admin-Token` header.
 
+## Architecture Updates (2025-08-17)
+
+### API Surface
+The application provides a clean REST API organized by domain:
+- **Authentication** (`/api/v1/auth`): User registration and login with JWT tokens
+- **Index Management** (`/api/v1/index`): Portfolio data, allocations, and simulations
+- **Strategy** (`/api/v1/strategy`): Dynamic strategy configuration and risk metrics
+- **Diagnostics** (`/api/v1/diagnostics`): System health and data status monitoring
+- **Manual Refresh** (`/api/v1/manual`): Smart refresh with rate limiting protection
+- **Benchmarks** (`/api/v1/benchmark`): S&P 500 comparison data
+
+### Recent Changes
+- **Removed**: Trading/broker functionality (not needed for index fund)
+- **Removed**: Temporary admin setup endpoints
+- **Fixed**: Frontend API endpoint mismatches
+- **Added**: Comprehensive API documentation in `apps/web/API_DOCUMENTATION.md`
+- **Enhanced**: Smart refresh with multiple modes and rate limit protection
+
+### Key Features
+- **Dynamic Strategy Weighting**: Configurable momentum, market cap, and risk parity weights
+- **Risk Analytics**: Real-time Sharpe ratio, Sortino ratio, drawdown metrics
+- **Smart Data Refresh**: Intelligent caching and rate limit management
+- **Multi-Currency Support**: Automatic exchange rate conversion for simulations
+- **Performance Optimization**: Caching, memoization, and lazy loading throughout
+
 ## Notes
 
-- The index logic is simple by design for MVP: filter assets with daily return below threshold and rebalance equally.
-- The history endpoint returns precomputed index values (base = 100) and the benchmark (S&P 500) for comparison.
-- Simulation uses index history to compute ROI given a start date and amount.
-- Market data is provided by TwelveData API, offering professional-grade financial data with real-time updates.
-- Supports multi-currency simulations with automatic exchange rate conversion.
+- The index uses a sophisticated weighted strategy combining momentum, market cap, and risk parity factors
+- Historical data is normalized to base 100 for easy comparison with benchmarks
+- Market data is provided by TwelveData API with professional-grade accuracy
+- The system supports automatic rebalancing based on configurable frequencies
+- All API endpoints are fully documented with TypeScript types
 
 Build date: 2025-08-12
 Updated: 2025-08-13 - Migrated from Yahoo Finance to TwelveData API
+Updated: 2025-08-17 - Cleaned up API surface and improved documentation
