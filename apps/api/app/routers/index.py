@@ -7,11 +7,18 @@ from ..models import Asset, Price, Allocation, IndexValue, User
 from ..schemas import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
 from ..services.currency import convert_amount, get_supported_currencies
 from ..utils.token_dep import get_current_user
+from ..utils.cache import cache, cached
 
 router = APIRouter()
 
 @router.get("/current", response_model=IndexCurrentResponse)
 def get_current_index(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    # Check cache first
+    cache_key = "index:current"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return IndexCurrentResponse(**cached_result)
+    
     # Latest allocation date
     latest_date = db.query(func.max(Allocation.date)).scalar()
     if latest_date is None:
@@ -20,7 +27,13 @@ def get_current_index(db: Session = Depends(get_db), user: User = Depends(get_cu
     items = []
     for alloc, asset in allocations:
         items.append(AllocationItem(symbol=asset.symbol, name=asset.name, sector=asset.sector, weight=alloc.weight))
-    return IndexCurrentResponse(date=latest_date, allocations=items)
+    
+    result = IndexCurrentResponse(date=latest_date, allocations=items)
+    
+    # Cache for 5 minutes
+    cache.set(cache_key, result.dict(), ttl=300)
+    
+    return result
 
 @router.get("/history", response_model=IndexHistoryResponse)
 def get_history(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
