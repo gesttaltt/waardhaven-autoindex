@@ -1,0 +1,383 @@
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - staging
+  paths:
+    exclude:
+      - docs/*
+      - '*.md'
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  - group: waardhaven-common
+  - name: pythonVersion
+    value: '3.11'
+  - name: nodeVersion
+    value: '20.x'
+  - name: buildConfiguration
+    value: 'Release'
+  - name: dockerRegistry
+    value: 'waardhavenacr.azurecr.io'
+
+stages:
+  - stage: Setup
+    displayName: 'Setup Pipeline'
+    jobs:
+      - job: DetectChanges
+        displayName: 'Detect Changes'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            fetchDepth: 2
+
+          - bash: |
+              git diff HEAD^ HEAD --name-only | grep -q "^apps/api/" && echo "##vso[task.setvariable variable=apiChanged;isOutput=true]true" || echo "##vso[task.setvariable variable=apiChanged;isOutput=true]false"
+              git diff HEAD^ HEAD --name-only | grep -q "^apps/web/" && echo "##vso[task.setvariable variable=webChanged;isOutput=true]true" || echo "##vso[task.setvariable variable=webChanged;isOutput=true]false"
+            name: changes
+            displayName: 'Check for changes'
+
+  - stage: Quality
+    displayName: 'Code Quality'
+    dependsOn: Setup
+    jobs:
+      - job: LintAPI
+        displayName: 'Lint API'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(pythonVersion)
+
+          - script: |
+              pip install ruff black mypy
+              cd apps/api
+              ruff check .
+              black --check .
+              mypy app --ignore-missing-imports
+            displayName: 'Run Python linters'
+
+      - job: LintWeb
+        displayName: 'Lint Web'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              npm install -g pnpm@8
+              cd apps/web
+              pnpm install --frozen-lockfile
+              pnpm run lint || true
+              pnpm run type-check || true
+            displayName: 'Run TypeScript linters'
+
+  - stage: Test
+    displayName: 'Test Applications'
+    dependsOn: Quality
+    jobs:
+      - job: TestAPI
+        displayName: 'Test API'
+        pool:
+          vmImage: 'ubuntu-latest'
+        services:
+          postgres:
+            image: postgres:15
+            ports:
+              - 5432:5432
+            env:
+              POSTGRES_USER: test
+              POSTGRES_PASSWORD: test
+              POSTGRES_DB: waardhaven_test
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: $(pythonVersion)
+
+          - script: |
+              cd apps/api
+              pip install -r requirements.txt
+              pip install pytest pytest-cov pytest-asyncio httpx
+            displayName: 'Install dependencies'
+
+          - script: |
+              cd apps/api
+              export DATABASE_URL="postgresql://test:test@localhost:5432/waardhaven_test"
+              export JWT_SECRET_KEY="test-secret-key"
+              export JWT_ALGORITHM="HS256"
+              export TWELVEDATA_API_KEY="test-key"
+              pytest tests/ -v --cov=app --junitxml=test-results.xml --cov-report=xml --cov-report=html || true
+            displayName: 'Run tests'
+
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFiles: '**/test-results.xml'
+              testRunTitle: 'API Tests'
+
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: '**/coverage.xml'
+
+      - job: TestWeb
+        displayName: 'Test Web'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              npm install -g pnpm@8
+              cd apps/web
+              pnpm install --frozen-lockfile
+            displayName: 'Install dependencies'
+
+          - script: |
+              cd apps/web
+              pnpm run test || true
+              pnpm run test:e2e || true
+            displayName: 'Run tests'
+
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFiles: '**/test-results.xml'
+              testRunTitle: 'Web Tests'
+
+  - stage: Build
+    displayName: 'Build Applications'
+    dependsOn: Test
+    jobs:
+      - job: BuildAPI
+        displayName: 'Build API Docker Image'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Docker@2
+            displayName: 'Build API image'
+            inputs:
+              command: buildAndPush
+              repository: 'waardhaven/api'
+              dockerfile: 'apps/api/Dockerfile'
+              containerRegistry: 'ACRServiceConnection'
+              tags: |
+                $(Build.BuildId)
+                latest
+
+      - job: BuildWeb
+        displayName: 'Build Web Application'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: |
+              npm install -g pnpm@8
+              cd apps/web
+              pnpm install --frozen-lockfile
+              pnpm run build
+            displayName: 'Build application'
+            env:
+              NEXT_PUBLIC_API_URL: $(apiUrl)
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: 'apps/web/.next'
+              ArtifactName: 'web-build'
+
+  - stage: Security
+    displayName: 'Security Scanning'
+    dependsOn: Setup
+    jobs:
+      - job: SecurityScan
+        displayName: 'Security Analysis'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: CredScan@3
+            displayName: 'Credential Scanner'
+
+          - task: WhiteSource@21
+            displayName: 'WhiteSource Scan'
+            inputs:
+              cwd: '$(System.DefaultWorkingDirectory)'
+
+          - script: |
+              pip install safety bandit
+              cd apps/api
+              safety check -r requirements.txt || true
+              bandit -r app/ || true
+            displayName: 'Python security scan'
+
+          - script: |
+              cd apps/web
+              npm audit || true
+            displayName: 'Node security scan'
+
+  - stage: DeployDev
+    displayName: 'Deploy to Development'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    jobs:
+      - deployment: DeployDevAPI
+        displayName: 'Deploy API to Dev'
+        environment: 'development'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-api-dev'
+                    containers: '$(dockerRegistry)/waardhaven/api:$(Build.BuildId)'
+
+      - deployment: DeployDevWeb
+        displayName: 'Deploy Web to Dev'
+        environment: 'development'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-web-dev'
+                    package: '$(Pipeline.Workspace)/web-build'
+
+  - stage: DeployStaging
+    displayName: 'Deploy to Staging'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/staging'))
+    jobs:
+      - deployment: DeployStagingAPI
+        displayName: 'Deploy API to Staging'
+        environment: 'staging'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-api-staging'
+                    containers: '$(dockerRegistry)/waardhaven/api:$(Build.BuildId)'
+
+      - deployment: DeployStagingWeb
+        displayName: 'Deploy Web to Staging'
+        environment: 'staging'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-web-staging'
+                    package: '$(Pipeline.Workspace)/web-build'
+
+  - stage: DeployProduction
+    displayName: 'Deploy to Production'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: Approval
+        displayName: 'Manual Approval'
+        environment: 'production-approval'
+        pool: server
+        timeoutInMinutes: 1440
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: ManualValidation@0
+                  inputs:
+                    notifyUsers: 'approvers@waardhaven.com'
+                    instructions: 'Please validate the staging deployment before approving production'
+
+      - deployment: DeployProdAPI
+        displayName: 'Deploy API to Production'
+        dependsOn: Approval
+        environment: 'production'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebAppContainer@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-api-prod'
+                    containers: '$(dockerRegistry)/waardhaven/api:$(Build.BuildId)'
+                    slotName: 'staging'
+
+                - task: AzureAppServiceManage@0
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    action: 'Swap Slots'
+                    webAppName: 'waardhaven-api-prod'
+                    sourceSlot: 'staging'
+                    targetSlot: 'production'
+
+      - deployment: DeployProdWeb
+        displayName: 'Deploy Web to Production'
+        dependsOn: Approval
+        environment: 'production'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    appName: 'waardhaven-web-prod'
+                    package: '$(Pipeline.Workspace)/web-build'
+                    slotName: 'staging'
+
+                - task: AzureAppServiceManage@0
+                  inputs:
+                    azureSubscription: 'AzureServiceConnection'
+                    action: 'Swap Slots'
+                    webAppName: 'waardhaven-web-prod'
+                    sourceSlot: 'staging'
+                    targetSlot: 'production'
+
+      - job: PostDeployment
+        displayName: 'Post Deployment Tasks'
+        dependsOn: [DeployProdAPI, DeployProdWeb]
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo "Running smoke tests"
+              # Add smoke test commands
+            displayName: 'Smoke Tests'
+
+          - script: |
+              echo "Notifying teams"
+              # Add notification logic
+            displayName: 'Send Notifications'

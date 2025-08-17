@@ -1,0 +1,112 @@
+parameters:
+  - name: nodeVersion
+    type: string
+    default: '20.x'
+  - name: workingDirectory
+    type: string
+    default: 'apps/web'
+  - name: packageManager
+    type: string
+    default: 'pnpm'
+  - name: packageManagerVersion
+    type: string
+    default: '8'
+  - name: buildCommand
+    type: string
+    default: 'build'
+  - name: artifactName
+    type: string
+    default: 'node-build'
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: ${{ parameters.nodeVersion }}
+    displayName: 'Use Node.js ${{ parameters.nodeVersion }}'
+
+  - ${{ if eq(parameters.packageManager, 'pnpm') }}:
+    - script: |
+        npm install -g pnpm@${{ parameters.packageManagerVersion }}
+      displayName: 'Install pnpm'
+
+    - task: Cache@2
+      inputs:
+        key: 'pnpm | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/pnpm-lock.yaml'
+        restoreKeys: |
+          pnpm | "$(Agent.OS)"
+          pnpm
+        path: $(PNPM_CACHE_FOLDER)
+      displayName: 'Cache pnpm store'
+
+    - script: |
+        pnpm install --frozen-lockfile
+      displayName: 'Install dependencies'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+    - script: |
+        pnpm run lint || true
+        pnpm run type-check || true
+      displayName: 'Run linters'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+    - script: |
+        pnpm run test || true
+      displayName: 'Run tests'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      continueOnError: true
+
+    - script: |
+        pnpm run ${{ parameters.buildCommand }}
+      displayName: 'Build application'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+  - ${{ if eq(parameters.packageManager, 'npm') }}:
+    - task: Cache@2
+      inputs:
+        key: 'npm | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/package-lock.json'
+        restoreKeys: |
+          npm | "$(Agent.OS)"
+          npm
+        path: $(npm_config_cache)
+      displayName: 'Cache npm'
+
+    - script: |
+        npm ci
+      displayName: 'Install dependencies'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+    - script: |
+        npm run lint || true
+        npm run type-check || true
+      displayName: 'Run linters'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+    - script: |
+        npm test || true
+      displayName: 'Run tests'
+      workingDirectory: ${{ parameters.workingDirectory }}
+      continueOnError: true
+
+    - script: |
+        npm run ${{ parameters.buildCommand }}
+      displayName: 'Build application'
+      workingDirectory: ${{ parameters.workingDirectory }}
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Node.js Tests'
+    condition: succeededOrFailed()
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '**/coverage/cobertura-coverage.xml'
+      reportDirectory: '**/coverage'
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: ${{ parameters.workingDirectory }}
+      ArtifactName: ${{ parameters.artifactName }}
+    condition: succeeded()

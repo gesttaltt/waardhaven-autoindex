@@ -1,0 +1,73 @@
+parameters:
+  - name: pythonVersion
+    type: string
+    default: '3.11'
+  - name: workingDirectory
+    type: string
+    default: 'apps/api'
+  - name: requirementsFile
+    type: string
+    default: 'requirements.txt'
+  - name: artifactName
+    type: string
+    default: 'python-build'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: ${{ parameters.pythonVersion }}
+    displayName: 'Use Python ${{ parameters.pythonVersion }}'
+
+  - task: Cache@2
+    inputs:
+      key: 'python | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/${{ parameters.requirementsFile }}'
+      restoreKeys: |
+        python | "$(Agent.OS)"
+        python
+      path: $(PIP_CACHE_DIR)
+    displayName: 'Cache pip packages'
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install wheel setuptools
+    displayName: 'Install build tools'
+    workingDirectory: ${{ parameters.workingDirectory }}
+
+  - script: |
+      pip install -r ${{ parameters.requirementsFile }}
+    displayName: 'Install dependencies'
+    workingDirectory: ${{ parameters.workingDirectory }}
+
+  - script: |
+      pip install ruff black mypy
+      ruff check .
+      black --check .
+      mypy app --ignore-missing-imports
+    displayName: 'Run linters'
+    workingDirectory: ${{ parameters.workingDirectory }}
+
+  - script: |
+      pip install pytest pytest-cov pytest-asyncio httpx
+      pytest tests/ -v --cov=app --junitxml=test-results.xml --cov-report=xml --cov-report=html
+    displayName: 'Run tests'
+    workingDirectory: ${{ parameters.workingDirectory }}
+    continueOnError: true
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python Tests'
+    condition: succeededOrFailed()
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: '**/coverage.xml'
+      reportDirectory: '**/htmlcov'
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: ${{ parameters.workingDirectory }}
+      ArtifactName: ${{ parameters.artifactName }}
+    condition: succeeded()

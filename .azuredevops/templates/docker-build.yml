@@ -1,0 +1,60 @@
+parameters:
+  - name: dockerfilePath
+    type: string
+  - name: dockerContext
+    type: string
+    default: '.'
+  - name: imageName
+    type: string
+  - name: containerRegistry
+    type: string
+  - name: includeLatestTag
+    type: boolean
+    default: true
+  - name: buildArguments
+    type: string
+    default: ''
+
+steps:
+  - task: Docker@2
+    displayName: 'Build Docker image'
+    inputs:
+      command: build
+      dockerfile: ${{ parameters.dockerfilePath }}
+      buildContext: ${{ parameters.dockerContext }}
+      repository: ${{ parameters.imageName }}
+      arguments: ${{ parameters.buildArguments }}
+      tags: |
+        $(Build.BuildId)
+        $(Build.SourceBranchName)-$(Build.BuildId)
+        ${{ if eq(parameters.includeLatestTag, true) }}:
+          latest
+
+  - task: Docker@2
+    displayName: 'Push Docker image'
+    inputs:
+      command: push
+      repository: ${{ parameters.imageName }}
+      containerRegistry: ${{ parameters.containerRegistry }}
+      tags: |
+        $(Build.BuildId)
+        $(Build.SourceBranchName)-$(Build.BuildId)
+        ${{ if eq(parameters.includeLatestTag, true) }}:
+          latest
+
+  - task: ContainerStructureTest@0
+    displayName: 'Container structure test'
+    inputs:
+      dockerRegistryServiceConnection: ${{ parameters.containerRegistry }}
+      repository: ${{ parameters.imageName }}
+      tag: $(Build.BuildId)
+      configFile: 'container-structure-test.yaml'
+    continueOnError: true
+
+  - task: Trivy@1
+    displayName: 'Scan Docker image for vulnerabilities'
+    inputs:
+      docker: true
+      image: ${{ parameters.imageName }}:$(Build.BuildId)
+      severities: 'CRITICAL,HIGH'
+    continueOnError: true
