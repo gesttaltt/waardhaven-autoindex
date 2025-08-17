@@ -40,18 +40,22 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 - `seed-assets.md` - Initial asset data
 
 ### 02-frontend/
+- `README.md` - Frontend architecture and setup guide
+- `API_DOCUMENTATION.md` - Complete API endpoint reference
+
 #### pages/
 - `dashboard.md` - Main dashboard
 - `ai-insights.md` - AI analysis page
-- Additional page documentation
+- `admin.md` - Admin panel
+- `login.md` - Authentication pages
+- `register.md` - User registration
 
 #### components/
 - `smart-refresh.md` - Intelligent refresh component
 - `strategy-config.md` - Strategy configuration UI
 
 #### services/
-- `api.md` - API client service
-- `ai-insights.md` - AI insights service
+- `api.md` - API client service architecture
 
 ### 03-infrastructure/
 #### docker/

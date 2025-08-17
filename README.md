@@ -76,7 +76,7 @@ The application provides a clean REST API organized by domain:
 - **Removed**: Trading/broker functionality (not needed for index fund)
 - **Removed**: Temporary admin setup endpoints
 - **Fixed**: Frontend API endpoint mismatches
-- **Added**: Comprehensive API documentation in `apps/web/API_DOCUMENTATION.md`
+- **Added**: Comprehensive API documentation in `docs/02-frontend/API_DOCUMENTATION.md`
 - **Enhanced**: Smart refresh with multiple modes and rate limit protection
 
 ### Key Features

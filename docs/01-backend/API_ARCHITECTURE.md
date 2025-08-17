@@ -18,7 +18,6 @@ apps/api/
 │   │   ├── user.py     # User authentication models
 │   │   ├── asset.py    # Asset and pricing models
 │   │   ├── index.py    # Index composition models
-│   │   ├── trading.py  # Trading order models
 │   │   └── strategy.py # Strategy and risk models
 │   │
 │   ├── schemas/        # Pydantic validation schemas (domain-organized)
@@ -26,14 +25,12 @@ apps/api/
 │   │   ├── auth.py     # Authentication schemas
 │   │   ├── index.py    # Index management schemas
 │   │   ├── benchmark.py# Benchmark comparison schemas
-│   │   ├── broker.py   # Trading schemas
 │   │   └── strategy.py # Strategy configuration schemas
 │   │
 │   ├── routers/        # API endpoint routers
 │   │   ├── auth.py     # Authentication endpoints
 │   │   ├── index.py    # Index data endpoints
 │   │   ├── benchmark.py# Benchmark comparison endpoints
-│   │   ├── broker.py   # Trading endpoints
 │   │   ├── strategy.py # Strategy management endpoints
 │   │   ├── diagnostics.py # System health endpoints
 │   │   └── manual_refresh.py # Manual data refresh endpoints

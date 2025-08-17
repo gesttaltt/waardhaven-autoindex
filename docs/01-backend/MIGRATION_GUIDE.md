@@ -24,7 +24,6 @@ class IndexValue(Base): ...
 from .user import User
 from .asset import Asset, Price
 from .index import IndexValue, Allocation
-from .trading import Order
 from .strategy import StrategyConfig, RiskMetrics, MarketCapData
 ```
 
@@ -32,7 +31,6 @@ Models are now organized by domain:
 - `models/user.py` - Authentication models
 - `models/asset.py` - Asset and pricing models
 - `models/index.py` - Index composition models
-- `models/trading.py` - Trading models
 - `models/strategy.py` - Strategy and risk models
 
 ### 2. Schemas Refactoring
@@ -51,7 +49,6 @@ class AllocationItem(BaseModel): ...
 from .auth import RegisterRequest, LoginRequest, TokenResponse
 from .index import AllocationItem, IndexCurrentResponse, ...
 from .benchmark import BenchmarkResponse
-from .broker import OrderRequest, OrderResponse
 from .strategy import StrategyConfigRequest, RiskMetricsResponse
 ```
 
@@ -59,7 +56,6 @@ Schemas are now organized by domain:
 - `schemas/auth.py` - Authentication schemas
 - `schemas/index.py` - Index management schemas
 - `schemas/benchmark.py` - Benchmark schemas
-- `schemas/broker.py` - Trading schemas
 - `schemas/strategy.py` - Strategy schemas
 
 ## Migration Steps
@@ -144,11 +140,11 @@ The refactoring maintains backward compatibility:
 ```python
 # Instead of
 from .user import User
-class Order(Base):
+class SomeModel(Base):
     user = relationship(User)
 
 # Use
-class Order(Base):
+class SomeModel(Base):
     user = relationship("User")
 ```
 
