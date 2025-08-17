@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from .routers import auth, index, benchmark, tasks, diagnostics, manual_refresh, strategy
+from .routers import root, auth, index, benchmark, tasks, diagnostics, manual_refresh, strategy
 from .core.config import settings
 import time
 from typing import Dict
@@ -36,8 +36,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],  # Allow all methods including OPTIONS
     allow_headers=["*"],
+    expose_headers=["*"],
     max_age=3600,  # Cache preflight requests for 1 hour
 )
 
@@ -98,11 +99,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # Add rate limiting (100 requests per minute)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
 # Routers
+app.include_router(root.router, tags=["root"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(index.router, prefix="/api/v1/index", tags=["index"])
 app.include_router(benchmark.router, prefix="/api/v1/benchmark", tags=["benchmark"])
