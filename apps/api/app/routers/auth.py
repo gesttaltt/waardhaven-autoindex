@@ -6,19 +6,33 @@ from ..core.database import get_db
 from ..models.user import User
 from ..schemas.auth import RegisterRequest, LoginRequest, TokenResponse
 from ..utils.security import get_password_hash, verify_password, create_access_token
+from ..utils.password_validator import PasswordValidator
 from ..core.config import settings
 
 router = APIRouter()
 
 @router.post("/register", response_model=TokenResponse)
 def register(req: RegisterRequest, db: Session = Depends(get_db)):
+    # Validate password strength
+    is_valid, errors = PasswordValidator.validate(req.password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=400, 
+            detail={"message": "Password does not meet security requirements", "errors": errors}
+        )
+    
+    # Check if email already exists
     existing = db.query(User).filter(User.email == req.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create user with hashed password
     user = User(email=req.email, password_hash=get_password_hash(req.password))
     db.add(user)
     db.commit()
     db.refresh(user)
+    
+    # Generate token
     token = create_access_token(str(user.id))
     return TokenResponse(access_token=token)
 

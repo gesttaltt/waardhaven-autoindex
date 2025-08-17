@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_cache_key(*args, **kwargs) -> str:
-    """Generate a cache key from function arguments."""
+    """Generate a cache key from function arguments using SHA256."""
     # Combine args and kwargs into a single string
     key_parts = []
     
@@ -30,15 +30,17 @@ def generate_cache_key(*args, **kwargs) -> str:
             continue
         key_parts.append(f"{k}={v}")
     
-    # Create hash of the key parts
+    # Create SHA256 hash of the key parts (more secure than MD5)
     key_string = ":".join(key_parts)
-    return hashlib.md5(key_string.encode()).hexdigest()
+    # Use SHA256 for better security and collision resistance
+    return hashlib.sha256(key_string.encode()).hexdigest()
 
 
 def cache_result(
     prefix: str,
     expire: Optional[int] = None,
-    key_func: Optional[Callable] = None
+    key_func: Optional[Callable] = None,
+    include_user: bool = True
 ):
     """
     Decorator to cache function results in Redis.
@@ -47,6 +49,7 @@ def cache_result(
         prefix: Cache key prefix (e.g., "index_history")
         expire: Expiration time in seconds (default from config)
         key_func: Custom function to generate cache key
+        include_user: Include user context in cache key for isolation
     """
     def decorator(func):
         @functools.wraps(func)
@@ -56,11 +59,19 @@ def cache_result(
             if not redis_client.is_connected:
                 return func(*args, **kwargs)
             
+            # Extract user context if available and requested
+            user_prefix = ""
+            if include_user:
+                # Look for user in kwargs or args (common patterns)
+                user = kwargs.get('user') or kwargs.get('current_user')
+                if user and hasattr(user, 'id'):
+                    user_prefix = f"u{user.id}:"
+            
             # Generate cache key
             if key_func:
-                cache_key = f"{prefix}:{key_func(*args, **kwargs)}"
+                cache_key = f"{prefix}:{user_prefix}{key_func(*args, **kwargs)}"
             else:
-                cache_key = f"{prefix}:{generate_cache_key(*args, **kwargs)}"
+                cache_key = f"{prefix}:{user_prefix}{generate_cache_key(*args, **kwargs)}"
             
             # Try to get from cache
             try:

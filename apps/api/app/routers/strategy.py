@@ -9,7 +9,9 @@ from ..core.database import get_db
 from ..models.user import User
 from ..models.strategy import StrategyConfig, RiskMetrics
 from ..utils.token_dep import get_current_user
+from ..schemas.validation import SecureStrategyConfig
 from ..services.refresh import refresh_all
+from ..core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,16 +45,16 @@ def get_strategy_config(db: Session = Depends(get_db), user: User = Depends(get_
 
 @router.put("/config")
 def update_strategy_config(
-    updates: Dict,
+    updates: SecureStrategyConfig,  # Use validated schema
     recompute: bool = True,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
     """
-    Update strategy configuration.
+    Update strategy configuration with validated input.
     
     Args:
-        updates: Dictionary of configuration updates
+        updates: Validated strategy configuration
         recompute: Whether to recompute the index after updating
     """
     config = db.query(StrategyConfig).first()
@@ -61,40 +63,12 @@ def update_strategy_config(
         config = StrategyConfig()
         db.add(config)
     
-    # Validate weights sum to 1.0 if provided
-    weight_keys = ['momentum_weight', 'market_cap_weight', 'risk_parity_weight']
-    weights_provided = [k for k in weight_keys if k in updates]
+    # Update configuration with validated data
+    # The SecureStrategyConfig has already validated all constraints
+    update_dict = updates.dict(exclude_unset=True)  # Only include provided fields
     
-    if weights_provided:
-        # Get current weights
-        current_weights = {
-            'momentum_weight': config.momentum_weight,
-            'market_cap_weight': config.market_cap_weight,
-            'risk_parity_weight': config.risk_parity_weight
-        }
-        
-        # Apply updates
-        for key in weights_provided:
-            current_weights[key] = updates[key]
-        
-        # Check sum
-        total_weight = sum(current_weights.values())
-        if abs(total_weight - 1.0) > 0.001:  # Allow small floating point errors
-            raise HTTPException(
-                status_code=400,
-                detail=f"Strategy weights must sum to 1.0, got {total_weight}"
-            )
-    
-    # Update configuration
-    allowed_fields = [
-        'momentum_weight', 'market_cap_weight', 'risk_parity_weight',
-        'min_price_threshold', 'max_daily_return', 'min_daily_return',
-        'max_forward_fill_days', 'outlier_std_threshold', 'rebalance_frequency',
-        'daily_drop_threshold', 'force_rebalance'
-    ]
-    
-    for field, value in updates.items():
-        if field in allowed_fields:
+    for field, value in update_dict.items():
+        if hasattr(config, field):
             setattr(config, field, value)
     
     config.updated_at = datetime.utcnow()
@@ -105,7 +79,7 @@ def update_strategy_config(
     
     config.adjustment_history.append({
         "timestamp": datetime.utcnow().isoformat(),
-        "updates": updates,
+        "updates": update_dict,
         "user_id": user.id
     })
     
@@ -116,12 +90,14 @@ def update_strategy_config(
         try:
             logger.info("Recomputing index with new configuration...")
             refresh_all(db, smart_mode=True)
-            return {"message": "Configuration updated and index recomputed", "config": updates}
+            return {"message": "Configuration updated and index recomputed", "config": update_dict}
         except Exception as e:
             logger.error(f"Failed to recompute index: {e}")
-            return {"message": "Configuration updated but index recomputation failed", "config": updates, "error": str(e)}
+            # Don't expose internal error details in production
+            error_msg = "Index recomputation failed" if not settings.DEBUG else str(e)
+            return {"message": "Configuration updated but index recomputation failed", "config": update_dict, "error": error_msg}
     
-    return {"message": "Configuration updated", "config": updates}
+    return {"message": "Configuration updated", "config": update_dict}
 
 @router.post("/config/ai-adjust")
 def ai_adjust_strategy(

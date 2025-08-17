@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     # Port configuration for Render
     PORT: int = Field(default=10000, env="PORT")
 
-    ADMIN_TOKEN: str = ""
+    # Admin token - required for admin endpoints (generate a secure random string)
+    ADMIN_TOKEN: str = Field(default="", env="ADMIN_TOKEN")  # Empty default for dev, MUST be set in production
     DAILY_DROP_THRESHOLD: float = -0.01
 
     ASSET_DEFAULT_START: str = "2018-01-01"
@@ -37,3 +38,15 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+
+# Security validation
+import os
+if os.getenv("RENDER") or os.getenv("PRODUCTION"):  # Production environment
+    if not settings.ADMIN_TOKEN or len(settings.ADMIN_TOKEN) < 32:
+        import warnings
+        warnings.warn(
+            "ADMIN_TOKEN is not set or too short in production! "
+            "Admin endpoints will be vulnerable. "
+            "Please set a secure token of at least 32 characters.",
+            RuntimeWarning
+        )

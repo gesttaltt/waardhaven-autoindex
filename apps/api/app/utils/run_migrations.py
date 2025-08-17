@@ -4,7 +4,8 @@ This can be called from the application startup or manually.
 """
 import os
 import logging
-from sqlalchemy import text
+from sqlalchemy import text, inspect
+from sqlalchemy.exc import SQLAlchemyError
 from ..core.database import engine
 
 logger = logging.getLogger(__name__)
@@ -12,111 +13,118 @@ logger = logging.getLogger(__name__)
 def run_index_migration():
     """Create database indexes for performance optimization."""
     
-    migration_sql = """
-    -- Add composite indexes for better query performance
-    CREATE INDEX IF NOT EXISTS idx_price_asset_date ON prices(asset_id, date);
-    CREATE INDEX IF NOT EXISTS idx_price_date ON prices(date);
-    CREATE INDEX IF NOT EXISTS idx_price_asset_id ON prices(asset_id);
-    CREATE INDEX IF NOT EXISTS idx_allocation_date ON allocations(date);
-    CREATE INDEX IF NOT EXISTS idx_allocation_asset_date ON allocations(asset_id, date);
-    CREATE INDEX IF NOT EXISTS idx_index_value_date ON index_values(date);
-    
-    -- Add timestamp columns if they don't exist
-    DO $$ 
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='prices' AND column_name='created_at') THEN
-            ALTER TABLE prices ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='prices' AND column_name='updated_at') THEN
-            ALTER TABLE prices ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='allocations' AND column_name='created_at') THEN
-            ALTER TABLE allocations ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='allocations' AND column_name='updated_at') THEN
-            ALTER TABLE allocations ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='index_values' AND column_name='created_at') THEN
-            ALTER TABLE index_values ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-        
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                       WHERE table_name='index_values' AND column_name='updated_at') THEN
-            ALTER TABLE index_values ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        END IF;
-    END $$;
-    
-    -- Create function to automatically update updated_at timestamp
-    CREATE OR REPLACE FUNCTION update_updated_at_column()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        NEW.updated_at = CURRENT_TIMESTAMP;
-        RETURN NEW;
-    END;
-    $$ language 'plpgsql';
-    
-    -- Create triggers to auto-update updated_at
-    DROP TRIGGER IF EXISTS update_prices_updated_at ON prices;
-    CREATE TRIGGER update_prices_updated_at BEFORE UPDATE ON prices
-        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-    DROP TRIGGER IF EXISTS update_allocations_updated_at ON allocations;
-    CREATE TRIGGER update_allocations_updated_at BEFORE UPDATE ON allocations
-        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-    DROP TRIGGER IF EXISTS update_index_values_updated_at ON index_values;
-    CREATE TRIGGER update_index_values_updated_at BEFORE UPDATE ON index_values
-        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-    -- Update statistics for query planner
-    ANALYZE prices;
-    ANALYZE allocations;
-    ANALYZE index_values;
-    """
-    
     try:
         with engine.begin() as conn:
             logger.info("Running database index migration...")
             
-            # Execute migration
-            conn.execute(text(migration_sql))
+            # Get inspector to check existing indexes
+            inspector = inspect(engine)
             
-            # Verify indexes were created
-            result = conn.execute(text("""
-                SELECT COUNT(*) as index_count
-                FROM pg_indexes
-                WHERE tablename IN ('prices', 'allocations', 'index_values')
-                AND indexname LIKE 'idx_%'
-            """))
+            # Define indexes to create (safer than raw SQL)
+            indexes_to_create = [
+                ("prices", "idx_price_asset_date", ["asset_id", "date"]),
+                ("prices", "idx_price_date", ["date"]),
+                ("prices", "idx_price_asset_id", ["asset_id"]),
+                ("allocations", "idx_allocation_date", ["date"]),
+                ("allocations", "idx_allocation_asset_date", ["asset_id", "date"]),
+                ("index_values", "idx_index_value_date", ["date"]),
+            ]
             
-            index_count = result.fetchone()[0]
-            logger.info(f"Migration completed. {index_count} custom indexes found.")
+            created_count = 0
             
-            # Log index details
-            result = conn.execute(text("""
-                SELECT tablename, indexname
-                FROM pg_indexes
-                WHERE tablename IN ('prices', 'allocations', 'index_values')
-                AND indexname LIKE 'idx_%'
-                ORDER BY tablename, indexname
-            """))
+            for table_name, index_name, columns in indexes_to_create:
+                # Check if table exists
+                if not inspector.has_table(table_name):
+                    logger.warning(f"Table {table_name} does not exist, skipping index {index_name}")
+                    continue
+                
+                # Check if index already exists
+                existing_indexes = inspector.get_indexes(table_name)
+                index_exists = any(idx['name'] == index_name for idx in existing_indexes)
+                
+                if not index_exists:
+                    # Create index using parameterized statement
+                    columns_str = ", ".join(columns)
+                    # Use SQLAlchemy's text() with bound parameters for safety
+                    create_index_sql = f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({columns_str})"
+                    conn.execute(text(create_index_sql))
+                    logger.info(f"Created index: {index_name} on {table_name}")
+                    created_count += 1
+                else:
+                    logger.debug(f"Index {index_name} already exists on {table_name}")
             
-            for row in result:
-                logger.info(f"  Index: {row[1]} on table {row[0]}")
+            # Add timestamp columns using safer approach
+            tables_to_update = ["prices", "allocations", "index_values"]
             
+            for table_name in tables_to_update:
+                if not inspector.has_table(table_name):
+                    continue
+                
+                # Get existing columns
+                columns = inspector.get_columns(table_name)
+                column_names = [col['name'] for col in columns]
+                
+                # Add created_at if missing
+                if 'created_at' not in column_names:
+                    conn.execute(text(
+                        f"ALTER TABLE {table_name} ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    ))
+                    logger.info(f"Added created_at column to {table_name}")
+                
+                # Add updated_at if missing
+                if 'updated_at' not in column_names:
+                    conn.execute(text(
+                        f"ALTER TABLE {table_name} ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    ))
+                    logger.info(f"Added updated_at column to {table_name}")
+            
+            # Create update trigger function (PostgreSQL specific)
+            # Only create if using PostgreSQL
+            if 'postgresql' in str(engine.url):
+                conn.execute(text("""
+                    CREATE OR REPLACE FUNCTION update_updated_at_column()
+                    RETURNS TRIGGER AS $$
+                    BEGIN
+                        NEW.updated_at = CURRENT_TIMESTAMP;
+                        RETURN NEW;
+                    END;
+                    $$ language 'plpgsql'
+                """))
+                
+                # Create triggers for each table
+                for table_name in tables_to_update:
+                    if inspector.has_table(table_name):
+                        trigger_name = f"update_{table_name}_updated_at"
+                        conn.execute(text(f"DROP TRIGGER IF EXISTS {trigger_name} ON {table_name}"))
+                        conn.execute(text(
+                            f"CREATE TRIGGER {trigger_name} BEFORE UPDATE ON {table_name} "
+                            f"FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
+                        ))
+                        logger.info(f"Created update trigger for {table_name}")
+            
+            # Update statistics for query planner
+            for table_name in tables_to_update:
+                if inspector.has_table(table_name):
+                    conn.execute(text(f"ANALYZE {table_name}"))
+            
+            logger.info(f"Migration completed. Created {created_count} new indexes.")
+            
+            # Verify final state
+            total_indexes = 0
+            for table_name, _, _ in indexes_to_create:
+                if inspector.has_table(table_name):
+                    indexes = inspector.get_indexes(table_name)
+                    custom_indexes = [idx for idx in indexes if idx['name'].startswith('idx_')]
+                    total_indexes += len(custom_indexes)
+            
+            logger.info(f"Total custom indexes: {total_indexes}")
             return True
             
+    except SQLAlchemyError as e:
+        logger.error(f"Database migration failed: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Failed to run index migration: {e}")
+        logger.error(f"Unexpected error during migration: {e}")
         return False
 
 def run_all_migrations():
