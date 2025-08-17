@@ -2,8 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from ..core.database import get_db
-from ..models import IndexValue, Price, Asset, User
-from ..schemas import BenchmarkResponse, SeriesPoint
+from ..models.index import IndexValue
+from ..models.asset import Asset, Price
+from ..models.user import User
+from ..schemas.benchmark import BenchmarkResponse
+from ..schemas.index import SeriesPoint
 from ..utils.token_dep import get_current_user
 
 router = APIRouter()

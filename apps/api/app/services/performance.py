@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 import logging
 
-from ..models import IndexValue, Price, Asset, Allocation, RiskMetrics
+from ..models.index import IndexValue, Allocation
+from ..models.asset import Asset, Price
+from ..models.strategy import RiskMetrics
 from ..core.config import settings
 
 logger = logging.getLogger(__name__)

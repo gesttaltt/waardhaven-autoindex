@@ -2,7 +2,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date, timedelta
 import pandas as pd
-from ..models import Asset, Price, IndexValue, Allocation
+from ..models.asset import Asset, Price
+from ..models.index import IndexValue, Allocation
 from ..core.config import settings
 try:
     from .twelvedata_optimized import fetch_prices_optimized as fetch_prices
@@ -11,7 +12,7 @@ except ImportError:
     from .twelvedata import fetch_prices
     use_optimized = False
 from .strategy import compute_index_and_allocations
-from ..models import StrategyConfig
+from ..models.strategy import StrategyConfig
 
 DEFAULT_ASSETS = [
     # Stocks

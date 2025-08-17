@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date
 from ..core.database import get_db
-from ..models import Asset, Price, Allocation, IndexValue, User
-from ..schemas import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
+from ..models.asset import Asset, Price
+from ..models.index import Allocation, IndexValue
+from ..models.user import User
+from ..schemas.index import IndexCurrentResponse, AllocationItem, IndexHistoryResponse, SeriesPoint, SimulationRequest, SimulationResponse
 from ..services.currency import convert_amount, get_supported_currencies
 from ..utils.token_dep import get_current_user
 from ..utils.cache import cache, cached

@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
 from ..core.database import get_db
-from ..models import Asset, Price, IndexValue, Allocation, User
+from ..models.asset import Asset, Price
+from ..models.index import IndexValue, Allocation
+from ..models.user import User
 import traceback
 
 router = APIRouter()

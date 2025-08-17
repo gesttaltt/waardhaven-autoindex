@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
 from ..core.database import get_db
-from ..models import IndexValue, Price
+from ..models.index import IndexValue
+from ..models.asset import Price
 import logging
 import traceback
 
@@ -132,7 +133,8 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
     try:
         from ..services.refresh import ensure_assets
         from ..services.twelvedata import fetch_prices
-        from ..models import Asset, Price, IndexValue
+        from ..models.asset import Asset, Price
+        from ..models.index import IndexValue
         from datetime import date, timedelta
         import pandas as pd
         

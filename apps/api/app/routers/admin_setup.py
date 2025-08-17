@@ -1,73 +1,130 @@
 """
-Temporary admin endpoint to set up database indexes.
-DELETE THIS FILE after running once in production!
+Admin setup router for initial database configuration.
+TEMPORARY - Should be removed after initial setup.
 """
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import text
-from ..core.database import engine
-from ..utils.token_dep import get_current_user
-from ..models import User
+from sqlalchemy.orm import Session
+from datetime import datetime
+from ..core.database import get_db
+from ..models.user import User
+from ..models.strategy import StrategyConfig
+from ..utils.security import get_password_hash
+import logging
 import os
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/setup-indexes")
-def setup_indexes(
-    admin_token: str,
-    user: User = Depends(get_current_user)
+@router.post("/setup-admin")
+def setup_admin_user(
+    email: str = "admin@waardhaven.com",
+    password: str = "changeme123",
+    db: Session = Depends(get_db)
 ):
     """
-    One-time setup to create database indexes.
-    Requires admin token from environment variable.
+    Create initial admin user and strategy configuration.
+    This endpoint should be called once during initial setup and then removed.
+    
+    WARNING: This is for development/initial setup only!
     """
     
-    # Check admin token
-    if admin_token != os.getenv("ADMIN_TOKEN", "change-me-in-production"):
-        raise HTTPException(status_code=403, detail="Invalid admin token")
+    # Check if running in production
+    if os.getenv("RENDER") and not os.getenv("ALLOW_ADMIN_SETUP"):
+        raise HTTPException(
+            status_code=403,
+            detail="Admin setup is disabled in production. Set ALLOW_ADMIN_SETUP=true to enable temporarily."
+        )
     
-    indexes_created = []
-    errors = []
-    
-    index_queries = [
-        ("idx_prices_asset_date", 
-         "CREATE INDEX IF NOT EXISTS idx_prices_asset_date ON prices(asset_id, date DESC)"),
-        
-        ("idx_allocations_date",
-         "CREATE INDEX IF NOT EXISTS idx_allocations_date ON allocations(date DESC)"),
-        
-        ("idx_index_values_date",
-         "CREATE INDEX IF NOT EXISTS idx_index_values_date ON index_values(date DESC)"),
-        
-        ("idx_risk_metrics_date",
-         "CREATE INDEX IF NOT EXISTS idx_risk_metrics_date ON risk_metrics(date DESC)"),
-        
-        ("idx_users_email_lower",
-         "CREATE INDEX IF NOT EXISTS idx_users_email_lower ON users(LOWER(email))"),
-    ]
-    
-    with engine.connect() as conn:
-        for index_name, query in index_queries:
-            try:
-                conn.execute(text(query))
-                conn.commit()
-                indexes_created.append(index_name)
-            except Exception as e:
-                errors.append(f"{index_name}: {str(e)}")
-        
-        # Update statistics
-        try:
-            conn.execute(text("ANALYZE prices"))
-            conn.execute(text("ANALYZE allocations"))
-            conn.execute(text("ANALYZE index_values"))
-            conn.execute(text("ANALYZE assets"))
-            conn.commit()
-            indexes_created.append("statistics_updated")
-        except Exception as e:
-            errors.append(f"statistics: {str(e)}")
-    
-    return {
-        "success": len(errors) == 0,
-        "indexes_created": indexes_created,
-        "errors": errors,
-        "message": "Delete the admin_setup.py file after running this!"
+    results = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "steps": []
     }
+    
+    # Step 1: Create admin user if doesn't exist
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        results["steps"].append({
+            "step": "create_admin_user",
+            "status": "skipped",
+            "message": f"User {email} already exists"
+        })
+    else:
+        admin_user = User(
+            email=email,
+            password_hash=get_password_hash(password)
+        )
+        db.add(admin_user)
+        db.commit()
+        results["steps"].append({
+            "step": "create_admin_user", 
+            "status": "success",
+            "message": f"Admin user {email} created successfully"
+        })
+    
+    # Step 2: Create default strategy config if doesn't exist
+    existing_config = db.query(StrategyConfig).first()
+    if existing_config:
+        results["steps"].append({
+            "step": "create_strategy_config",
+            "status": "skipped",
+            "message": "Strategy configuration already exists"
+        })
+    else:
+        default_config = StrategyConfig(
+            momentum_weight=0.4,
+            market_cap_weight=0.3,
+            risk_parity_weight=0.3,
+            daily_drop_threshold=-0.01,
+            max_daily_return=0.5,
+            min_daily_return=-0.5,
+            min_price_threshold=1.0,
+            rebalance_frequency="weekly",
+            max_forward_fill_days=2,
+            outlier_std_threshold=3.0
+        )
+        db.add(default_config)
+        db.commit()
+        results["steps"].append({
+            "step": "create_strategy_config",
+            "status": "success",
+            "message": "Default strategy configuration created"
+        })
+    
+    # Step 3: Provide connection info
+    results["connection_info"] = {
+        "login_endpoint": "/api/v1/auth/login",
+        "credentials": {
+            "email": email,
+            "password": "***" if existing_user else password
+        },
+        "note": "Use these credentials to login and get an access token"
+    }
+    
+    results["warning"] = "REMOVE THIS ENDPOINT FROM PRODUCTION CODE!"
+    
+    return results
+
+@router.delete("/cleanup-test-data")
+def cleanup_test_data(
+    confirm: bool = False,
+    db: Session = Depends(get_db)
+):
+    """
+    Clean up test data from the database.
+    Use with caution - this will delete data!
+    """
+    if not confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Set confirm=true to proceed with cleanup"
+        )
+    
+    # Only allow in development
+    if os.getenv("RENDER"):
+        raise HTTPException(
+            status_code=403,
+            detail="Cleanup is not allowed in production"
+        )
+    
+    # Implement cleanup logic here if needed
+    return {"message": "Cleanup not implemented yet"}

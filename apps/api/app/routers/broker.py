@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 from ..core.database import get_db
-from ..models import Order, User
-from ..schemas import OrderRequest, OrderResponse
+from ..models.trading import Order
+from ..models.user import User
+from ..schemas.broker import OrderRequest, OrderResponse
 from ..utils.token_dep import get_current_user
 
 router = APIRouter()

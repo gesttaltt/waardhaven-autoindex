@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import logging
-from ..models import Asset, Price, IndexValue, Allocation
+from ..models.asset import Asset, Price
+from ..models.index import IndexValue, Allocation
 from ..core.config import settings
 
 logger = logging.getLogger(__name__)

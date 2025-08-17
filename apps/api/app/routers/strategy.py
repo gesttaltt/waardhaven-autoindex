@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from typing import Dict, Optional
 from datetime import datetime
 from ..core.database import get_db
-from ..models import User, StrategyConfig, RiskMetrics
+from ..models.user import User
+from ..models.strategy import StrategyConfig, RiskMetrics
 from ..utils.token_dep import get_current_user
 from ..services.refresh import refresh_all
 import logging

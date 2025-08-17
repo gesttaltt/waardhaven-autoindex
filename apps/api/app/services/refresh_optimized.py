@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date, timedelta
 import pandas as pd
-from ..models import Asset, Price, IndexValue, Allocation
+from ..models.asset import Asset, Price
+from ..models.index import IndexValue, Allocation
 from ..core.config import settings
 from .twelvedata_optimized import (
     fetch_prices_optimized, 

@@ -5,7 +5,7 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from ..core.database import get_db
 from ..core.config import settings
-from ..models import User
+from ..models.user import User
 import os
 
 bearer_scheme = HTTPBearer(auto_error=False)

@@ -20,7 +20,8 @@
       "Bash(git clean:*)",
       "Bash(mv:*)",
       "Bash(git remote remove:*)",
-      "Bash(git remote rename:*)"
+      "Bash(git remote rename:*)",
+      "Bash(export SECRET_KEY=test123 DATABASE_URL=postgresql://test:test@localhost/test)"
     ],
     "deny": [],
     "ask": []

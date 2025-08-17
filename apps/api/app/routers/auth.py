@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime
 from ..core.database import get_db
-from ..models import User
-from ..schemas import RegisterRequest, LoginRequest, TokenResponse
+from ..models.user import User
+from ..schemas.auth import RegisterRequest, LoginRequest, TokenResponse
 from ..utils.security import get_password_hash, verify_password, create_access_token
 from ..core.config import settings
 
