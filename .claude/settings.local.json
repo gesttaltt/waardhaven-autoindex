@@ -18,7 +18,9 @@
       "Bash(find:*)",
       "Bash(find:*)",
       "Bash(git clean:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git remote remove:*)",
+      "Bash(git remote rename:*)"
     ],
     "deny": [],
     "ask": []

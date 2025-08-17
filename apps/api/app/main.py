@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth, index, broker, benchmark, tasks, diagnostics, manual_refresh, strategy
 from .core.config import settings
 
+# Import models to ensure they're registered with SQLAlchemy
+from . import models
+
 app = FastAPI(title="Waardhaven Autoindex API", version="0.1.0")
 
 # CORS - Configure allowed origins based on environment

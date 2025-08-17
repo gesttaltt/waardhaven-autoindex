@@ -1,18 +1,15 @@
 """
-Compatibility layer for backward compatibility.
-Re-exports all schemas from the new modular structure.
-
-This file will be deprecated. Please import from app.schemas.* directly.
+Pydantic schemas for API request/response validation.
+Organized by domain for better modularity.
 """
 
-# Re-export all schemas from modular structure
-from .schemas.auth import (
+from .auth import (
     RegisterRequest,
     LoginRequest,
     TokenResponse
 )
 
-from .schemas.index import (
+from .index import (
     AllocationItem,
     IndexCurrentResponse,
     SeriesPoint,
@@ -21,23 +18,21 @@ from .schemas.index import (
     SimulationResponse
 )
 
-from .schemas.benchmark import (
+from .benchmark import (
     BenchmarkResponse
 )
 
-from .schemas.broker import (
+from .broker import (
     OrderRequest,
     OrderResponse
 )
 
-from .schemas.strategy import (
+from .strategy import (
     StrategyConfigRequest,
     StrategyConfigResponse,
-    RiskMetric,
     RiskMetricsResponse
 )
 
-# Make all schemas available for import
 __all__ = [
     # Auth
     "RegisterRequest",
@@ -58,6 +53,5 @@ __all__ = [
     # Strategy
     "StrategyConfigRequest",
     "StrategyConfigResponse",
-    "RiskMetric",
     "RiskMetricsResponse",
 ]
