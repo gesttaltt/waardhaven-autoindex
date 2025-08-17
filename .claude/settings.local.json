@@ -16,7 +16,9 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(find:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git clean:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
