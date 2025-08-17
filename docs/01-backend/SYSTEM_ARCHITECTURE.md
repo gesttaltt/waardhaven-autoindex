@@ -2,11 +2,13 @@
 
 ## Executive Summary
 
-Waardhaven AutoIndex is a modern portfolio management platform built with a modular, microservices-ready architecture. The system consists of three main components:
+Waardhaven AutoIndex is a modern portfolio management platform built with a modular, microservices-ready architecture. The system consists of five main components:
 
-1. **FastAPI Backend** - Modular Python API server
-2. **Next.js Frontend** - React-based web application
-3. **PostgreSQL Database** - Persistent data storage
+1. **FastAPI Backend** - Modular Python API server with async capabilities
+2. **Next.js Frontend** - React-based web application with TypeScript
+3. **PostgreSQL Database** - Persistent data storage with automatic migrations
+4. **Redis Cache** - High-performance caching layer with automatic invalidation
+5. **Celery Workers** - Background task processing with queue management
 
 All components are deployed on Render.com with automatic CI/CD from GitHub.
 
@@ -35,6 +37,19 @@ All components are deployed on Render.com with automatic CI/CD from GitHub.
 │   onrender.com              │   │   onrender.com              │
 └─────────────────────────────┘   └─────────────────────────────┘
                     │                           │
+                    │              ┌────────────┴────────────┐
+                    │              │                         │
+                    │              ▼                         ▼
+                    │   ┌─────────────────────┐  ┌─────────────────────┐
+                    │   │   Redis Cache       │  │   Celery Workers    │
+                    │   │   (In-Memory)       │  │   (Background)      │
+                    │   │                     │  │                     │
+                    │   │   - API Response    │  │   - Data Refresh    │
+                    │   │   - Session Data    │  │   - Report Gen      │
+                    │   │   - Hot Data        │  │   - Index Calc      │
+                    │   └─────────────────────┘  └─────────────────────┘
+                    │              │                         │
+                    │              └────────────┬────────────┘
                     │                           │ SQL/TCP
                     │                           ▼
                     │              ┌─────────────────────────────┐
@@ -67,42 +82,51 @@ All components are deployed on Render.com with automatic CI/CD from GitHub.
 apps/api/app/
 ├── core/                  # Core functionality
 │   ├── config.py         # Environment & settings
-│   └── database.py       # Database connection
+│   ├── database.py       # Database connection & pooling
+│   ├── redis_client.py   # Redis cache connection
+│   └── celery_app.py     # Celery task queue config
 │
 ├── models/               # Domain models (SQLAlchemy)
 │   ├── user.py          # User authentication
 │   ├── asset.py         # Assets & prices
 │   ├── index.py         # Index & allocations
-│   ├── trading.py       # Orders & transactions
 │   └── strategy.py      # Strategy & risk metrics
 │
 ├── schemas/              # API contracts (Pydantic)
 │   ├── auth.py          # Auth request/response
 │   ├── index.py         # Portfolio schemas
 │   ├── benchmark.py     # Benchmark schemas
-│   ├── broker.py        # Trading schemas
-│   └── strategy.py      # Strategy schemas
+│   ├── strategy.py      # Strategy schemas
+│   └── validation.py    # Common validators
 │
 ├── routers/              # API endpoints
 │   ├── auth.py          # /api/v1/auth/*
 │   ├── index.py         # /api/v1/index/*
 │   ├── benchmark.py     # /api/v1/benchmark/*
-│   ├── broker.py        # /api/v1/broker/*
 │   ├── strategy.py      # /api/v1/strategy/*
+│   ├── background.py    # /api/v1/background/*
 │   ├── diagnostics.py   # /api/v1/diagnostics/*
 │   └── manual_refresh.py# /api/v1/manual/*
 │
 ├── services/             # Business logic
 │   ├── refresh.py       # Data refresh pipeline
 │   ├── strategy.py      # Portfolio allocation
-│   ├── performance.py   # Risk metrics
+│   ├── performance.py   # Risk metrics & calculations
 │   ├── twelvedata.py    # Market data client
 │   └── currency.py      # FX conversion
+│
+├── tasks/                # Background tasks
+│   ├── background_tasks.py # Task definitions
+│   ├── market_refresh.py   # Async market updates
+│   └── report_generation.py# Report processing
 │
 ├── utils/                # Utilities
 │   ├── security.py      # JWT & password
 │   ├── token_dep.py     # Auth dependencies
-│   └── cache.py         # Caching utilities
+│   ├── cache_utils.py   # Redis cache helpers
+│   ├── password_validator.py # Password rules
+│   ├── create_indexes.py    # DB index creation
+│   └── run_migrations.py    # Auto-migrations
 │
 └── main.py              # Application entry
 ```
@@ -114,6 +138,9 @@ apps/api/app/
 3. **Repository Pattern**: Services abstract database operations
 4. **DTO Pattern**: Schemas separate API contracts from domain models
 5. **Middleware Pipeline**: Security, CORS, rate limiting, headers
+6. **Cache-Aside Pattern**: Redis caching with automatic invalidation
+7. **Task Queue Pattern**: Celery for async background processing
+8. **Unit of Work**: Database transactions with automatic rollback
 
 ### API Endpoints
 
@@ -136,6 +163,13 @@ apps/api/app/
 - `GET /risk-metrics` - Risk analytics
 - `POST /rebalance` - Trigger rebalance
 
+#### Background Tasks (`/api/v1/background`)
+- `POST /refresh-market-data` - Async market data update
+- `POST /compute-index` - Async index calculation
+- `POST /generate-report` - Async report generation
+- `POST /cleanup-old-data` - Async data cleanup
+- `GET /task/{task_id}` - Check task status
+
 #### Market Data (`/api/v1/manual`)
 - `POST /trigger-refresh` - Standard refresh
 - `POST /smart-refresh` - Optimized refresh
@@ -144,6 +178,7 @@ apps/api/app/
 #### Diagnostics (`/api/v1/diagnostics`)
 - `GET /database-status` - DB health
 - `GET /refresh-status` - Data freshness
+- `GET /cache-status` - Redis cache metrics
 - `POST /test-refresh` - Test pipeline
 - `POST /recalculate-index` - Recalculate
 
@@ -163,7 +198,8 @@ apps/web/app/
 │   ├── api/
 │   │   ├── base.ts     # Base API service
 │   │   ├── portfolio.ts# Portfolio endpoints
-│   │   └── market.ts   # Market data endpoints
+│   │   ├── market.ts   # Market data endpoints
+│   │   └── background.ts# Background task endpoints
 │   └── aiInsights.ts   # AI service
 │
 ├── hooks/               # Custom React hooks
@@ -176,17 +212,22 @@ apps/web/app/
 │   ├── portfolio.ts    # Portfolio types
 │   └── chart.ts        # Chart types
 │
+├── lib/                 # Libraries & utilities
+│   └── utils.ts        # Helper functions
+│
+├── contexts/            # React contexts
+│   └── AuthContext.tsx # Auth state management
+│
 ├── constants/           # Configuration
 │   ├── config.ts       # App config
 │   └── theme.ts        # Theme constants
-│
-├── utils/               # Utilities
-│   └── api.ts          # API helpers
 │
 └── (routes)/           # Next.js pages
     ├── page.tsx        # Home
     ├── dashboard/      # Dashboard
     ├── login/          # Auth pages
+    ├── reports/        # Report views
+    ├── tasks/          # Task management
     └── admin/          # Admin panel
 ```
 
@@ -228,27 +269,28 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 users (id, email, password_hash, created_at)
 
 -- Market Data
-assets (id, symbol, name, sector)
-prices (id, asset_id, date, close)
+assets (id, symbol, name, sector, asset_type, exchange)
+prices (id, asset_id, date, open, high, low, close, volume)
+  INDEX: (asset_id, date) -- Composite index for performance
 
 -- Portfolio
-index_values (id, date, value)
-allocations (id, date, asset_id, weight)
+index_values (id, date, value, created_at, updated_at)
+  INDEX: (date) -- For time-series queries
+allocations (id, date, asset_id, weight, created_at)
+  INDEX: (date, asset_id) -- Composite index
 
 -- Strategy
-strategy_configs (id, weights, parameters, ai_metadata)
-risk_metrics (id, date, metrics, performance)
-
--- Trading
-orders (id, user_id, asset_symbol, type, amount)
+strategy_configs (id, weights, parameters, ai_metadata, created_at)
+risk_metrics (id, date, metrics, performance, drawdown, correlation)
 ```
 
 ### Relationships
 
-- **User** → Orders (1:N)
+- **User** → Authentication (1:1)
 - **Asset** → Prices (1:N)
 - **Asset** → Allocations (1:N)
 - **IndexValue** ← Strategy (N:1)
+- **StrategyConfig** → RiskMetrics (1:N)
 
 ## Deployment Architecture
 
@@ -277,14 +319,20 @@ Services:
 
 ### Environment Variables
 
-#### Backend
-- `DATABASE_URL` - PostgreSQL connection
+#### Backend (apps/api/.env)
+- `DATABASE_URL` - PostgreSQL connection string
 - `SECRET_KEY` - JWT signing key
-- `TWELVEDATA_API_KEY` - Market data API
+- `ADMIN_TOKEN` - Admin access token
+- `TWELVEDATA_API_KEY` - Market data API key
+- `FRONTEND_URL` - CORS allowed origin
+- `SKIP_STARTUP_REFRESH` - Skip initial data refresh
+- `REDIS_URL` - Redis connection (optional)
+- `CELERY_BROKER_URL` - Celery broker URL
+- `CELERY_RESULT_BACKEND` - Celery results storage
 - `RENDER` - Deployment flag
 
-#### Frontend
-- `NEXT_PUBLIC_API_URL` - Backend URL
+#### Frontend (apps/web/.env)
+- `NEXT_PUBLIC_API_URL` - Backend API URL
 
 ### CI/CD Pipeline
 
@@ -324,20 +372,33 @@ Services:
 ### Backend
 
 1. **Database**
-   - Connection pooling (20 connections)
-   - Indexed columns (date, symbol)
+   - Connection pooling (20 connections max)
+   - Composite indexes on (asset_id, date)
    - Batch operations for bulk inserts
-   - UPSERT pattern for updates
+   - UPSERT pattern for safe updates
+   - Automatic rollback on errors
+   - Backup before modifications
 
-2. **Caching**
-   - In-memory cache for hot data
-   - API response caching (5 min TTL)
-   - Market data caching
+2. **Redis Caching**
+   - Full caching layer implementation
+   - Automatic cache invalidation
+   - Graceful fallback when unavailable
+   - Cache keys: portfolio data, market data, user sessions
+   - TTL: 5-60 minutes based on data type
+   - Cache status monitoring endpoint
 
-3. **API Optimization**
-   - Async request handling
+3. **Background Processing**
+   - Celery task queue for async operations
+   - Separate queues for different priorities
+   - Task monitoring with Flower dashboard
+   - Automatic retry with exponential backoff
+   - Dead letter queue for failed tasks
+
+4. **API Optimization**
+   - Async request handling with FastAPI
    - Pagination for large datasets
    - Selective field returns
+   - Request/response compression
 
 ### Frontend
 
@@ -400,19 +461,25 @@ Services:
    - Strategy service
 
 2. **Event-Driven Architecture**
-   - Message queue (RabbitMQ/Kafka)
+   - Message queue expansion (RabbitMQ/Kafka)
    - Event sourcing
    - CQRS pattern
 
-3. **Caching Layer**
-   - Redis integration
-   - Distributed caching
-   - Session storage
-
-4. **Real-time Updates**
+3. **Real-time Updates**
    - WebSocket support
    - Server-sent events
    - Live price feeds
+
+4. **Monitoring & Observability**
+   - Prometheus metrics
+   - Grafana dashboards
+   - Distributed tracing
+   - Log aggregation
+
+5. **API Enhancements**
+   - GraphQL alternative
+   - Per-user rate limiting
+   - API versioning strategy
 
 ## Development Workflow
 
@@ -435,17 +502,50 @@ docker-compose up postgres
 
 ### Testing Strategy
 
-1. **Unit Tests**: Service logic
-2. **Integration Tests**: API endpoints
+1. **Unit Tests**: 
+   - Service logic coverage (70%+ target)
+   - Pytest framework
+   - SQLite for test database
+   - Mock external services
+
+2. **Integration Tests**: 
+   - API endpoint testing
+   - Database transaction tests
+   - Redis cache tests
+   - Background task tests
+
 3. **E2E Tests**: User workflows
 4. **Performance Tests**: Load testing
 
+### Test Commands
+```bash
+# Run all tests
+npm run test:api
+
+# With coverage
+npm run test:api:coverage
+
+# Unit tests only
+npm run test:api:unit
+
+# Integration tests only
+npm run test:api:integration
+```
+
 ### Code Quality
 
-- **Linting**: Black, ESLint
-- **Type Checking**: mypy, TypeScript
+- **Linting**: 
+  - Python: Ruff, Black, Flake8
+  - JavaScript: ESLint
+- **Type Checking**: 
+  - Python: mypy
+  - TypeScript: tsc --noEmit
 - **Code Review**: PR process
 - **Documentation**: Inline + markdown
+- **Security**: 
+  - bcrypt password hashing
+  - JWT authentication
+  - Input validation with Pydantic
 
 ## Conclusion
 
