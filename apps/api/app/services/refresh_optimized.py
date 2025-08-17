@@ -97,6 +97,16 @@ def smart_refresh(db: Session, mode: str = "auto"):
         logger.info("Computing index and allocations...")
         compute_index_and_allocations(db)
         
+        # Calculate and store portfolio metrics
+        try:
+            from .performance import calculate_portfolio_metrics
+            logger.info("Calculating portfolio performance metrics...")
+            metrics = calculate_portfolio_metrics(db)
+            if metrics:
+                logger.info(f"Portfolio metrics calculated: Sharpe={metrics.get('sharpe_ratio', 0):.2f}, Max DD={metrics.get('max_drawdown', 0):.1f}%")
+        except Exception as e:
+            logger.warning(f"Failed to calculate portfolio metrics: {e}")
+        
         # Log success metrics
         index_count = db.query(func.count()).select_from(IndexValue).scalar()
         price_count = db.query(func.count()).select_from(Price).scalar()

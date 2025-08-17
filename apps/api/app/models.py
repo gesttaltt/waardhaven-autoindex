@@ -94,7 +94,7 @@ class RiskMetrics(Base):
     __tablename__ = "risk_metrics"
     
     id = Column(Integer, primary_key=True, index=True)
-    date = Column(DateTime, index=True)
+    date = Column(Date, index=True)
     
     # Performance metrics
     total_return = Column(Float)  # Total return from inception

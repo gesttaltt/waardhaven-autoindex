@@ -77,12 +77,12 @@ export default function AdminPage() {
           
           {loading ? (
             <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-20 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-white/20 rounded w-1/4"></div>
+              <div className="h-20 bg-white/20 rounded"></div>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700">{error}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <p className="text-red-400">{error}</p>
               <button
                 onClick={loadDatabaseStatus}
                 className="btn-secondary btn-sm mt-2"
@@ -92,15 +92,15 @@ export default function AdminPage() {
             </div>
           ) : databaseStatus ? (
             <div className="space-y-4">
-              <div className={`p-4 rounded-lg ${
+              <div className={`p-4 rounded-lg border ${
                 databaseStatus.simulation_ready 
-                  ? 'bg-green-50 border border-green-200' 
-                  : 'bg-yellow-50 border border-yellow-200'
+                  ? 'bg-green-500/10 border-green-500/30' 
+                  : 'bg-yellow-500/10 border-yellow-500/30'
               }`}>
                 <p className={`font-medium ${
-                  databaseStatus.simulation_ready ? 'text-green-800' : 'text-yellow-800'
+                  databaseStatus.simulation_ready ? 'text-green-400' : 'text-yellow-400'
                 }`}>
-{databaseStatus.simulation_ready ? '[OK] ' : '[WARN] '}
+                  {databaseStatus.simulation_ready ? '✓ ' : '⚠ '}
                   {databaseStatus.message}
                 </p>
               </div>
@@ -109,21 +109,21 @@ export default function AdminPage() {
                 {Object.entries(databaseStatus.tables).map(([table, info]) => (
                   <div
                     key={table}
-                    className={`p-4 rounded-lg border text-center ${
+                    className={`p-4 rounded-lg border text-center backdrop-blur-sm ${
                       info.status === 'OK' 
-                        ? 'bg-green-50 border-green-200' 
+                        ? 'bg-green-500/10 border-green-500/30' 
                         : info.status === 'EMPTY'
-                        ? 'bg-yellow-50 border-yellow-200'
-                        : 'bg-red-50 border-red-200'
+                        ? 'bg-yellow-500/10 border-yellow-500/30'
+                        : 'bg-red-500/10 border-red-500/30'
                     }`}
                   >
                     <div className={`text-2xl font-bold ${
-                      info.status === 'OK' ? 'text-green-600' : 
-                      info.status === 'EMPTY' ? 'text-yellow-600' : 'text-red-600'
+                      info.status === 'OK' ? 'text-green-400' : 
+                      info.status === 'EMPTY' ? 'text-yellow-400' : 'text-red-400'
                     }`}>
                       {info.count.toLocaleString()}
                     </div>
-                    <div className="text-sm text-neutral-300 capitalize">{table.replace('_', ' ')}</div>
+                    <div className="text-sm text-neutral-400 capitalize">{table.replace('_', ' ')}</div>
                     {info.latest_date && (
                       <div className="text-xs text-neutral-400 mt-1">
                         Latest: {new Date(info.latest_date).toLocaleDateString()}
@@ -149,9 +149,9 @@ export default function AdminPage() {
           </h2>
           
           <div className="space-y-4">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h3 className="font-medium text-yellow-800 mb-2">⚠️ Fix AutoIndex Normalization</h3>
-              <p className="text-sm text-yellow-700 mb-3">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+              <h3 className="font-medium text-yellow-400 mb-2">⚠️ Fix AutoIndex Normalization</h3>
+              <p className="text-sm text-yellow-300 mb-3">
                 If AutoIndex values appear extremely large compared to individual assets, 
                 this indicates a normalization issue that can be fixed by recalculating.
               </p>
@@ -194,18 +194,18 @@ export default function AdminPage() {
               <div>
                 <h3 className="font-medium text-neutral-200 mb-2">Market Data Management</h3>
                 <ul className="space-y-1 text-neutral-300">
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/smart-refresh</code></li>
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/trigger-refresh</code></li>
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/manual/minimal-refresh</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">POST /api/v1/manual/smart-refresh</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">POST /api/v1/manual/trigger-refresh</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">POST /api/v1/manual/minimal-refresh</code></li>
                 </ul>
               </div>
               
               <div>
                 <h3 className="font-medium text-neutral-200 mb-2">Diagnostics</h3>
                 <ul className="space-y-1 text-neutral-300">
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">GET /api/v1/diagnostics/database-status</code></li>
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">GET /api/v1/diagnostics/refresh-status</code></li>
-                  <li><code className="bg-gray-100 px-2 py-1 rounded">POST /api/v1/diagnostics/test-refresh</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">GET /api/v1/diagnostics/database-status</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">GET /api/v1/diagnostics/refresh-status</code></li>
+                  <li><code className="bg-white/10 px-2 py-1 rounded text-xs">POST /api/v1/diagnostics/test-refresh</code></li>
                 </ul>
               </div>
             </div>
@@ -219,21 +219,21 @@ export default function AdminPage() {
           </h2>
           
           <div className="space-y-4 text-sm text-neutral-300">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-800 mb-2">For Free Tier Users</h3>
-              <div className="space-y-1">
-                <div><code>REFRESH_MODE=minimal</code> - Fetches only 5 priority symbols</div>
-                <div><code>TWELVEDATA_RATE_LIMIT=8</code> - Respects free tier limits</div>
-                <div><code>ENABLE_MARKET_DATA_CACHE=true</code> - Use caching to reduce API calls</div>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <h3 className="font-medium text-blue-400 mb-2">For Free Tier Users</h3>
+              <div className="space-y-1 text-neutral-300">
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">REFRESH_MODE=minimal</code> - Fetches only 5 priority symbols</div>
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">TWELVEDATA_RATE_LIMIT=8</code> - Respects free tier limits</div>
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">ENABLE_MARKET_DATA_CACHE=true</code> - Use caching to reduce API calls</div>
               </div>
             </div>
             
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-medium text-green-800 mb-2">For Paid Plans</h3>
-              <div className="space-y-1">
-                <div><code>REFRESH_MODE=auto</code> - Smart mode selection</div>
-                <div><code>TWELVEDATA_RATE_LIMIT=800</code> - Higher limits (adjust based on plan)</div>
-                <div><code>SKIP_STARTUP_REFRESH=false</code> - Full refresh on deployment</div>
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+              <h3 className="font-medium text-green-400 mb-2">For Paid Plans</h3>
+              <div className="space-y-1 text-neutral-300">
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">REFRESH_MODE=auto</code> - Smart mode selection</div>
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">TWELVEDATA_RATE_LIMIT=800</code> - Higher limits (adjust based on plan)</div>
+                <div><code className="bg-white/10 px-1 py-0.5 rounded text-xs">SKIP_STARTUP_REFRESH=false</code> - Full refresh on deployment</div>
               </div>
             </div>
           </div>

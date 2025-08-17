@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine, Brush } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,20 +52,28 @@ export default function Dashboard() {
     }
   };
 
-  // Function to fetch individual asset data
+  // Function to fetch individual asset data with better error handling
   const fetchAssetData = async (symbol: string) => {
-    if (assetSeriesData[symbol] || loadingAssets[symbol]) return; // Already loaded or loading
+    // Check if already loaded or loading
+    if (assetSeriesData[symbol] || loadingAssets[symbol]) return;
     
     setLoadingAssets(prev => ({ ...prev, [symbol]: true }));
     
     try {
       const response = await api.get(`/api/v1/index/assets/${symbol}/history`);
-      setAssetSeriesData(prev => ({ 
-        ...prev, 
-        [symbol]: response.data.series 
-      }));
-    } catch (err) {
+      if (response.data && response.data.series) {
+        setAssetSeriesData(prev => ({ 
+          ...prev, 
+          [symbol]: response.data.series 
+        }));
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (err: any) {
       console.error(`Failed to fetch data for ${symbol}:`, err);
+      // Show user-friendly error message
+      const errorMessage = err.response?.data?.detail || err.message || 'Failed to load asset data';
+      console.warn(`${symbol}: ${errorMessage}`);
       // Remove from individual assets if fetch fails
       setIndividualAssets(prev => ({ ...prev, [symbol]: false }));
     } finally {
@@ -108,11 +116,11 @@ export default function Dashboard() {
   // Fetch asset data when individual assets are selected
   useEffect(() => {
     Object.entries(individualAssets).forEach(([symbol, isSelected]) => {
-      if (isSelected) {
+      if (isSelected && !assetSeriesData[symbol] && !loadingAssets[symbol]) {
         fetchAssetData(symbol);
       }
     });
-  }, [individualAssets, assetSeriesData, loadingAssets]);
+  }, [individualAssets]); // Remove assetSeriesData and loadingAssets to prevent infinite loops
 
   const runSimulation = async () => {
     setSimulating(true);
@@ -158,33 +166,57 @@ export default function Dashboard() {
     ? ((indexSeries[indexSeries.length - 1].value - 100) / 100 * 100).toFixed(2)
     : "0";
 
-  // Calculate volatility (standard deviation of returns)
+  // Calculate volatility (standard deviation of returns) with safety checks
   const calculateVolatility = (data: SeriesPoint[]) => {
-    if (data.length < 2) return 0;
-    const returns = data.slice(1).map((point, i) => 
-      (point.value - data[i].value) / data[i].value
-    );
-    const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
-    const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / returns.length;
-    return Math.sqrt(variance) * Math.sqrt(252) * 100; // Annualized volatility
+    if (!data || data.length < 2) return 0;
+    try {
+      const returns = data.slice(1).map((point, i) => {
+        const prevValue = data[i].value;
+        if (prevValue === 0) return 0; // Avoid division by zero
+        return (point.value - prevValue) / prevValue;
+      });
+      
+      if (returns.length === 0) return 0;
+      
+      const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+      const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / returns.length;
+      return Math.sqrt(variance) * Math.sqrt(252) * 100; // Annualized volatility
+    } catch (err) {
+      console.error('Error calculating volatility:', err);
+      return 0;
+    }
   };
 
-  const volatility = calculateVolatility(indexSeries);
-  const filteredIndexSeries = filterDataByRange(indexSeries);
-  const filteredSpSeries = filterDataByRange(spSeries);
+  // Memoize expensive calculations
+  const volatility = useMemo(() => calculateVolatility(indexSeries), [indexSeries]);
+  const filteredIndexSeries = useMemo(() => filterDataByRange(indexSeries), [indexSeries, chartTimeRange]);
+  const filteredSpSeries = useMemo(() => filterDataByRange(spSeries), [spSeries, chartTimeRange]);
   
-  // Calculate technical indicators
+  // Calculate technical indicators with improved performance
   const calculateMovingAverage = (data: SeriesPoint[], period: number = 50) => {
-    if (data.length < period) return [];
+    if (!data || data.length < period) {
+      return new Array(data?.length || 0).fill(null);
+    }
     
-    return data.map((point, index) => {
-      if (index < period - 1) return null;
+    const result: (number | null)[] = new Array(data.length).fill(null);
+    let sum = 0;
+    
+    // Calculate initial sum for the first period
+    for (let i = 0; i < period && i < data.length; i++) {
+      sum += data[i].value;
+    }
+    
+    if (data.length >= period) {
+      result[period - 1] = sum / period;
       
-      const sum = data.slice(index - period + 1, index + 1)
-        .reduce((acc, p) => acc + p.value, 0);
-      
-      return sum / period;
-    });
+      // Use sliding window for efficiency
+      for (let i = period; i < data.length; i++) {
+        sum = sum - data[i - period].value + data[i].value;
+        result[i] = sum / period;
+      }
+    }
+    
+    return result;
   };
 
   const calculateVolatilityBands = (data: SeriesPoint[], period: number = 20, multiplier: number = 2) => {
@@ -208,14 +240,17 @@ export default function Dashboard() {
     });
   };
 
-  // Create properly aligned dataset for chart rendering
+  // Create properly aligned dataset for chart rendering with memoization
   const createAlignedChartData = () => {
-    if (filteredIndexSeries.length === 0) return [];
+    if (!filteredIndexSeries || filteredIndexSeries.length === 0) return [];
     
     // Create a map of SP500 data by date for efficient lookup
-    const spDataMap = new Map(
-      filteredSpSeries.map(point => [point.date, point.value])
-    );
+    const spDataMap = new Map<string, number>();
+    if (filteredSpSeries && filteredSpSeries.length > 0) {
+      filteredSpSeries.forEach(point => {
+        spDataMap.set(point.date.toString(), point.value);
+      });
+    }
     
     // Create maps for individual asset data by date
     const assetDataMaps = new Map();
@@ -237,15 +272,15 @@ export default function Dashboard() {
       const dataPoint: any = {
         date: point.date,
         value: point.value,
-        sp: showComparison ? (spDataMap.get(point.date) || null) : undefined,
-        ma: showMovingAverage ? movingAverage[index] : undefined,
-        upperBand: showVolatilityBands ? volatilityBands[index]?.upper : undefined,
-        lowerBand: showVolatilityBands ? volatilityBands[index]?.lower : undefined
+        sp: showComparison ? (spDataMap.get(point.date.toString()) || null) : undefined,
+        ma: showMovingAverage && movingAverage[index] !== null ? movingAverage[index] : undefined,
+        upperBand: showVolatilityBands && volatilityBands[index]?.upper !== null ? volatilityBands[index]?.upper : undefined,
+        lowerBand: showVolatilityBands && volatilityBands[index]?.lower !== null ? volatilityBands[index]?.lower : undefined
       };
       
-      // Add individual asset data
+      // Add individual asset data with proper date handling
       assetDataMaps.forEach((assetMap, symbol) => {
-        dataPoint[symbol] = assetMap.get(point.date) || null;
+        dataPoint[symbol] = assetMap.get(point.date.toString()) || null;
       });
       
       return dataPoint;
@@ -254,7 +289,16 @@ export default function Dashboard() {
     return alignedData;
   };
   
-  const alignedChartData = createAlignedChartData();
+  // Memoize chart data creation to prevent recalculation on every render
+  const alignedChartData = useMemo(() => createAlignedChartData(), [
+    filteredIndexSeries,
+    filteredSpSeries,
+    showComparison,
+    showMovingAverage,
+    showVolatilityBands,
+    individualAssets,
+    assetSeriesData
+  ]);
   
   // Calculate performance metrics
   const calculatePerformanceMetrics = () => {
@@ -278,7 +322,11 @@ export default function Dashboard() {
     };
   };
   
-  const performanceMetrics = calculatePerformanceMetrics();
+  // Memoize performance metrics calculation
+  const performanceMetrics = useMemo(() => calculatePerformanceMetrics(), [
+    filteredIndexSeries,
+    filteredSpSeries
+  ]);
 
   return (
     <main className="min-h-screen relative">

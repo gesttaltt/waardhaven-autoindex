@@ -349,14 +349,13 @@ def calculate_portfolio_metrics(db: Session, lookback_days: Optional[int] = None
             date=date.today(),
             sharpe_ratio=metrics["sharpe_ratio"],
             sortino_ratio=metrics["sortino_ratio"],
-            max_drawdown=max_dd,
+            max_drawdown=max_dd / 100,  # Store as decimal (0.20 for 20%)
+            current_drawdown=0.0,  # TODO: Calculate current drawdown
             volatility=metrics["volatility"],
-            beta=metrics.get("beta", 1.0),
-            alpha=metrics.get("alpha", 0.0),
-            information_ratio=metrics.get("information_ratio", 0.0),
-            calmar_ratio=metrics["calmar_ratio"],
+            beta_sp500=metrics.get("beta", 1.0),
+            correlation_sp500=0.0,  # TODO: Calculate correlation
             total_return=metrics["total_return"],
-            excess_return=metrics.get("excess_return", 0.0)
+            annualized_return=metrics.get("annualized_return", 0.0)
         )
         
         # Update or create today's metrics
