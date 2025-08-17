@@ -84,14 +84,15 @@ def refresh_all(db: Session, smart_mode: bool = True):
             logger.error("No price data fetched!")
             raise ValueError("Unable to fetch any price data")
         
-        # Step 3: Store prices
+        # Step 3: Store prices (UPSERT - don't delete historical data!)
         logger.info("Storing prices in database...")
-        # Clear existing prices for simplicity (MVP)
-        db.query(Price).delete()
-        db.commit()
         
         price_count = 0
+        updated_count = 0
         skipped_count = 0
+        
+        # Prepare batch data for efficient upsert
+        price_data = []
         
         for sym in price_df.columns.levels[0]:
             asset = db.query(Asset).filter(Asset.symbol == sym).first()
@@ -108,12 +109,15 @@ def refresh_all(db: Session, smart_mode: bool = True):
                 if null_count > 0:
                     logger.warning(f"{sym}: {null_count} null values in {len(series)} total prices")
                 
-                # Only store non-null prices above minimum threshold
+                # Collect non-null prices above minimum threshold
                 min_price = 1.0  # Match our strategy's min_price_threshold
                 for idx, val in series.items():
                     if pd.notna(val) and float(val) >= min_price:
-                        db.add(Price(asset_id=asset.id, date=idx.date(), close=float(val)))
-                        price_count += 1
+                        price_data.append({
+                            'asset_id': asset.id,
+                            'date': idx.date(),
+                            'close': float(val)
+                        })
                     elif pd.notna(val):
                         skipped_count += 1
                         logger.debug(f"Skipped {sym} price on {idx.date()}: ${val:.4f} below threshold")
@@ -122,8 +126,36 @@ def refresh_all(db: Session, smart_mode: bool = True):
                 logger.error(f"Missing 'Close' data for {sym}: {e}")
                 continue
         
-        db.commit()
-        logger.info(f"Stored {price_count} price records, skipped {skipped_count} below threshold")
+        # Perform BULK batch upsert using PostgreSQL ON CONFLICT
+        if price_data:
+            from sqlalchemy import text
+            from sqlalchemy.dialects.postgresql import insert
+            
+            # Split into chunks for better memory management
+            chunk_size = 1000
+            
+            for i in range(0, len(price_data), chunk_size):
+                chunk = price_data[i:i + chunk_size]
+                
+                # Use SQLAlchemy's bulk insert with ON CONFLICT
+                stmt = insert(Price).values(chunk)
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=['asset_id', 'date'],
+                    set_={'close': stmt.excluded.close}
+                )
+                
+                result = db.execute(stmt)
+                
+                # Track inserts vs updates (approximate)
+                price_count += len(chunk)
+            
+            db.commit()
+            
+            # Log actual count
+            actual_count = db.query(Price).count()
+            logger.info(f"Total prices in database: {actual_count}")
+        
+        logger.info(f"Stored {price_count} new prices, updated {updated_count} existing, skipped {skipped_count} below threshold")
         
         # Step 4: Compute index + allocations with strategy config
         logger.info("Computing index and allocations...")

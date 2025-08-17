@@ -129,6 +129,9 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 - Implementation strategies
 - Timeline estimates
 
+### TODO-MVP (07)
+- 48 hours sprint to deliver a functional demo
+
 ## Quick Links
 
 ### Getting Started
