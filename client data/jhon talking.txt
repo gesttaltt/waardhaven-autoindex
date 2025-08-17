@@ -1,0 +1,691 @@
+What you get now is that you want to get to the, how you say, you know, you've been playing around, yeah? Great.
+Now you should start getting, okay, how can I get my workflows? How to make a project?
+How to make, how to go from ID to project, to initial project, prototype, refined project definition,
+to final product, to initial long small product, yeah? It can be taken through iteration, whatever.
+There's a certain type of workflow going on there, with all the different rules, requirements and things that needs to be done.
+For all of them, there are a thousand groups with them, where you can find online how to do those things, yeah?
+You can use different methodologies. You can, in this project, we're going to use this methodology, the rules, that's what I included, yeah?
+In my goal that way, you have a very fast, what you are intending to create is an automated development environment,
+which goes as fast as possible ID to the final product. So you create really fast cycle times.
+Now, as part of those cycle times, there's a review process, where you not only update the product, but also create lessons learned.
+Lessons learned will be updates and rules, improvement of your whole process flow.
+Review, how do you say, reviews and how do you say, correcting mechanisms are key here, yeah?
+Now, it becomes more and more important for AI, when you work on a project, that you have more than the project files, your different rules, based on what you are doing.
+So, based on specific to the project, specific to the phase of the project.
+So, the project part is all the project information that are to understand how things work.
+And the, how do you say, when you're in the design phase, you're doing different things in the development phase, in the test phase and what's where.
+Yeah? Several phases can go in parallel, because when you write in the code, you already can write the unit test.
+In the past, what happened is, you would have code written, unit test created based on the code, or what, to multiply, needing to specify the project, they would create the unit test.
+So, they instead, how do you say, they use, they misuse the unit test as to write down the project definition.
+Which you shouldn't, you shouldn't. Project definition, ultimately generated, because hey, now doesn't matter, because everything is AI anyway.
+And, you did a new one in?
+So, you need, how do you say, you need to really start with the project definition, but you shouldn't make the whole waterfall project definition.
+You should get as much fast feedback on your project.
+So, that means also fast deployment, fast testability, all those things you want.
+The faster you can test your code, the better it is, so that process flow should be automatic and as standard as possible.
+You will have to make like, I will get like a tiny LLM with specific rules for each segment, and maybe you set up like different algorithms even for how we call each other.
+Something like that, and the feedback, you just create feedback loops in your project, in your project workflow, in everything you teach, like feedback loops.
+You are a developer, you are an investor, you are a viewer.
+Yeah, and you have different, how do you say, different LLMs review the task, so from task you close it to your project.
+It could be even like a pro owner, like okay, what are the requirements, what is missing.
+Exactly, you can have a project owner takes one, you have, you create different roles, you create different project agents that do whatever is there.
+So, if a ticket goes in, ticket development one, then a reviewer one, then a unit tester one, then make sure that it is never happening again.
+Now, how do you say, once you have those workflows, at this moment, it is not there yet, it is getting there.
+You need to, how do you say, you have manual review points.
+You need to, as a person, need to review stuff from hey, is this all going okay, is this going in the right direction or not, and if not, okay.
+Okay, redo. Then you check from hey, why did you do this one, yeah, because it is in this one, okay, well, then adjust this role, blah, blah, blah.
+So, okay, run again now, yeah, okay, now it plays the right result, okay, next time we will take a look again, we can automatically review every time.
+That is how, how you start working on those things.
+So, fast cycle time, fast review time, fast things, a whole automated chain.
+And then we, how do you say, feedback to itself, like, yeah, it still works.
+So, you know, what is the project? The project definition, you have the rules, how everything works, you have the project definition, the project definition improves over time, yeah.
+And your code is created and creates better over time.
+And you can then read to actively apply rules still so you can actually, based on feedback, improve the better rules and then apply the better rules on the previous data.
+Like how to create documentation, so it improves your documentation, for example.
+Now, in that way you can have all this fast created, everything in Git, everything in project documentation, everything read me, everything is out and out.
+It's not just what you're seeing, it's also everything what you're not seeing. Everything is out, yeah.
+Now, when you have that one, you start going, okay, now I can't just have any idea.
+You just collect ideas and just feed them in, review a little bit, the result that they're generating, take a look on the prototypes.
+And you decide how much review or feedback at some moment you need to get. Because everything is automatic.
+And you can go for globalization, gold nose, what you want to focus on, on marketability.
+But you start understanding how fast you can make those things. And it doesn't have to be crappled. If you make a lot of them, yeah, you will have some crapple at some moment.
+It's just, hey, this is, you know, you hardly say you don't even market it as you have, like, if you have those sites running and what's left, or all the apps running and whatever, people like them.
+And it's not okay, it's nothing, okay? You throw away well.
+And that would be like using kind of like chain and stuff you could do.
+It's more, you change things. What you're developing is a whole process flow of a digital AI development engineering company.
+And it's at some moment, how far are you going with AI on all of those things?
+And it's not even that that is what you're selling those, making those things. Those are experiments, I must say. It's, hey, I can make that one.
+What do you mean? Do you want us to make for you? And there's where you're getting the real money.
+This is you learning, this is you learning another software company. They talk to you and it's like, because, yeah, they have some things ultimately that are whatsoever.
+But how long is your time from ID to market? That's at least three months.
+If it's a month, it's fucking faster.
+You can cut it to a week. What if it scales to a million years?
+From each of those services, whatever. Well, if you host it on like, then you take a look on how you can monetize it.
+You know, that's why, hey, take a look on, buy me a coffee and what's that. So you can always put that link there. Hey, you like it.
+It's free to use it. Here's the code that you want to use. You don't need to put all your rules that you use to create all those projects. That's one thing.
+We can teach you how to do those things.
+It's like speed codes on steroids. It's also the, take a look at the speed code. It's a specific championship that they are doing in the Islamic government.
+No, that was before AI. That was, speed coding was, how to create a functionality as fast as possible.
+It's like speed chess, speed coding. It's like, you know, problem. Okay.
+It doesn't matter like the, you just have to get to it as fast as possible.
+Yeah. It's not so much the optimization of the code, but you making the codes. So who's faster at making the code fit that fixes.
+And the people, which is my, the, the, the, the, the Olympians of the, the informatics, you would have a point of time and points on the quality of the solution.
+We were at the IEEE, they do the programming competition. Even also participated one year, I think I participated a different year.
+It was very nice, but I didn't get it very far.
+Yeah. Yeah. But the thing is, is that speed code is like part of that, uh, the Olympians or at least when we would do it.
+Yeah. Like lead code as well. It's like kind of maybe like lead code or lead codes.
+It's like, uh, like competitive programming exercises.
+Yeah. Those kind of like, it's like math exercises. Yeah. It's so cool. Um, but now let me take on, how do you say maybe you're not the best one on that one, but do it.
+I just say play the one now with AI. It's from, Hey, we have this, this, this, we have to take not this and this. What did you think?
+You know, uh, probably it's already single stroke. If you give it in, you get it, you get it back.
+But at that level, we are, everybody's on that level. If he wants to lose those tools is like, you know,
+it's like power up, you know, you know, they put those suits on the sexy skeleton suit and okay, let's power up.
+Yeah. The future. I think the future will be interesting. The person's now, it's not the future, it's now. We are in the future.
+We're in the know. The only thing is that many people are still in the past. It's not that we are in the future. The thing is,
+and when you look right, what is okay, this is coming, this, this, and this, and this. Okay. And I'm based on that. This is what you want to do. So this is the model.
+It's, it's further. I mean, I have to say now more outside the eye bubble and whatever people hear like cricket, cricket or so a little bit, you know, they hear there's something going on.
+They don't want to miss out. So the fear of missing out is a really good selling point. They know there's something going on. They want to know more on it and they are eager to pay for that one.
+They want to know because they know it and they hear it's very valuable, but they don't know a shit about it. And who can explain it in a normal way to them? In an understandable way. How, how it all impacts.
+And how to pull, you know, to have the story to tell that you pull people along, that they, that they all follow it. And it's like, in the end, you know, that eyes are wide open. Okay.
+Fog, what do you say? I didn't know that this one was coming. Many people even in the field are not aware enough of what's coming in the, in the, in the IT field. They think it's a gimmick or whatsoever.
+But when you kick, when you show them hard numbers, there's very eye opening.
+And for that one, you need examples. Hey, I made all these things. Pick one. You want to see one?
+And they know how much time it took normally before. And they know the quality that you have by the time. They've all had a top quality.
+It's so much faster now.
+Now, I was talking about old codes, of a new code. Now old codes. I have done before, how do you say, we have done a project before I was using a little bit of AI making it.
+And there is also what, how do you say, I, I use a certain ticket system. I think Ivan showed you already.
+And that doesn't, when I show that work, but it was to use for sure.
+Now, what happens is, is that you have a project, you have your rules, the rules depending on your role. Yeah. You have your project that you're doing.
+And there is where you have tickets. So you start creating tickets, so different types of steps and whatever that goes through adjusting the code project and whatsoever.
+So those tickets become their own story. So you can talk with the ticket. You can talk with the project. You can talk with the rules because of the environment.
+Your AI is the environment. Yes, they're all the different agents, but that whole environment is one AI where you can talk to, where you can actually have rules on how you deal with the whole setup even as an environment.
+Everything is AI. Everything. Different rules, whatever. Everything is AI. You should treat it like that.
+And you can index it to databases, maybe.
+Folders. How do you say? In principle, it doesn't matter how it is stored.
+One thing that would be useful for Databricks is that you can just use the MCP to connect to using the catalog, and you can make a whole copy of a markdown of just this schema and everything.
+What is the whole structure? And it's a stored local.
+What is already, how do you say, a kicker, AI user or agent? It's one that how to create, how to document whatever your whole project, because that's never done.
+Do you know all those, all the things that all should be done, but they're never done, and nobody's going to do it anyway.
+If you create an agent that does so, and so from, hey, you click this button, everything done, you're not okay with it? Okay, send me feedback on what is wrong. We're going to try to adjust the rules based on that one.
+We'll send you an updated version if it's not okay. And if it's okay, please let us know. So you can automate the feedback from another distribution, that should be different than what's wrong.
+That feedback is automatically sent back, or actually corrected already, because the reviewer would say that already in the review reports.
+How to feedback, how to update the rules, how to, that's how you do those things. Out to, out to, out to, out to, out to everything.
+Now, so you have your rules, your projects, and your tickets, your individual steps that are modified.
+And now what I had with the project where we did the migration is, is only very late on Emilio got because feedback from Emilio on the test project.
+No, his fault is just that the chain setup took a long time to set it up, which shows already how important this feedback loops.
+Because the fast you have a feedback loop, you're fast, you can correct them. It's most of the time is because you have long loops that you're running out of time.
+It's not the fixing time is the problem, it's the whole loop thing. That's why they are so important to have them assured.
+You fix something, you commit something, it's reviewed, it's unit tested, and what's relevant only when everything is unit tested, it is merged into the maintenance. Otherwise it doesn't happen.
+And those things can be automatically, and when there's some failure, whatever you did, take a stream, review them, what's where, why did it fail, unit test them, what's where, or why do the two loops together, correct?
+You can put any limitations on it as well. Everything that goes automatically you don't need to do manual. Only the things that are going wrong, you need to review. Some of them will need to update its rules. That's how you update, update, update, update, update.
+Now, once you have what we have existing code, what I now use existing code to extract the real mathematic definitions, what we were doing, and how we were operating, because what I was noticing that every time I had to explain some different concepts again and again and again.
+So, what you can is if you have existing code, you extract the rules, and you start defining the rules based on the existing code, you start defining a real well-defined project definition with all your definition rules and whatever paradigms you're using in your project.
+What does this mean? What does a period mean? Is this including, including, blah, blah, blah, blah, blah. And if you define those things very, very hard, the code rules out automatically.
+But, so when you create a documentation in your code, you can automatically first do those definitions, so if the AI is not updating it, it will find those definitions and it becomes way better than fixing the code.
+So, it becomes very, very important to have the correct product definition included, and the AI then selecting the documentation from that one that is relevant to the part that is a problem or part that needs to be included.
+Now, once you create code that is really auto-generated, most of the time, that has this type of quality that you almost do not see even in a, how do you say, high-level, high-pater environment, you create, and how do you say, you're not creating smart, you're creating better than even the best-generated software,
+because all those cycles are being automated, and everything is feeding back upon on top of each other. That force is so strong.
+How do you say, it's very easy to set up now getting things done, and I can teach you how to do that not, how do you say, fast, but on a much higher quality.
+So, what you're generating, what you're generating as slot, which it is not, is of a higher quality than what a team would work on, and spending two weeks on it, and you generate it in a day, maybe an hour.
+It's that crazy, and that is not future, that is now, and is that setup, is that context, and then they're getting it, you see people, context is all what it is, you know, I didn't follow AI news the last two weeks,
+but before that was like, yeah, context, context, tele-contest, and it's memory, project definition, rules, and tickets, together with your, yeah, how do you say, really strict project definition.
+All that information is dragged, integrated, and whatsoever, and you talk with your project, and you get better definitions, you get better parts.
+Now, I'm in the phase where I now need to review the definitions, and really that you don't have contradictory definitions, that everything is exactly correct, and that also all the documentation from all the classes and functions and whatever is reviewed, does they match with the definition, and if not, why not, blah, blah, blah.
+So, it's, the code works with the refinement of the documentation, so everything becomes clearer, nicer, and it's like, it's already from gold, but it's like, you know, you're just polishing it.
+And yes, that is now still a manual process, but not the second code time. Every time you do something, it takes you half the time. You go so fast to near zero time.
+Yeah, I would say, enjoy. Find out how much time you can spend on those, how much to refine your skills.
+I just asked cloud to make unit tests for everything, so I can tomorrow ask, hey, I made this.
+Yeah, and it's, how do you say, make the unit test, but also, I would say, with clouds.
+It's like, you know, you make your commit chain also, that in the commit chain, a unit test is included, so you never have a commit that doesn't fit with your unit test.
+Also, the whole workflow, how do you work with unit tests, how do you work with versioning, how to block, all those different things that define a project, all of those things you need to describe.
+Maybe there's already a repository that has many of those rules described. You need, you know, start collecting them.
+What is that automation chain that you will have? It can be different for different types of setups and whatever.
+You know you started your project, and then you, how do you say it, your framework is included, and you have probably a preferred framework, which you are going to use, because you are used to it.
+You have your library of functionalities already there.
+And you can just set it up all with the AIR. You can set it all with the AIR.
+Yeah, it just, you define your workflow, define the part, do the part, automatic what you, how do you say, automate as fast as possible the most of those parts, and there are some things that you do.
+How do you do it manually? You record it how you're doing it, and that's what you use it to automate. So there's always some manual steps that you're doing, but that is to teach the AI how to do it.
+It's like, hey, this is how I'm doing that one. But you can also online, there are people that already made those rules, use them.
+If you can base those rules on the best books, from the O'Reilly books, how do you do those type of things? Pull those rules from O'Reilly.
+I mean, that are the rules, that is how business describes, this is how you do those things. Okay, then do those things like that.
+That is what I would do, if you're going to describe all this. But of course, you do the AI. I have this PDF, create the rules on it.
+Take a light, you know by the time you're making money on that one, hey, take a, how do you say, an account that O'Reilly uses from the end. You know, it's great to respond to things.
+Yes.
+I feel also, this indexing, like when you ask the AI, it does, it has like, of course, that is what the MCB is.
+That it verifies, and stuff like, okay, do I have this information, do I have, do I have this information?
+But that is, how do you say, that functionality, that is the gigantic mode, that you define, you can have a, how do you say, you can define how you define your project, which steps you go through.
+But that is the steps you normally would go through if you would do it yourself. So if, you know, it's like you have a certain phase and you review, there is a way of how you do a project.
+That is all, how do you say, that has been studied already. And yes, in the time of AI, you do things different. But as you do not know yet how different you need to do that, the best base is from what top research says, this is how you do a project.
+And if, while doing so, you will figure out, nowadays you would do it like this. So you adjust your rules, you know, you have your definition on how you do your project.
+You know, what roles you use for different steps. How to say what rules you use for different steps. What type of the project information is important and what not.
+So you include the context of your question or whatever needs to be done, that you need to feed it and then you trust the AI to find out, okay, this is what I need to do, this is base information that I have, okay, then I need this and this and this information also, puts it together and then throws it to the AI.
+How do you say, but you want to improve that initial step as good as possible by feeding the right rules, the right project, having the right project data stored as condensed as possible with enough example of information as possible.
+But you, for example, example of information you put in separate files, because normally you don't want to have it included only when it is really necessary.
+So you want your AI to be as smart as possible to, let's say, collect, refine the information that is needed and then send it to, hey, based on this context, this is the question.
+How do you say automate first things that you normally don't want to do?
+And how do you say you make it in a project, but that project is just a template for all the other projects and your rules update.
+As you're doing your rules update, which you apply to all projects that you're doing.
+It's like the more projects you have, the better rules you're getting, which benefits all your projects.
+And as I said, you know, when you have the tools in setup, have a smoke, get a lot of ideas, a lot of them will be bullshit. Maybe it will be fun later.
+So you then select from all those ideas, you go with AI, you know, you sit the next day together from, okay, which one are we going to do?
+Which one are you going to put your time on?
+And as you go and you have a new project, and every time when you've done the project, you update your rules.
+And actually you probably do mid-project your already updated rules, for all of them.
+Since everybody, I want to remember, I would like to automate, see if I can automate calling the tickets from Jira and putting them into Azure DevOps.
+Because that should be a very easy challenge.
+It should be easy, it should be possible.
+When we are doing it manually.
+Yeah, what is more on that one, is you have on one side, you have that you can automate that one.
+But what you, how do you say, when you have working with AI, you have things that are new, how do you say, every time different, based on the problem that has been solved or whatever thing that has been identified, blah, blah, blah, blah, blah.
+And on the other side, you have, how do you say, sorry, I just said, can you shortly look what was there and then put me the text back.
+Because it was something, he was getting something from Jira to Azure DevOps.
+Yeah, oh yeah, now I know what I wanted to say.
+You have a lot of things that are random, and those ones you really use AI for.
+At some moment, what you have is things that are becoming more often, that you would put, for example, two rules, specific rules.
+There are also things that are like, you want to have really standard, so you want to have them through a forced, how do you say, forced chain.
+And for example, at that moment, lung changes, for example, I think a very good one.
+So you have a general AI, and maybe some of those, hey, do this, and you can really say, do this, this, this, this, this, really in a step order.
+Where you use the AI, on top of a, how do you say, a tooling.
+Make, call this agent with this format and this context, so you really have a, how do you say, a kind of a forced structure agent workflow.
+Where you use MCP, A2A and what so ever.
+But sometimes you get to from, hey, I want to have, how do you say, I don't want to be disturbed by the context, I want to just execute this one.
+So, and then you start getting a Python script where you have a standard, hey, a standard, how do you say, not a temporary Python script, but really a standard Python script where you're running it through a pipeline.
+You run through some scripting or whatever, which you then have also in your get repository.
+So you're, how do you say, while doing all things, all those jobs, tickets, tasks, and what so ever, you start generating standards, workflows.
+For example, now for me is when you have commit, when I finish a ticket, there are some steps I want to have done automatically.
+And that can just be a Python program.
+So besides those rules, you start getting also like a library of functionality that you want to use to unload your AI.
+So by giving it, hey, we made this tool for you, use it, and you will sometimes have a refinement where you improve that tool.
+And that is your improvement of your workflow.
+And like that is like, initially, you have like a standard equipment, but at some moment you will start making specialized equipment because that is a more efficient way of your workflow.
+And that is all those AI agents that you're making.
+All those agents are more or less like specialized tools, more or less.
+How do you say, when is an AI agent is still flexible?
+When is a Python program is much more coded, more fixed?
+There's a whole gradation that you have, but over time you will figure out what you should be using at what moment.
+What should be your standards, blah, blah, blah, blah, blah.
+You know, there's a combination between rules and those things.
+You will describe, you know, when, how to use those rules and how to use them, for example.
+And then you make the AI query the automations.
+You will detect what takes an AI, what an AI, for example, goes wrong.
+And then you can make a standard functionality there.
+So it doesn't go wrong.
+It's a way in how you correct your workflow or where you, where the AI is going to fly too much.
+If you want to have a precise functionality, I have like an import.
+Don't do an input with AI that is telling from, hey, I tell you, blah, blah, blah, blah, blah.
+And now you write it down.
+There are better ways to do that.
+You know, don't go through an AI when you can let the AI use a tool to do something.
+I tell my AI to install its own MCPs, get its own hooks, everything on its own.
+For example, for the website that I made for myself, I told it, this is the work that I want to do.
+I want to make it only using AI, research the best framework to do this.
+And it suggested something like Next.js 15, Visual.ai, something.
+Works were pretty good.
+Exactly.
+But like that is you can start refining, okay, what are my frameworks?
+You start researching your frameworks and you can, how do you say, use one or the other framework,
+but you know, hey, don't support like 20 frameworks.
+Just limit yourself to the best ones.
+That is perfect.
+This is the one I will always use.
+Yeah.
+And unless there is a very hard reason not to do so, which most of the time will not be there anyway,
+because otherwise, why would that be the perfect solution?
+Once a year, research if there are any updates to any of those things.
+Yeah, exactly.
+It's not once a year, you have an agent running.
+You have an agent running those things every time and it will inform you from here,
+and you develop that one.
+Shall we research it?
+Because in the meantime, all your things are running anyway.
+Yeah.
+The thing is because things are going so automatically, you have so much time left over
+to do whatever you want to do.
+Because you automate.
+But the thing is, is all those things, the ultimate issue is from, hey, people,
+you want to learn how that works, and you can have maybe someone to work together,
+because to manage all those things, it becomes a lot of work.
+You don't want to do those things.
+You want to, you know, inspire people and work together with them
+and get some money from them here also.
+Teach companies how to do those things.
+And if companies see those values, you can ask good money for that one.
+I don't know how much that price should be.
+Ask the activity, what would that cost if I can do this, this, and this?
+Like I show a company like this, this, and this.
+What would be the value, you know, the added value from my course to that person?
+Within a week, within a month.
+Well, let them do their calculus.
+But how do you say, you can ask, how do you say it, you can really work out that calculus,
+your eyes will open also, because that information is very valuable,
+and people know it, they're seeing it, they're hearing about it,
+but, you know, you need to help them alone.
+And, you know, those projects are making likely money at some moment.
+I don't know how much or whatever, maybe nothing, I don't know,
+but they will be great on your CV.
+But I think you will make money on them also,
+and you will learn a lot, and your whole project, you will learn how your whole project's in,
+how to automate it.
+And then it's from, okay, yeah, we'll also do these things,
+and also that things, you know, database behind it, okay, no problem,
+oh, interfacing with this and this protocol, okay,
+we'll also automate it, blah, blah, blah, blah.
+I'm now one company, how do you say, Energy21,
+how do you say, some companies went, how do you say,
+there was one company bought up like five companies,
+and more or less in the same environment, you know, for Synergy.
+Now I am automating, how do you say, I'm now leveraging our old code to C sharp,
+and I'm now trying, you know, getting that change to work.
+But I think it's an existing code, my code stability is way more important
+because how we are facing, if you're doing something for yourself,
+accessibility, all those things, you don't give a flying fuck about those things.
+You know, so you are way more risk-free environment.
+You get the difference, I hope.
+Now they have some software, and we want to try to integrate some part of it.
+So I now want to learn his team, which is more Java-based, okay,
+how can we now start leveraging what I've been doing together,
+I don't know what level there is, but there's a lot of things to learn on that one.
+So okay, hey, let's create the whole project information from your code.
+Okay, let's create the right project description, the project documentation.
+How long it's going to take me, that doesn't know shit about the whole project,
+how everything works, and let me take a look on what my advice would be,
+for example, in all types of adjustment integrations.
+For me, not knowing anything on Java, not anything knowing on this one,
+just bring it on.
+Let's, you know, let's sit a week together and go, hey, what?
+How fast can you level me up on the code,
+and how fast can I level you up on using AI?
+Okay, and like that, you should go from company to company to company,
+because there is where you're adding thousands of dollars per day on value.
+I like it.
+No, you have to be good, make a business piece for that one.
+Cloud, please, make a business pitch.
+When do you hear this?
+What you should take a look, I mean, I was talking with you before,
+and that was about, how do you say, there are ways on how to use AI,
+and there are people that from, hey, hey, I have now AI, that's going to do my work,
+I don't need to work anymore.
+They throw away an opportunity, because now from, hey, I have an AI,
+now finally I can do all the things I wanted to do and didn't have time for,
+to make now my, the perfect thing that I always wanted to never have time for,
+now I can make it, and I can make more, I can make it better, I can make it faster, blah, blah, blah.
+That is the person that will go ahead, that's the person you want to hire in your company.
+Now, if you as a company think that from, oh, hey, we have this AI,
+how many people can we cut, you're exactly thinking like that person you don't want to hire,
+because you want to have the person that says, fire it, whatever.
+You should use it now, this moment in time, to use the AI, not to cut costs,
+but to find, how do you say, the growth that you never could reach.
+In the company that says, from how can I cut costs,
+it will be just overtaken within months by any startup that is using this type of technology.
+And so, how do you say, don't think only to cut costs, how do you say, invest in AI,
+hey, we can explain you more, next course.
+It's to pull people along, because you will see them thinking from, hey, not opportunity,
+they only look on cutting costs.
+Then there is another one, I think I told you that one, is if management thinks,
+how do you say, the management layer thinks that they are so important,
+the development people know from, oh, that's the easiest one to automate.
+You don't need any fucking management.
+And there's also a good one, you know, hey, set a site that is doing all the management stuff for you.
+You know, hey, that one can be just an AI whole, AI structure and whatsoever.
+Hey, this is our management layer, feel free to use it, it's the rules that we're using, blah, blah, blah.
+I don't know if there's really people setting up those things, but if I had time, I would.
+And you have books on how to manage your company.
+You can now run your one, well, one man business running a thousand businesses,
+because all of them are AI, by an AI management that is run by many, many AIs
+that is actually overseen by one person that is running a company that is from a thousand companies and whatsoever.
+It's idiotic, that's true.
+And you can use the best knowledge, best books on all those different types of topics.
+And the AI is getting better.
+It works, generates money.
+You need to find, hey, where's my battle? Which one am I going to do?
+Which one? Which one can you, how do you say, find where you can do?
+How do you say it's the fastest return, only faster than theirs?
+And it's just practice, practice, practice, practice, practice, just, you know,
+take a machine gun of shit and have this shit.
+How do you say you put whatever shit on the wall and some will stick on the wall.
+But how do you say, if you have good ideas, how do you say you will learn how fast you can make,
+don't make too complex, start with the easy ones.
+You know, the easy ideas you have, the ones that you're probably already working on.
+And just learn, it's not to make it, learn how fast you can automate that whole cycle of making those things,
+those ideas that you have.
+That is very more important than making those sites or whatever you're making.
+It's creating the automatic process.
+And as you're doing the first ones manually anyway, you have all the sessions recorded.
+You should record all those sessions, because that one is for how you create feedback.
+How do you say you have, and you don't need to have one feedback loop, you can have multiple feedback loops.
+For example, I have my conversation tickets, but later on I'm going to mind them for ideas,
+commands and whatever that I left in the code.
+So if I said, hey, this is who we need to suggest, then I can later on reflect on the project
+and then go through all those, you know, I had to do, to do missing things.
+Oh, this needs to be different, blah, blah, blah.
+You know, let the AI filter out all those things.
+And based on that one, you can still have, create a new to-do items and what's the matter.
+You can have updated project information, better unit tests.
+I don't know. You know everything what you can think of and not even think of.
+Because you can have new processes defined later on where you're going to mind things which you didn't think of.
+And every time you can update to just a new model and everything works, will work better.
+Yeah. And the thing is, is, is, is, is, is, do you, how do you say it?
+The reflection is better. You don't run the project from start to finish.
+So finish now, you start using the newer AI to update the project better.
+It's like, hey, you put a better expert on your project.
+So your expertise is leveling up. Your rules are leveling up.
+Your, your code quality is leveling up because how you want to have things.
+And you go for the best, the best, the best.
+Is, is, is, is, is with Readme, with Docker.
+Everything. This is industry standard.
+Everything we make is industry standard.
+Having everything, blah, blah, blah, on it. Everything done by the AI.
+What?
+No, I was, what I wanted to do now, because I was a bit in the zone-ish.
+And to not disturb the machine, the object.
+Yeah, yeah.
+I said, hey, let's see what I can do with the AI to help a bit in the company.
+And since I'm already a bit of QA-less at testing,
+I have a new branch where I told the AI to analyze the whole project pretty good.
+To find things to improve and then make a, analyze a lot of the
+testings that we should apply to our solutions.
+And then to suggest how to make those testings.
+And then to check again that it's not duplicated with the functions that we already have.
+And then to make a structure plan of how it should be written.
+Yeah.
+So it's not all spaghetti code everywhere.
+What, what you, how do you say, what you now have is?
+Another thing is, make an implementation plan with specific tests for everything
+and generic tests that should also always pass.
+It's, it's what, what I would, if you have existing code, yeah?
+Yes.
+Then you want to create from that existing code, you want to extract.
+Yeah, the whole project is deficient.
+And then what you start doing that one is, okay, if this is the, the content
+definition as we established, yeah?
+Where in the code is it contradicting?
+Where in the code is contradicting the project specification that we just extract from the code?
+That's how you find, find errors.
+Yeah.
+So you can, how you say you can understand that code much better and then you can also document
+most of the time the existing code, there is no documentation.
+So you can also create documentation.
+So there are many different processes that you can do now with, ultimately with AI to,
+to highly improve the code quality.
+This also would be nice to make another branch where I just put documentation on everything
+and make everything really detailed.
+The main issues that I don't want to over document everything and make it true.
+The thing is, the documentation has in principle no negative execution time problem.
+Now the thing is, what you want is you want to have your functionality, how do you say,
+functionality, how everything should be working with your project.
+So in a document folder and you want to have it defined in blocks, in short blocks that define a certain functionality,
+a certain definition whatsoever.
+And what you then get when you create the codes, you're referring to that one instead of copying that functionality.
+So you want to use referral where possible instead of copying, same like in codes.
+That would be like your index kind of way.
+Yeah, what that creates is you create a code indexing with, how do you say, a graph rack,
+your hard code, a graph rack in your codes where you're putting specifications,
+specifications referring to all the specifications because those are important.
+You can do the same with rules and in rules you can also refer to templates and exemplars.
+So you can offload the context where possible and AI will define if something needs to be included or not
+and can always include it when necessary.
+So that's why you don't want to have big blocks, you want to have small blocks.
+And those blocks are indexed with the ragging index.
+So what you have now is you have your definitions and your AI is able to find what is necessary to make the right answers.
+Because you have extracted that information, if you don't do that one,
+it needs to first go to the code to start understanding what are we talking about
+and then maybe if it has the right interpretation of it, it will start coding also.
+And what you want to have is you want to have a clear definition from, hey, the primary truth is the,
+how do you say the definition, and if code is not in accordance, I need to know, you need to answer me one more.
+So you can go very fast from a more and more code to a very good code that has no contradictions.
+Because there is where the errors are in the contradictions, the misinterpretations.
+Now you can create, hey, this is my definition, okay, create unit tests based on that one.
+So you have independent unit tests from the code.
+Code quality, all those type of things on that one.
+Yeah, so how do you say, if you extract from adjusting code, you extract those things,
+then you can start creating the rhythmic, recreate all the documentation that should be there,
+but it's very important that that step is very good reviewed.
+You want to, how do you say, that's why you want to find the contradictions to find, hey, is my code not, is it not correctly described?
+You know, it doesn't mean that the code is wrong, it doesn't mean that my project data is wrong.
+But I need to know where there's a conflict.
+How do you say, that is where your manual task is, to figure out what it should be.
+Because you know when you need to drill deeper, oh no, no, it should be like that, you know.
+That is what AI can do, that is where the human input is important.
+But you can learn, you can describe a project better than it has ever been described,
+by going through those steps and as a result and also improving the code.
+Because most of the time it has no documentation, blah, blah, blah, blah, blah.
+I have a random question.
+If you were a boss in a company and your employee randomly comes in, hey, I refactored your whole project.
+Yeah, yeah, no, no, that is not what you're doing.
+Nobody like many different branches where the one is just adding lots of testing,
+the other one is adding documentation to everything,
+the other is really obstructing everything.
+The thing is, is what you need to figure out, and I don't, how to say, at this moment,
+I don't know enough of Git to tell you how your branching strategy should be.
+But maybe what you're doing is actually the correct one, is branch, okay, these are the units test
+and then you add them to the main branch.
+I tend to work on a branch per release with different tickets on that release
+and then coming to the main branch.
+But, you know, maybe, you know, having that poof, hey, here are your unit tests.
+You know, because we don't want to take them or not.
+Because I'm thinking more of like, hey, I only made this first, oh, you liked it,
+then I made these other ones also.
+Yeah, oh, you like this instead of surprising him with it.
+I did everything.
+Well, how do you say, well, I'm kind of bored, I'm a Muslim, so I made this one for you.
+Oh no, by the way, no, I made the process to make this one for you.
+Oh, and if you take a good look also for this one, this one, this one, this one.
+You can run it whenever you want it.
+Because that's what I'm thinking of doing now, what I'm free-ish.
+The thing is, yes, you should do it.
+Show more value?
+Yeah, yeah, no, no, no, no.
+The thing is, yes, you should do that, but you should do that for your own process now.
+Because it's not doing that one, it's setting up the process flow to do those things.
+It's also because I want to learn how to do it and how to make it work,
+and to say, yeah, I can make this shit work.
+Yeah, and then it's from A.
+What you do then is from, hey, this is what I did on my project.
+Shall I show you how to run this on this one, on our project?
+And, you know, let me show you how you can do that one.
+And he will say, yeah, sure, go, because you just create a branch,
+you can throw the branch away if you want to.
+And, you know, it's like, and then say, I also made for my project once for this, this and this, you know,
+so we run it also, you know, but then you follow them by the hand instead of smashing it in their faces
+just from, hey, I'm using this one on my things, feel free to use it also.
+It's a different way of telling the things, you know, when you tell the same story.
+Because I want to take a look to use a bit more of the AI for this,
+because mostly it was just for the tickets that they give me without much initiative.
+Yeah.
+I think, but it's also because getting a bit too used to it, and then I got stuck in sick.
+Yeah, but as I said, the thing is, it's good to do those things,
+but learn from those things to then learn how to create those processes automatically.
+And that is where you start and really go, how do you say is, is,
+there's where you really start hitting the pedal to the metal.
+Hey, I was working before we had to go vacation.
+We had to finish some things that were not working good.
+I spent like 20 hours, 20 hours, 20 hours, like 40 hours in two days.
+It didn't get tired doing those things.
+I did work that normally would have taken a month.
+The reason why we had it that late only is because, how do you say,
+the cases from Emilio were only, you know, finding them, grouping them slowly, you know,
+the cycle time, slow cycle time.
+That's why, you know, it's what build, how do you say, the moment I'm finished, build, commit,
+unit test, yes, everything, okay, okay, deploy.
+And how do you say, two hours later, the test cases are coming.
+There is also automatically love them, you know, wake up.
+Okay, next one.
+Okay.
+They are ready groups.
+Start going after the first one.
+Blah, blah, blah, blah, blah.
+You know that, but that is already like production stuff that is like,
+yes, you need that having part of your, your workflow and what's in there for some moments.
+But it's not the problem that you're going to have at this moment.
+What you want to have is, you know, how can I do a whole project from zero to maybe prototype to something really working.
+That workflow commit, blah, blah, delay loop, ticket administration.
+It doesn't work.
+I tried.
+What?
+Yeah.
+But it's cool, nice. But you should get, like, it probably has several powers also.
+It could be probably better, the ones that you hang on the monitor.
+But maybe that puts weight on the monitor as well.
+I want now to make a standing desk.
+I mean, how do you say, I hope I can guide you guys in getting a great success in whatever your guy is doing.
+Thank you so much.
+It's going to be pricey.
+I will try to definitely have AI.
+This morning I had a meeting.
+I don't know nothing about Terraform.
+And Mateo, the worker, explained to me the project, the structure, everything on a meeting.
+And I recorded everything. I transcribed it locally with Whisper, passed it to charge GPT.
+And the transcription was very bad, like the words were different, some of them.
+I tested GPT with all three, perfectly summarized everything that he mentioned.
+I'm sure it was there, exactly like that.
+But the thing is, that's how you can automate that.
+Exactly.
+But that is, how do you say, oh, this I did, I need to automate this and this and this.
+Now all those databases, someone would pass me a copy.
+Because, how do you say, the thing is, how do you say, what I haven't already, likely not, is a good starting point.
+And likely it's going to be, there is nothing more permanent than a temporary solution.
+So likely one of those temporary solutions.
+You collect agents from people around and whatever, you share your set ups or whatever.
+People sharing them online also, find the places where to find them.
+How do you say, don't look to make it yourself, look what all the people are doing.
+And how do you say, pick the best one and adjust them how you want it.
+Look around, look specifically what all the people do and what people tell you not to do.
+Some people post them, it's from, hey, you know, I wish I knew this one before I started.
+I'm sure, because I see a lot of our peers, like classmates from college, they are all very scared.
+And I think they don't look into it too much.
+I think especially us that have kind of some knowledge already.
+But the thing is, I think with more technical knowledge is even much more powerful.
+And I see a lot of more technical people try to push back.
+Yeah, and how do you say, what it is?
+How do you say, don't try to evangelize people.
+It's, hey, this is what is going on.
+I can explain you about it if you're interested.
+If they are not interested, don't force them.
+Just show them, hey, this is what you can do with this type of tooling.
+People, if you talk in, how do you say, development cycles, cycle speed or whatever, they understand those things.
+They understand, how do you say, if you can show them, hey, this is what I have to say, tell me, you know, what do you want, you know.
+Show, how do you say, you have some base from, hey, the time to make this, blah, blah, blah, blah, blah.
+We have all this and this, this, this amount of time.
+We can measure it some moments.
+And it has, whom? Covered by this amount of unity, blah, ble, blue, blue.
+Just throw, how do you say, throw the numbers.
+Document, blah, ble, color, code, quality.
+You know, there are probably gradings and whatever on, on, on, online gradings of code.
+You can throw them over it.
+You make tests for everything.
+Yeah.
+It's not, how do you say, not, not, not just sometimes test, but also just a rating, you know.
+Does my rating go up or down?
+You know, improve code, code, quality improvement, codes, performance, you know, is it still a performance range?
+It doesn't, is it improving the performance?
+There are many, many things that you can take into account.
+But how do you say, this solution is currently, you know, for like basic functionality, not for heavy projects.
+You can use heavy projects, but you need a little bit more human oversight still.
+But give it a few months and maybe it's already there.
+I mean, as I said, I mean, two weeks out, it's half a year in AI time.
+Really, that is sad.
+It's getting better.
+It is, it is.
+It is currently, it is for like cloud code.
+Yeah, exactly.
+I still need to see that there were like several new models out in a period of time.
+This is cloud code.
+Here I'm doing it.
+Here I was working on the testing part.
+Cloud code is kind of like, it has already integrated that system of like, okay.
+I, I, I, I, I, I, I'm aware of that.
+The thing is this, how do you say?
+What do you say?
+I'm always working in many, many different modes.
+Yeah.
+And, and, and, and besides of that one is that, how do you call that?
+I have an integrated environment where first AI is one of them and all my tooling is around it.
+So first AI is not my only tool.
+The other tools are also important.
+So I need to be able to have a physical location where they can work together.
+It can be done by a file path or whatsoever.
+Also, okay.
+I just need to, to take a look on and test how I can run a C sharp project.
+You know, that as a get the kids, I do the good things.
+I, how do you say, well, how do you say the, the, the, the,
+the staging I do AI does the, the, the, the, the command based on the state's data.
+And then, okay.
+If I'm okay with the command, I commit and how do you say push it?
+But I have, I have a workflow like that.
+And if I have, if that workflow is more complicated, then why would I use a more complicated solution
+than I have already one that is working perfectly for me.
+So there are some things, if, if, if I cannot have the, my chat history, then it's not useful for me because that chat history is more or less key to my feedback loop.
+Yeah, that makes a lot of sense.
+Yeah.
+And so, but if it's available, great.
+And it's there, you know, great.
+But I don't know.
+But, but you know, my feedback looping in the, in, in, in, in, that I'm using is you, some from time to time, you pass it the whole chat history.
+That is one thing, but I use spec story to, to have from each chat conversation.
+So now what I can have is I can create a summary of what I actually want to do is we use AI to do secure recap from it.
+And that recap is actually the one that I want to put wreck.
+I don't want to wreck the conversation.
+I only want to wreck the recaps of the conversation.
+So it's important.
+It will pull in the conversation if necessary.
+Then how do you say, by having those, by having those tickets conversation, I can include this conversation.
+I create a context on it, a plan, a context and a progress on my, on my ticket.
+I can also in principle track time.
+I was busy with that one.
+Didn't really work yet.
+Like half off.
+But are things that, that you in principle, how to say automatically do when every day, every time you work on ticket, like a recap that you automatically put in Jira or whatever tool in your use.
+So you have on one side, you have an immediate usage on your ticket.
+But on the other side, you have like insights.
+You have like different things that on your ticket has been done to do or whatever.
+Those you mind for later or you mind them later.
+But by having those conversations, you can have short conversations so you don't run out of context.
+So you always start with the context of the tickets with whatever you're okay.
+No, this is in this.
+So every conversation needs to include files that needs to include.
+Oh, I've also found like references.
+So it already free those which are important files based off of the ticket.
+That can ultimately be used.
+How do you say it optimizes instead of the AI needing to figure out what files are important, you already tell them, hey, this and this files are important.
+And then it can still include any other files.
+But if you free, how do you say you're not losing of me, you know, you're doing something, you're writing down.
+You throw away the paper.
+It's like, oh, you have a question about something, whatever you look in the library.
+You go to the whole library, you find the book, you find the page whatsoever.
+Read the answer, whatever.
+You put everything back.
+Then you get the next question that was about the same thing.
+You need to look at how do you say you work on something.
+You have your books on the table.
+You have already resorted.
+It's like, think what you would do, you know, and do the same as the idea.
+You know, you know how to work efficiently.
+OK, tell them this is the way to do something.
+I need to use the space story.
+Yeah.
+And I don't know that the works in clouds.
+I don't know if they have an alternative like that.
+I'm not sure.
+But for me, in the setup, it's a very important one.
+But it will come in.
+How to say, because it's so important, it will come in clouds.
+I'm not the only one that sees this.
+Yes, definitely.
+Since we have paid cursor for work,
+I could try to do something related to that as well.
+Maybe to show and then other share as well.
+And how to say that it's nothing wrong.
+It's from, hey, do you think cursor?
+Do you think, you know, hey, what works best?
+Maybe, you know, in cloud, do this one in cursor.
+I mean, it's not that you are limited to one solution.
+In principle, you should create, how do you call that,
+an environment that is transparent.
+You don't care about any more which AI you're using or which environment you use AI in.
+The rules define the rules, the model, all those things.
+That defines the AI.
+How do you say you want to have short conversations?
+So it's easier to recap in, how do you say, you want to get short, short, short.
+So it's also easier to rag and everything.
+Anyway, I hope you learned a lot.
+I will definitely try to make a summary of everything.
