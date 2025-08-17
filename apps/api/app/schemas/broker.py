@@ -1,7 +1,7 @@
 """
 Broker and trading related schemas.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Literal
 from datetime import datetime
 
@@ -12,14 +12,15 @@ class OrderRequest(BaseModel):
     type: Literal["BUY", "SELL"] = Field(..., description="Order type")
     amount: float = Field(..., gt=0, description="Order amount in USD")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "asset_symbol": "AAPL",
                 "type": "BUY",
                 "amount": 1000.0
             }
         }
+    )
 
 
 class OrderResponse(BaseModel):
@@ -32,8 +33,8 @@ class OrderResponse(BaseModel):
     status: str = Field("pending", description="Order status")
     execution_price: Optional[float] = Field(None, description="Execution price if filled")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "order_id": 1,
                 "asset_symbol": "AAPL",
@@ -44,3 +45,4 @@ class OrderResponse(BaseModel):
                 "execution_price": 185.50
             }
         }
+    )

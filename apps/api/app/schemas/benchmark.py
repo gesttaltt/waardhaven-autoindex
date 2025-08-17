@@ -1,7 +1,7 @@
 """
 Benchmark comparison schemas.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 from .index import SeriesPoint
 
@@ -11,8 +11,8 @@ class BenchmarkResponse(BaseModel):
     series: List[SeriesPoint] = Field(..., description="Benchmark time series (base 100)")
     benchmark_name: str = Field("S&P 500", description="Name of the benchmark")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "series": [
                     {"date": "2024-01-01", "value": 100.0},
@@ -21,3 +21,4 @@ class BenchmarkResponse(BaseModel):
                 "benchmark_name": "S&P 500"
             }
         }
+    )

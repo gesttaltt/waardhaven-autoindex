@@ -1,7 +1,7 @@
 """
 Authentication and authorization schemas.
 """
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class RegisterRequest(BaseModel):
@@ -9,13 +9,14 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "email": "user@example.com",
                 "password": "SecurePassword123!"
             }
         }
+    )
 
 
 class LoginRequest(BaseModel):
@@ -23,13 +24,14 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "email": "user@example.com",
                 "password": "SecurePassword123!"
             }
         }
+    )
 
 
 class TokenResponse(BaseModel):
@@ -37,10 +39,11 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer"
             }
         }
+    )

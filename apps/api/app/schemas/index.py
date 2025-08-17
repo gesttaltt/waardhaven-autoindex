@@ -2,7 +2,7 @@
 Index-related schemas for portfolio management.
 """
 from pydantic import BaseModel, Field, ConfigDict
-from datetime import date
+from datetime import date as DateType
 from typing import List, Optional
 
 
@@ -31,7 +31,7 @@ class AllocationItem(BaseModel):
 
 class IndexCurrentResponse(BaseModel):
     """Current index composition response."""
-    date: date = Field(..., description="Date of the allocation")
+    date: DateType = Field(..., description="Date of the allocation")
     allocations: List[AllocationItem] = Field(..., description="List of asset allocations")
     total_assets: Optional[int] = Field(None, description="Total number of assets")
     
@@ -55,7 +55,7 @@ class IndexCurrentResponse(BaseModel):
 
 class SeriesPoint(BaseModel):
     """Time series data point."""
-    date: date = Field(..., description="Date of the data point")
+    date: DateType = Field(..., description="Date of the data point")
     value: float = Field(..., description="Value at this date (base 100)")
     
     model_config = ConfigDict(
@@ -71,8 +71,8 @@ class SeriesPoint(BaseModel):
 class IndexHistoryResponse(BaseModel):
     """Historical index performance response."""
     series: List[SeriesPoint] = Field(..., description="Time series of index values")
-    start_date: Optional[date] = Field(None, description="Start date of the series")
-    end_date: Optional[date] = Field(None, description="End date of the series")
+    start_date: Optional[DateType] = Field(None, description="Start date of the series")
+    end_date: Optional[DateType] = Field(None, description="End date of the series")
     
     model_config = ConfigDict(
         json_schema_extra={
@@ -91,7 +91,7 @@ class IndexHistoryResponse(BaseModel):
 class SimulationRequest(BaseModel):
     """Investment simulation request."""
     amount: float = Field(..., gt=0, description="Investment amount")
-    start_date: date = Field(..., description="Simulation start date")
+    start_date: DateType = Field(..., description="Simulation start date")
     currency: str = Field("USD", description="Currency code")
     
     model_config = ConfigDict(
@@ -107,8 +107,8 @@ class SimulationRequest(BaseModel):
 
 class SimulationResponse(BaseModel):
     """Investment simulation results."""
-    start_date: date
-    end_date: date
+    start_date: DateType
+    end_date: DateType
     start_value: float
     end_value: float
     amount_initial: float

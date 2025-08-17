@@ -1,9 +1,9 @@
 """
 Strategy configuration and risk management schemas.
 """
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, List, Literal
-from datetime import datetime, date
+from datetime import datetime, date as DateType
 
 
 class StrategyConfigRequest(BaseModel):
@@ -24,8 +24,8 @@ class StrategyConfigRequest(BaseModel):
         """Ensure weights are valid when provided together."""
         return v
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "momentum_weight": 0.4,
                 "market_cap_weight": 0.3,
@@ -33,6 +33,7 @@ class StrategyConfigRequest(BaseModel):
                 "rebalance_frequency": "weekly"
             }
         }
+    )
 
 
 class StrategyConfigResponse(BaseModel):
@@ -56,7 +57,7 @@ class StrategyConfigResponse(BaseModel):
 
 class RiskMetric(BaseModel):
     """Individual risk metric data point."""
-    date: date
+    date: DateType
     total_return: float
     annualized_return: Optional[float] = None
     sharpe_ratio: float
@@ -75,8 +76,8 @@ class RiskMetricsResponse(BaseModel):
     metrics: List[RiskMetric]
     message: Optional[str] = None
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "metrics": [
                     {
@@ -92,3 +93,4 @@ class RiskMetricsResponse(BaseModel):
                 ]
             }
         }
+    )

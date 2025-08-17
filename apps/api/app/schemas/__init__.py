@@ -30,6 +30,7 @@ from .broker import (
 from .strategy import (
     StrategyConfigRequest,
     StrategyConfigResponse,
+    RiskMetric,
     RiskMetricsResponse
 )
 
@@ -53,5 +54,6 @@ __all__ = [
     # Strategy
     "StrategyConfigRequest",
     "StrategyConfigResponse",
+    "RiskMetric",
     "RiskMetricsResponse",
 ]
