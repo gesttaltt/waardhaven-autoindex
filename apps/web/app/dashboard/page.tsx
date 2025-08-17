@@ -99,7 +99,7 @@ export default function Dashboard() {
       }),
       api.get('/api/v1/index/current').then(r => setAllocations(r.data.allocations)),
       api.get('/api/v1/index/currencies').then(r => setCurrencies(r.data)),
-      strategyApi.getRiskMetrics(1).then(r => {
+      strategyApi.getRiskMetrics().then(r => {
         if (r.data.metrics && r.data.metrics.length > 0) {
           setRiskMetrics(r.data.metrics[0]);
         }

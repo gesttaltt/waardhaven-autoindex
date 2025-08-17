@@ -5,7 +5,6 @@ SQLAlchemy database models organized by domain.
 from .user import User
 from .asset import Asset, Price
 from .index import IndexValue, Allocation
-from .trading import Order
 from .strategy import StrategyConfig, RiskMetrics, MarketCapData
 
 # Re-export Base for migrations
@@ -18,7 +17,6 @@ __all__ = [
     "Price",
     "IndexValue",
     "Allocation",
-    "Order",
     "StrategyConfig",
     "RiskMetrics",
     "MarketCapData",

@@ -20,7 +20,7 @@ export default function StrategyConfig() {
     try {
       const [configRes, metricsRes] = await Promise.all([
         strategyApi.getConfig(),
-        strategyApi.getRiskMetrics(1)
+        strategyApi.getRiskMetrics()
       ]);
       
       setConfig(configRes.data);
@@ -44,7 +44,7 @@ export default function StrategyConfig() {
       
       // Reload metrics after recomputation
       setTimeout(async () => {
-        const metricsRes = await strategyApi.getRiskMetrics(1);
+        const metricsRes = await strategyApi.getRiskMetrics();
         setRiskMetrics(metricsRes.data.metrics);
       }, 2000);
     } catch (error) {

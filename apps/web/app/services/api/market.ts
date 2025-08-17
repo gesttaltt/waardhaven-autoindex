@@ -13,11 +13,11 @@ class MarketService extends ApiService {
   }
 
   async refreshMarketData(): Promise<any> {
-    return this.post('/api/v1/manual/refresh');
+    return this.post('/api/v1/manual/trigger-refresh');
   }
 
   async getDiagnostics(): Promise<any> {
-    return this.get('/api/v1/diagnostics/status');
+    return this.get('/api/v1/diagnostics/database-status');
   }
 }
 

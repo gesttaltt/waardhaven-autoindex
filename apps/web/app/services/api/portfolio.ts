@@ -58,8 +58,8 @@ class PortfolioService extends ApiService {
     return this.get<CurrencyMap>('/api/v1/index/currencies');
   }
 
-  async getRiskMetrics(strategyId: number = 1): Promise<RiskMetricsResponse> {
-    return this.get<RiskMetricsResponse>(`/api/v1/strategy/${strategyId}/risk-metrics`);
+  async getRiskMetrics(): Promise<RiskMetricsResponse> {
+    return this.get<RiskMetricsResponse>('/api/v1/strategy/risk-metrics');
   }
 
   async refreshPortfolio(): Promise<any> {
