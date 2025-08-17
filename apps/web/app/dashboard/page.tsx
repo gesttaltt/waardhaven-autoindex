@@ -344,12 +344,36 @@ export default function Dashboard() {
               <h1 className="text-4xl font-bold mb-2 gradient-text">Dashboard</h1>
               <p className="text-neutral-400">Track your portfolio performance in real-time</p>
             </div>
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push("/tasks")}
+                className="btn-secondary text-sm px-3 py-2"
+              >
+                Tasks
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push("/diagnostics")}
+                className="btn-secondary text-sm px-3 py-2"
+              >
+                Diagnostics
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push("/reports")}
+                className="btn-secondary text-sm px-3 py-2"
+              >
+                Reports
+              </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => router.push("/ai-insights")}
-                className="btn-primary text-sm px-4 py-2"
+                className="btn-primary text-sm px-3 py-2"
               >
                 AI Insights
               </motion.button>
@@ -357,7 +381,7 @@ export default function Dashboard() {
                 onClick={() => router.push("/admin")}
                 className="btn-ghost btn-sm"
               >
-                Admin Panel
+                Admin
               </button>
               <button
                 onClick={() => {
