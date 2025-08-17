@@ -39,12 +39,17 @@ import os
 # Determine allowed origins based on environment
 if os.getenv("RENDER", None):  # Running on Render
     allowed_origins = [
-        "https://waardhaven-web.onrender.com",  # Production frontend
+        "https://waardhaven-web-frontend.onrender.com",  # Actual production frontend URL
+        "https://www.waardhaven-web-frontend.onrender.com",  # www variant
+        "https://waardhaven-web.onrender.com",  # Legacy URL (keep for compatibility)
         "https://waardhaven-autoindex.onrender.com",  # Alternative domain
     ]
     # Add custom domain if configured
     if custom_domain := os.getenv("FRONTEND_URL"):
         allowed_origins.append(custom_domain)
+        # Also add www variant of custom domain
+        if not custom_domain.startswith("www."):
+            allowed_origins.append(custom_domain.replace("https://", "https://www."))
 else:  # Local development
     allowed_origins = [
         "http://localhost:3000",
@@ -117,6 +122,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 # Add rate limiting (100 requests per minute)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+
+# CORS Debug Middleware (only in debug mode or when CORS_DEBUG is set)
+if settings.DEBUG or os.getenv("CORS_DEBUG"):
+    @app.middleware("http")
+    async def cors_debug_middleware(request: Request, call_next):
+        """Log CORS-related information for debugging"""
+        origin = request.headers.get("origin")
+        if origin:
+            logger.info(f"CORS Debug - Request from origin: {origin}")
+            logger.info(f"CORS Debug - Method: {request.method}")
+            logger.info(f"CORS Debug - Path: {request.url.path}")
+            logger.info(f"CORS Debug - Allowed origins: {allowed_origins}")
+            
+        response = await call_next(request)
+        
+        # Log response CORS headers
+        if origin:
+            cors_header = response.headers.get("access-control-allow-origin")
+            logger.info(f"CORS Debug - Response Allow-Origin: {cors_header}")
+            
+        return response
 
 # Routers
 app.include_router(root.router, tags=["root"])

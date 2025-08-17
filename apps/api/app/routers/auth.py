@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime
@@ -10,6 +10,17 @@ from ..utils.password_validator import PasswordValidator
 from ..core.config import settings
 
 router = APIRouter()
+
+# Explicit OPTIONS handlers for CORS preflight requests
+@router.options("/register")
+async def options_register():
+    """Handle preflight requests for registration endpoint"""
+    return Response(status_code=200)
+
+@router.options("/login")
+async def options_login():
+    """Handle preflight requests for login endpoint"""
+    return Response(status_code=200)
 
 @router.post("/register", response_model=TokenResponse)
 def register(req: RegisterRequest, db: Session = Depends(get_db)):
