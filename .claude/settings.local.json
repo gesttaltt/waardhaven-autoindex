@@ -35,9 +35,13 @@
       "WebFetch(domain:www.marketaux.com)",
       "Bash(gh run list:*)",
       "Bash(./cli_v2.1.4.exe --help)",
-      "Bash(./cli_v2.1.4.exe whoami)"
+      "Bash(./cli_v2.1.4.exe whoami)",
+      "Bash(./cli_v2.1.4.exe logs:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\Gestalt\\Desktop"
+    ]
   }
 }

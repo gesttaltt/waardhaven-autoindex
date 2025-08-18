@@ -63,7 +63,7 @@ class PortfolioService extends ApiService {
   }
 
   async refreshPortfolio(): Promise<any> {
-    return this.post('/api/v1/tasks/refresh');
+    return this.post('/api/v1/manual/trigger-refresh');
   }
 }
 

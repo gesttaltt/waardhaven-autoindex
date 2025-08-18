@@ -47,3 +47,20 @@ class TokenResponse(BaseModel):
             }
         }
     )
+
+
+class GoogleAuthRequest(BaseModel):
+    """Google OAuth authentication request."""
+    email: EmailStr
+    google_id: str
+    name: str = ""
+    
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "user@gmail.com",
+                "google_id": "1234567890",
+                "name": "John Doe"
+            }
+        }
+    )

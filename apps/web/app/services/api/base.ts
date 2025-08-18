@@ -2,12 +2,14 @@
 
 import { API_BASE_URL } from '../../constants/config';
 import { ApiError } from '../../types/api';
+import { getApiUrl } from '../../utils/env-validator';
 
 export class ApiService {
   protected baseUrl: string;
 
-  constructor(baseUrl: string = API_BASE_URL) {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl?: string) {
+    // Use env validator to get API URL, fallback to constant if not provided
+    this.baseUrl = baseUrl || getApiUrl() || API_BASE_URL;
   }
 
   protected getAuthHeaders(): HeadersInit {

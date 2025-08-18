@@ -133,11 +133,22 @@ def run_index_migration():
         logger.error(f"Unexpected error during migration: {e}")
         return False
 
+def run_google_auth_migration():
+    """Add Google OAuth support to users table."""
+    try:
+        from ..migrations.add_google_auth import upgrade
+        upgrade(engine)
+        return True
+    except Exception as e:
+        logger.error(f"Google auth migration failed: {e}")
+        return False
+
 def run_all_migrations():
     """Run all pending database migrations."""
     
     migrations = [
         ("indexes", run_index_migration),
+        ("google_auth", run_google_auth_migration),
     ]
     
     success_count = 0

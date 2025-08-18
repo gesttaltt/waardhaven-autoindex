@@ -8,7 +8,7 @@ set -e
 # Configuration from environment
 DEBUG_MODE="${DEBUG_MODE:-false}"
 SKIP_STARTUP_REFRESH="${SKIP_STARTUP_REFRESH:-false}"
-MAX_DB_RETRIES="${MAX_DB_RETRIES:-30}"
+MAX_DB_RETRIES="${MAX_DB_RETRIES:-60}"
 REFRESH_TIMEOUT="${REFRESH_TIMEOUT:-120}"
 PORT="${PORT:-10000}"
 
@@ -91,11 +91,30 @@ check_environment() {
 # Check database connection
 check_database() {
     python -c "
-from app.core.database import SessionLocal
+import os
+import time
+from sqlalchemy import create_engine, text
+
+# Get DATABASE_URL directly from environment
+database_url = os.getenv('DATABASE_URL')
+if not database_url:
+    print('DATABASE_URL not set')
+    exit(1)
+
 try:
-    db = SessionLocal()
-    db.execute('SELECT 1')
-    db.close()
+    # Create a simple engine without pooling for connection test
+    engine = create_engine(
+        database_url,
+        pool_pre_ping=True,
+        connect_args={'connect_timeout': 10} if 'postgresql' in database_url else {}
+    )
+    
+    # Try to connect and execute a simple query
+    with engine.connect() as conn:
+        result = conn.execute(text('SELECT 1'))
+        conn.commit()
+    
+    engine.dispose()
     exit(0)
 except Exception as e:
     if '$DEBUG_MODE' == 'true':
@@ -317,13 +336,30 @@ main() {
             echo ""
         fi
     else
-        log_warn "Starting API with limited functionality (database unavailable)"
+        log_warn "Database connection not established during startup"
+        log_warn "The API will attempt to connect when handling requests"
+        log_info "This is common on Render.com during cold starts"
+    fi
+    
+    # Start Celery worker in background if Redis is available
+    if [ ! -z "$REDIS_URL" ]; then
+        log_info "Starting Celery worker in background..."
+        celery -A app.core.celery_app worker --loglevel=info --detach --pidfile=/tmp/celery.pid
+        
+        # Start Celery beat scheduler for periodic tasks
+        log_info "Starting Celery beat scheduler..."
+        celery -A app.core.celery_app beat --loglevel=info --detach --pidfile=/tmp/celerybeat.pid
+    else
+        log_warn "REDIS_URL not set - background tasks will not be available"
     fi
     
     # Start the API server
     echo "============================================"
     log_info "Starting uvicorn server on port $PORT..."
     echo "============================================"
+    
+    # Set environment variable to indicate startup without initial DB connection
+    export DB_INIT_DELAYED=true
     
     exec uvicorn app.main:app --host 0.0.0.0 --port $PORT
 }
