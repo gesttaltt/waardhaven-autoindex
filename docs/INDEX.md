@@ -1,10 +1,11 @@
-# Documentation Index
+# Waardhaven AutoIndex Documentation Index
 
 ## Overview
-Complete documentation structure for the Waardhaven AutoIndex project, organized by module and concept.
+Complete documentation for the Waardhaven AutoIndex platform featuring automated portfolio management, AI-driven insights, market data integration, and sentiment analysis.
 
-**Last Updated**: 2025-01-17  
-**Coverage Status**: Backend 100% | Frontend 85% | Documentation 95%
+**Last Updated**: 2025-01-18  
+**Architecture**: Provider Pattern with TwelveData & Marketaux  
+**Coverage Status**: Backend 100% | Frontend 90% | Documentation 100%
 
 ## Documentation Structure
 
@@ -28,8 +29,9 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 - `index.md` - Portfolio index operations
 - `benchmark.md` - S&P 500 comparison
 - `strategy.md` - Strategy configuration
-- `background.md` - Background task management ✨ NEW
-- `diagnostics.md` - System health monitoring ✨ NEW
+- `news.md` - News & sentiment endpoints ✨ NEW
+- `background.md` - Background task management
+- `diagnostics.md` - System health monitoring
 - `tasks.md` - Task queue operations
 - `manual_refresh.md` - Manual data refresh
 
@@ -38,11 +40,17 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 - `IMPLEMENTATION_SUMMARY.md` - Quick reference guide
 - `TECHNICAL_SPECIFICATIONS.md` - Detailed technical specs
 
+#### providers/ ✨ NEW
+- `base-provider.md` - Abstract provider pattern with circuit breaker
+- `market-data-providers.md` - TwelveData market data provider
+- `news-providers.md` - Marketaux news & sentiment provider
+
 #### services/
-- `twelvedata.md` - Market data integration
+- `market-data.md` - Market data service (refactored)
+- `news-service.md` - News & sentiment service ✨ NEW
 - `strategy.md` - Investment strategy logic
 - `currency.md` - Multi-currency support
-- `refresh.md` - Data refresh operations
+- `refresh.md` - Data refresh operations (updated)
 
 #### utils/
 - `security.md` - Security utilities
@@ -54,14 +62,15 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 
 ### 02-frontend/
 - `README.md` - Frontend architecture and setup guide
-- `API_DOCUMENTATION.md` - Complete API endpoint reference
+- `API_DOCUMENTATION.md` - Complete API endpoint reference (updated with news)
 
-#### pages/ (85% Complete)
-- `dashboard.md` - Main dashboard with navigation
-- `tasks.md` - Task management interface ✨ NEW
-- `diagnostics.md` - System diagnostics dashboard ✨ NEW
-- `reports.md` - Reports & analytics center ✨ NEW
-- `ai-insights.md` - AI analysis page
+#### pages/ (90% Complete)
+- `dashboard.md` - Main dashboard with news widgets ✨ UPDATED
+- `news-analytics.md` - News & sentiment analytics ✨ NEW
+- `tasks.md` - Task management interface
+- `diagnostics.md` - System diagnostics dashboard
+- `reports.md` - Reports & analytics center
+- `ai-insights.md` - AI analysis with sentiment ✨ UPDATED
 - `admin.md` - Admin panel
 - `login.md` - Authentication pages
 - `register.md` - User registration
@@ -69,14 +78,19 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 #### components/
 - `smart-refresh.md` - Intelligent refresh component
 - `strategy-config.md` - Strategy configuration UI
+- `news-feed.md` - News article feed component ✨ NEW
+- `sentiment-dashboard.md` - Sentiment visualization ✨ NEW
+- `entity-trends.md` - Trending entities chart ✨ NEW
+- `news-filters.md` - Advanced news filtering ✨ NEW
 
 #### services/api/
 - `base.md` - Base API service class
 - `portfolio.md` - Portfolio operations
-- `market.md` - Market data
-- `background.md` - Background tasks ✨ NEW
-- `diagnostics.md` - System diagnostics ✨ NEW
-- `benchmark.md` - Benchmark data ✨ NEW
+- `market.md` - Market data (refactored)
+- `news.md` - News & sentiment service ✨ NEW
+- `background.md` - Background tasks
+- `diagnostics.md` - System diagnostics
+- `benchmark.md` - Benchmark data
 
 ### 03-infrastructure/
 #### docker/
@@ -97,9 +111,16 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 - `rebalancing.md` - Rebalancing process
 
 #### market-data/
-- `twelvedata-integration.md` - API integration
+- `provider-pattern.md` - Provider architecture ✨ NEW
+- `twelvedata-integration.md` - TwelveData provider (refactored)
 - `price-fetching.md` - Price updates
 - `data-refresh.md` - Refresh logic
+
+#### news-sentiment/ ✨ NEW
+- `marketaux-integration.md` - Marketaux provider
+- `sentiment-analysis.md` - Sentiment scoring
+- `entity-extraction.md` - Entity identification
+- `news-aggregation.md` - News collection
 
 #### analytics/
 - `performance-tracking.md` - Performance metrics
@@ -169,11 +190,19 @@ Complete documentation structure for the Waardhaven AutoIndex project, organized
 ### Getting Started
 - [Project Overview](00-project-overview/README.md)
 - [Getting Started Guide](00-project-overview/getting-started.md)
+- [API Integration Guide](API_INTEGRATION_GUIDE.md)
 
 ### Key Features
+- [Provider Pattern](04-current-features/market-data/provider-pattern.md) ✨ NEW
+- [News & Sentiment](04-current-features/news-sentiment/sentiment-analysis.md) ✨ NEW
 - [Index Strategy](04-current-features/portfolio-management/index-strategy.md)
 - [JWT Authentication](04-current-features/authentication/jwt-auth.md)
 - [Performance Tracking](04-current-features/analytics/performance-tracking.md)
+
+### API Documentation
+- **TwelveData**: https://twelvedata.com/docs
+- **Marketaux**: https://www.marketaux.com/documentation
+- **FastAPI Docs**: https://waardhaven-api.onrender.com/docs
 
 ### Future Plans
 - [Real-time WebSockets](05-ideas-and-concepts/features/real-time-websockets.md)

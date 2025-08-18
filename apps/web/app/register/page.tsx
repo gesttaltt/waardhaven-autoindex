@@ -1,79 +1,142 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import api from "../utils/api";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AuthRepository } from '../core/infrastructure/repositories/AuthRepository';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const router = useRouter();
+  const authRepository = new AuthRepository();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    setIsLoading(true);
     
     try {
-      const res = await api.post('/api/v1/auth/register', { 
-        email, 
-        password 
-      });
-      
-      console.log('Registration successful:', res.data);
-      localStorage.setItem("token", res.data.access_token);
-      router.push("/dashboard");
+      await authRepository.register({ email, password, name });
+      router.push('/dashboard');
     } catch (err: any) {
-      console.error('Registration error:', err);
-      console.error('Error details:', {
-        message: err.message,
-        code: err.code,
-        response: err.response?.data,
-        status: err.response?.status,
-        headers: err.response?.headers,
-        config: {
-          url: err.config?.url,
-          method: err.config?.method,
-          baseURL: err.config?.baseURL
-        }
-      });
-      
-      // More detailed error handling
-      if (err.response) {
-        // Server responded with error
-        const detail = err.response.data?.detail || err.response.data?.message || 'Unknown server error';
-        setError(`Server error (${err.response.status}): ${detail}`);
-      } else if (err.request) {
-        // Request made but no response
-        setError('Cannot connect to server. Please check if the API is running.');
-      } else {
-        // Request setup error
-        setError('Error setting up request: ' + err.message);
-      }
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="card w-full max-w-md text-center">
-        <h1 className="text-2xl font-semibold gradient-text mb-2">Create Account</h1>
-        <p className="text-neutral-400 text-sm">Join the future of automated investing</p>
-        <div className="mt-6 space-y-4">
-          <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
-          <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button className="btn-primary w-full" type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-          <p className="text-xs text-neutral-500 mt-2">
-            Platform in beta - Use at your own risk
-          </p>
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+          <p className="text-gray-600">Join Waardhaven AutoIndex</p>
         </div>
-      </form>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Name (optional)
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your name"
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your email"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your password"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Confirm your password"
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-300 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isLoading ? 'Creating account...' : 'Sign Up'}
+          </button>
+
+          <div className="text-center text-sm">
+            <span className="text-gray-600">Already have an account? </span>
+            <a href="/login" className="text-blue-600 hover:underline">
+              Sign in
+            </a>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }

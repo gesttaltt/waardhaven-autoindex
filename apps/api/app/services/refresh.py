@@ -6,12 +6,7 @@ from ..models.asset import Asset, Price
 from ..models.index import IndexValue, Allocation
 from ..core.config import settings
 from ..utils.cache_utils import CacheManager
-try:
-    from .twelvedata_optimized import fetch_prices_optimized as fetch_prices
-    use_optimized = True
-except ImportError:
-    from .twelvedata import fetch_prices
-    use_optimized = False
+from ..providers.market_data import TwelveDataProvider
 from .strategy import compute_index_and_allocations
 from ..models.strategy import StrategyConfig
 
@@ -48,14 +43,12 @@ def refresh_all(db: Session, smart_mode: bool = True):
     import json
     logger = logging.getLogger(__name__)
     
-    # Use smart refresh if optimized module is available and enabled
-    if smart_mode and use_optimized:
-        try:
-            from .refresh_optimized import smart_refresh
-            logger.info("Using smart refresh with rate limit protection...")
-            return smart_refresh(db, mode=settings.REFRESH_MODE)
-        except ImportError:
-            logger.warning("Smart refresh not available, falling back to standard refresh")
+    # Initialize provider with new architecture
+    provider = TwelveDataProvider()
+    
+    # Smart mode now uses the improved TwelveData service with built-in rate limiting
+    if smart_mode:
+        logger.info("Using smart refresh with rate limit protection...")
     
     # Create backup before any operations
     backup_timestamp = datetime.utcnow()
@@ -96,7 +89,7 @@ def refresh_all(db: Session, smart_mode: bool = True):
         start = pd.to_datetime(settings.ASSET_DEFAULT_START).date()
         
         try:
-            price_df = fetch_prices(symbols, start=start)
+            price_df = provider.fetch_historical_prices(symbols, start_date=start)
             logger.info(f"Fetched {len(price_df)} price records")
         except Exception as e:
             logger.error(f"Failed to fetch prices: {e}")
@@ -104,7 +97,7 @@ def refresh_all(db: Session, smart_mode: bool = True):
             from datetime import timedelta
             fallback_start = date.today() - timedelta(days=90)
             logger.info(f"Trying fallback period from {fallback_start}")
-            price_df = fetch_prices(symbols, start=fallback_start)
+            price_df = provider.fetch_historical_prices(symbols, start_date=fallback_start)
         
         if price_df.empty:
             logger.error("No price data fetched!")

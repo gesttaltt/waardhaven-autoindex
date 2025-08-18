@@ -1,38 +1,29 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import api from "../utils/api";
+import dynamic from 'next/dynamic';
+
+const LoginForm = dynamic(
+  () => import('../core/presentation/components/auth/LoginForm').then(mod => mod.LoginForm),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+);
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const res = await api.post('/api/v1/auth/login', { email, password });
-      localStorage.setItem("token", res.data.access_token);
-      router.push("/dashboard");
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || "Login failed");
-    }
-  };
-
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="card w-full max-w-md text-center">
-        <h1 className="text-2xl font-semibold gradient-text mb-2">Log In</h1>
-        <p className="text-neutral-400 text-sm">Welcome back to Waardhaven</p>
-        <div className="mt-6 space-y-4">
-          <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
-          <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button className="btn-primary w-full" type="submit">Log In</button>
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+          <p className="text-gray-600">Sign in to Waardhaven AutoIndex</p>
         </div>
-      </form>
+        <LoginForm />
+      </div>
     </main>
   );
 }

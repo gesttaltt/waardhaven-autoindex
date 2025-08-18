@@ -25,7 +25,14 @@
       "Bash(pip install:*)",
       "Bash(set PYTHONPATH=.)",
       "Bash(cp:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.render.com)",
+      "WebFetch(domain:render.com)",
+      "WebSearch",
+      "Bash(powershell:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.marketaux.com)"
     ],
     "deny": [],
     "ask": []

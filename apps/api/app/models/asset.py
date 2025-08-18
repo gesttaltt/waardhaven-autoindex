@@ -2,6 +2,7 @@
 Asset and pricing models.
 """
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date, UniqueConstraint
+from sqlalchemy.orm import relationship
 from ..core.database import Base
 
 
@@ -13,6 +14,14 @@ class Asset(Base):
     symbol = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
     sector = Column(String, nullable=True)
+    
+    # Relationships
+    news_articles = relationship(
+        "NewsArticle",
+        secondary="asset_news",
+        back_populates="assets",
+        overlaps="assets"
+    )
     
     def __repr__(self):
         return f"<Asset(symbol='{self.symbol}', name='{self.name}')>"

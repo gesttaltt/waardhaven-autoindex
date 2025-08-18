@@ -294,10 +294,10 @@ export default function Dashboard() {
               className="bg-purple-600 hover:bg-purple-700"
             />
             <button
-              onClick={() => router.push('/ai-insights')}
+              onClick={() => router.push('/news')}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
             >
-              AI Insights
+              Market News
             </button>
           </div>
         </div>

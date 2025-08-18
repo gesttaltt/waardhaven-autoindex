@@ -9,6 +9,7 @@ export { benchmarkService } from './benchmark';
 export { marketService } from './market';
 export { strategyService } from './strategy';
 export { manualService } from './manual';
+export { newsService } from './news';
 
 // Re-export types
 export type {

@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     ENABLE_MARKET_DATA_CACHE: bool = Field(default=True, env="ENABLE_MARKET_DATA_CACHE")
     REFRESH_MODE: str = Field(default="auto", env="REFRESH_MODE")  # auto, full, minimal, cached
     
+    # Marketaux API configuration
+    MARKETAUX_API_KEY: str = Field(default="", env="MARKETAUX_API_KEY")
+    MARKETAUX_RATE_LIMIT: int = Field(default=100, env="MARKETAUX_RATE_LIMIT")  # Requests per minute
+    ENABLE_NEWS_CACHE: bool = Field(default=True, env="ENABLE_NEWS_CACHE")
+    NEWS_REFRESH_INTERVAL: int = Field(default=900, env="NEWS_REFRESH_INTERVAL")  # 15 minutes
+    
     # Redis configuration
     REDIS_URL: str = Field(default="", env="REDIS_URL")  # redis://localhost:6379/0
     CACHE_TTL_SECONDS: int = Field(default=300, env="CACHE_TTL_SECONDS")  # 5 minutes default

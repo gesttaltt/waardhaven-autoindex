@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
 from ..core.database import get_db
+from ..utils.token_dep import get_current_user, require_admin
+from ..core.config import settings
 from ..models.asset import Asset, Price
 from ..models.index import IndexValue, Allocation
 from ..models.user import User
@@ -301,6 +303,123 @@ def recalculate_autoindex(db: Session = Depends(get_db)):
     except Exception as e:
         return {
             "timestamp": datetime.utcnow().isoformat(),
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+@router.get("/twelvedata-status")
+def get_twelvedata_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get TwelveData API status including usage, rate limits, and cache statistics.
+    """
+    try:
+        from ..services.twelvedata import get_twelvedata_service
+        from ..core.redis_client import get_redis_client
+        
+        service = get_twelvedata_service()
+        redis_client = get_redis_client()
+        
+        # Get API usage from TwelveData
+        api_usage = service.get_api_usage()
+        
+        # Get rate limiter status
+        rate_limit_info = {
+            "credits_per_minute": service.rate_limiter.credits_per_minute,
+            "credits_used_last_minute": len(service.rate_limiter.credits_used),
+            "credits_available": service.rate_limiter.credits_per_minute - len(service.rate_limiter.credits_used)
+        }
+        
+        # Get cache statistics if Redis is available
+        cache_stats = {
+            "enabled": service.cache_enabled,
+            "redis_connected": redis_client.is_connected
+        }
+        
+        if redis_client.is_connected:
+            try:
+                # Get cache keys count
+                cache_keys = redis_client.client.keys("prices:*")
+                quote_keys = redis_client.client.keys("quote:*")
+                forex_keys = redis_client.client.keys("forex:*")
+                
+                cache_stats.update({
+                    "price_cache_entries": len(cache_keys),
+                    "quote_cache_entries": len(quote_keys),
+                    "forex_cache_entries": len(forex_keys),
+                    "total_cache_entries": len(cache_keys) + len(quote_keys) + len(forex_keys)
+                })
+            except Exception as e:
+                cache_stats["error"] = str(e)
+        
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "healthy",
+            "api_usage": api_usage,
+            "rate_limit": rate_limit_info,
+            "cache": cache_stats,
+            "configuration": {
+                "plan": settings.TWELVEDATA_PLAN,
+                "rate_limit": settings.TWELVEDATA_RATE_LIMIT,
+                "refresh_mode": settings.REFRESH_MODE,
+                "cache_enabled": settings.ENABLE_MARKET_DATA_CACHE
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
+
+
+@router.post("/clear-market-cache")
+def clear_market_cache(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Clear all market data cache (admin only).
+    """
+    try:
+        from ..core.redis_client import get_redis_client
+        from ..utils.cache_utils import CacheManager
+        
+        redis_client = get_redis_client()
+        
+        if not redis_client.is_connected:
+            return {
+                "status": "error",
+                "message": "Redis not connected"
+            }
+        
+        # Clear specific cache patterns
+        patterns = ["prices:*", "quote:*", "forex:*", "twelvedata:*"]
+        total_deleted = 0
+        
+        for pattern in patterns:
+            keys = redis_client.client.keys(pattern)
+            if keys:
+                deleted = redis_client.client.delete(*keys)
+                total_deleted += deleted
+        
+        # Also clear via CacheManager
+        CacheManager.invalidate_market_data()
+        
+        return {
+            "status": "success",
+            "message": f"Cleared {total_deleted} cache entries",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        return {
             "status": "error",
             "error": str(e),
             "traceback": traceback.format_exc()

@@ -89,4 +89,23 @@ docs/ROADMAP_*.md
 docs/*_INTERNAL.md
 
 # AI Assistant context (contains project specifics)
-CLAUDE.md
+API_REFACTOR_CONTEXT.md
+.claude-context.md
+.claude/
+
+# CLI Tools
+tools/
+tools/*.exe
+tools/cli_v*.exe
+cli_v*.exe
+
+# Render CLI config (contains API keys and tokens)
+.render/
+*.render.yaml
+*.render.yml
+render-cli-config.yaml
+render-cli-config.yml
+
+# Temporary Render files
+render-tmp/
+render-cache/
