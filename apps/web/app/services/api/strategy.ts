@@ -23,6 +23,9 @@ export interface RiskMetric {
   beta: number;
   alpha: number;
   correlation_with_market: number;
+  total_return?: number;
+  beta_sp500?: number;
+  correlation_sp500?: number;
 }
 
 interface RiskMetrics {
@@ -47,8 +50,9 @@ class StrategyService extends ApiService {
     return this.post('/api/v1/strategy/rebalance');
   }
 
-  async getRiskMetrics(): Promise<RiskMetrics> {
-    return this.get<RiskMetrics>('/api/v1/strategy/risk-metrics');
+  async getRiskMetrics(days?: number): Promise<{ metrics: RiskMetric[] }> {
+    const params = days ? `?days=${days}` : '';
+    return this.get<{ metrics: RiskMetric[] }>(`/api/v1/strategy/risk-metrics${params}`);
   }
 
   async aiAdjust(marketCondition: string): Promise<StrategyConfig> {
