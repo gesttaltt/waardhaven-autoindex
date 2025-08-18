@@ -200,7 +200,6 @@ def test_refresh_process(db: Session = Depends(get_db)):
         
         # Step 2: Test price fetching for one symbol
         from ..services.twelvedata import fetch_prices
-        import pandas as pd
         from datetime import date, timedelta
         
         results["steps"].append({"step": "fetch_prices", "status": "starting"})

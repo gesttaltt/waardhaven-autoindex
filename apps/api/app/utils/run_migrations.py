@@ -2,7 +2,6 @@
 Run database migrations including index creation.
 This can be called from the application startup or manually.
 """
-import os
 import logging
 from sqlalchemy import text, inspect
 from sqlalchemy.exc import SQLAlchemyError

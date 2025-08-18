@@ -3,13 +3,12 @@ Unit tests for TwelveData provider.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import date, datetime, timedelta
+from unittest.mock import patch, MagicMock
+from datetime import date
 import pandas as pd
-import json
 
 from app.providers.market_data import TwelveDataProvider, QuoteData, ExchangeRate
-from app.providers.base import APIError, RateLimitError
+from app.providers.base import APIError, ProviderStatus
 
 
 @pytest.fixture

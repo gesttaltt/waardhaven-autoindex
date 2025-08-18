@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import date, timedelta
+from datetime import date
 import pandas as pd
 from ..models.asset import Asset, Price
 from ..models.index import IndexValue, Allocation
@@ -147,7 +147,6 @@ def refresh_all(db: Session, smart_mode: bool = True):
         
         # Perform BULK batch upsert using PostgreSQL ON CONFLICT
         if price_data:
-            from sqlalchemy import text
             from sqlalchemy.dialects.postgresql import insert
             
             # Split into chunks for better memory management
@@ -163,7 +162,7 @@ def refresh_all(db: Session, smart_mode: bool = True):
                     set_={'close': stmt.excluded.close}
                 )
                 
-                result = db.execute(stmt)
+                db.execute(stmt)
                 
                 # Track inserts vs updates (approximate)
                 price_count += len(chunk)

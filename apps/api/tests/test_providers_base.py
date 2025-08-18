@@ -3,14 +3,12 @@ Unit tests for base provider functionality.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock
 import time
-from datetime import datetime
 
 from app.providers.base import (
     BaseProvider,
     CircuitBreaker,
-    ProviderError,
     RateLimitError,
     APIError,
     CircuitBreakerError,

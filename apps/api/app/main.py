@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -7,11 +7,10 @@ from .core.config import settings
 import time
 from typing import Dict
 from collections import defaultdict
-import asyncio
 import logging
+import os
 
 # Import models to ensure they're registered with SQLAlchemy
-from . import models
 
 logger = logging.getLogger(__name__)
 app = FastAPI(title="Waardhaven Autoindex API", version="0.1.0")
@@ -34,8 +33,6 @@ async def startup_event():
             raise
 
 # CORS - Secure configuration
-import os
-
 # Determine allowed origins based on environment
 if os.getenv("RENDER", None):  # Running on Render
     allowed_origins = [

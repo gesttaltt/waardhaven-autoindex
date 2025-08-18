@@ -1,5 +1,4 @@
 from .core.database import Base, engine, SessionLocal
-from . import models
 from .models import StrategyConfig
 import logging
 

@@ -1,15 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
-from datetime import datetime
-from typing import Optional
 from ..core.database import get_db
 from ..models.user import User
 from ..schemas.auth import RegisterRequest, LoginRequest, TokenResponse, GoogleAuthRequest
 from ..utils.security import get_password_hash, verify_password, create_access_token
 from ..utils.password_validator import PasswordValidator
 from ..utils.token_dep import get_current_user
-from ..core.config import settings
 
 router = APIRouter()
 

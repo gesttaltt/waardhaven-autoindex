@@ -1,12 +1,11 @@
 """Unit tests for refresh service."""
 import pytest
-from datetime import date, datetime
-from unittest.mock import Mock, patch, MagicMock
+from datetime import date
+from unittest.mock import patch
 import pandas as pd
-import json
 
 from app.services.refresh import refresh_all, ensure_assets
-from app.models import Asset, Price, IndexValue, Allocation
+from app.models import Asset, Price, IndexValue
 
 
 class TestRefreshService:

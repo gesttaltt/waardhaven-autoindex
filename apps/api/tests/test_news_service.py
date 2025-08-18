@@ -3,20 +3,16 @@ Unit tests for news service.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock, create_autospec
-from datetime import datetime, timedelta
+from unittest.mock import patch, MagicMock, create_autospec
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.services.news import NewsService
 from app.models.news import (
-    NewsArticle as NewsArticleModel,
-    NewsSentiment as NewsSentimentModel,
-    NewsEntity as NewsEntityModel,
-    NewsSource as NewsSourceModel,
     EntitySentimentHistory
 )
 from app.models.asset import Asset
-from app.providers.news import NewsArticle, NewsSentiment, NewsEntity, SentimentLabel
+from app.providers.news import NewsArticle, NewsSentiment, NewsEntity
 
 
 @pytest.fixture
@@ -119,7 +115,7 @@ class TestNewsService:
         ]
         
         # Search news
-        results = news_service.search_news(
+        news_service.search_news(
             symbols=['AAPL'],
             limit=10
         )
@@ -181,7 +177,7 @@ class TestNewsService:
         )
         
         # Get article
-        result = news_service.get_article('provider-123')
+        news_service.get_article('provider-123')
         
         # Should fetch from provider
         mock_provider.get_article.assert_called_once_with('provider-123')
@@ -382,7 +378,7 @@ class TestNewsService:
         mock_db.query.side_effect = query_side_effect
         
         # Store article
-        result = news_service._store_article(article_data)
+        news_service._store_article(article_data)
         
         # Should create article
         assert mock_db.add.called
@@ -419,7 +415,7 @@ class TestNewsService:
         mock_db.query.side_effect = query_side_effect
         
         # Calculate history
-        history = news_service._calculate_sentiment_history(
+        news_service._calculate_sentiment_history(
             'AAPL',
             datetime(2024, 1, 1),
             datetime(2024, 1, 2)

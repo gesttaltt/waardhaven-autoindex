@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import date
 from ..core.database import get_db
 from ..models.asset import Asset, Price
 from ..models.index import Allocation, IndexValue

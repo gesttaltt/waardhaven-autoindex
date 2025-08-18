@@ -1,10 +1,8 @@
 """Cache utilities and decorators."""
-import json
 import hashlib
 import functools
 import logging
-from typing import Optional, Callable, Any
-from datetime import timedelta
+from typing import Optional, Callable
 
 from ..core.redis_client import get_redis_client
 from ..core.config import settings

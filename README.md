@@ -128,3 +128,4 @@ The application provides a clean REST API organized by domain:
 Build date: 2025-08-12
 Updated: 2025-08-13 - Migrated from Yahoo Finance to TwelveData API
 Updated: 2025-08-17 - Critical fixes for data safety, performance, and reliability
+Updated: 2025-08-18 - Authentication integration fixes for Render deployment

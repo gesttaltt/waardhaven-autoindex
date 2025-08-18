@@ -3,7 +3,7 @@ API endpoints for managing strategy configuration.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import Dict, Optional
+from typing import Dict
 from datetime import datetime
 from ..core.database import get_db
 from ..models.user import User

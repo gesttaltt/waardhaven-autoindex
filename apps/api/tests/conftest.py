@@ -2,7 +2,7 @@
 import os
 import pytest
 from typing import Generator
-from datetime import datetime, date
+from datetime import date
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -16,7 +16,7 @@ os.environ["DEBUG"] = "true"
 
 from app.main import app
 from app.core.database import Base
-from app.models import User, Asset, Price, IndexValue, Allocation, StrategyConfig
+from app.models import User, Asset, Price, StrategyConfig
 from app.utils.security import get_password_hash
 
 
@@ -118,7 +118,7 @@ def sample_assets(test_db: Session) -> list[Asset]:
 def sample_prices(test_db: Session, sample_assets: list[Asset]) -> list[Price]:
     """Create sample price data for testing."""
     prices = []
-    base_date = date(2024, 1, 1)
+    _base_date = date(2024, 1, 1)
     
     for day_offset in range(30):  # 30 days of data
         current_date = date(2024, 1, 1 + day_offset)

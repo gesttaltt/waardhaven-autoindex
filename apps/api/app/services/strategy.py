@@ -2,8 +2,7 @@
 Enhanced AutoIndex strategy with dynamic weighting and comprehensive risk management.
 """
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from typing import Dict, List, Tuple, Optional
@@ -496,9 +495,6 @@ def compute_index_and_allocations(db: Session, config: Optional[Dict] = None):
         normalized_index_values = []
     
     # Safe upsert with transaction and backup
-    from contextlib import contextmanager
-    import json
-    from datetime import datetime
     
     # Create backup of existing data before modifications
     existing_index_values = db.query(IndexValue).all()

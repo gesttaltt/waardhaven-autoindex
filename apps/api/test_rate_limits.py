@@ -4,7 +4,7 @@ Test script for TwelveData rate limit protection.
 """
 import os
 import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 import time
 
@@ -58,7 +58,7 @@ def test_rate_limit_protection():
                 print(f"❌ {symbol}: {e}")
         
         total_time = time.time() - start_time
-        print(f"\n📊 Summary:")
+        print("\n📊 Summary:")
         print(f"   Successful requests: {successful_requests}/{len(symbols)}")
         print(f"   Total time: {total_time:.1f} seconds")
         

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
@@ -136,7 +136,6 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
         from ..models.asset import Asset, Price
         from ..models.index import IndexValue
         from datetime import date, timedelta
-        import pandas as pd
         
         results = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -200,7 +199,7 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
                     existing = db.query(IndexValue).filter(IndexValue.date == dt.date()).first()
                     if not existing:
                         db.add(IndexValue(date=dt.date(), value=avg_price))
-                except:
+                except Exception:
                     pass
             
             db.commit()

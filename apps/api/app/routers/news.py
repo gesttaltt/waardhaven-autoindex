@@ -10,8 +10,6 @@ from datetime import datetime, timedelta
 from ..core.database import get_db
 from ..schemas.news import (
     NewsArticleResponse,
-    NewsSearchRequest,
-    NewsSentimentResponse,
     EntitySentimentResponse,
     TrendingEntityResponse
 )

@@ -53,7 +53,6 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Security validation
-import os
 if os.getenv("RENDER") or os.getenv("PRODUCTION"):  # Production environment
     if not settings.ADMIN_TOKEN or len(settings.ADMIN_TOKEN) < 32:
         import warnings

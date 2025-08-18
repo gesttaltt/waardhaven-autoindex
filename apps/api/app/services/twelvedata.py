@@ -4,16 +4,14 @@ Implements best practices from the official TwelveData Python library.
 """
 import time
 import pandas as pd
-from datetime import date, datetime, timedelta
-from typing import Optional, Dict, List, Tuple, Any
+from datetime import date
+from typing import Optional, Dict, List, Any
 import logging
 import json
-from functools import wraps
 from twelvedata import TDClient
 from twelvedata.exceptions import TwelveDataError
 
 from ..core.config import settings
-from ..utils.cache_utils import CacheManager
 from ..core.redis_client import get_redis_client
 
 logger = logging.getLogger(__name__)

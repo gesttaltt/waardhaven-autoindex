@@ -5,7 +5,6 @@ Implements common functionality and error handling.
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, TypeVar, Generic
-from datetime import datetime
 import logging
 import time
 from functools import wraps
@@ -211,7 +210,7 @@ class BaseProvider(ABC, Generic[T]):
             )
             self._record_success()
             return result
-        except Exception as e:
+        except Exception:
             self._record_error()
             raise
     

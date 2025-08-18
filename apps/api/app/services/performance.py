@@ -2,15 +2,13 @@
 Portfolio performance metrics calculation service.
 Provides Sharpe ratio, Sortino ratio, max drawdown, and other key metrics.
 """
-import pandas as pd
 import numpy as np
 from typing import Dict, List, Optional, Tuple
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
 import logging
 
-from ..models.index import IndexValue, Allocation
+from ..models.index import IndexValue
 from ..models.asset import Asset, Price
 from ..models.strategy import RiskMetrics
 from ..core.config import settings
@@ -348,9 +346,9 @@ def calculate_portfolio_metrics(db: Session, lookback_days: Optional[int] = None
         
         # Calculate current drawdown
         current_drawdown = 0.0
-        if len(portfolio_values) > 0:
-            current_value = portfolio_values[-1]
-            running_max = max(portfolio_values)
+        if len(values) > 0:
+            current_value = values[-1]
+            running_max = max(values)
             if running_max > 0:
                 current_drawdown = ((current_value - running_max) / running_max) * 100
         

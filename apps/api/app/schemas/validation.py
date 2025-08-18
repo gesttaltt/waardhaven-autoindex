@@ -1,7 +1,7 @@
 """Enhanced validation schemas with security constraints."""
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import Optional, Dict, Any, Self
-from datetime import date, datetime
+from typing import Optional, Self
+from datetime import date
 import re
 
 
@@ -178,7 +178,7 @@ class SecureSimulationRequest(BaseModel):
             if v < min_date:
                 raise ValueError(f"Start date cannot be before {min_date}")
             if v > max_date:
-                raise ValueError(f"Start date cannot be in the future")
+                raise ValueError("Start date cannot be in the future")
         
         return v
 

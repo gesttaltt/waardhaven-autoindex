@@ -38,7 +38,7 @@ def test_basic_connection():
         quote = client.quote(symbol="AAPL").as_json()
         
         if quote and 'symbol' in quote:
-            print(f"✅ Basic connection successful")
+            print("✅ Basic connection successful")
             print(f"   AAPL current price: ${quote.get('close', 'N/A')}")
             return True
         else:

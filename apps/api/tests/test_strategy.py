@@ -1,7 +1,7 @@
 """Unit tests for strategy service."""
 import pytest
-from datetime import date, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from datetime import date
+from unittest.mock import patch
 import pandas as pd
 import numpy as np
 
@@ -11,7 +11,7 @@ from app.services.strategy import (
     calculate_risk_parity_weights,
     apply_data_quality_filters
 )
-from app.models import Asset, Price, IndexValue, Allocation
+from app.models import Price, IndexValue, Allocation
 
 
 class TestStrategyService:
@@ -203,7 +203,6 @@ class TestDataIntegrity:
     def test_concurrent_updates(self, test_db, sample_assets, sample_prices):
         """Test that concurrent updates don't corrupt data."""
         from threading import Thread
-        import time
         
         def update_strategy():
             """Run strategy update in thread."""
@@ -223,7 +222,7 @@ class TestDataIntegrity:
         
         # Verify data integrity
         index_values = test_db.query(IndexValue).all()
-        allocations = test_db.query(Allocation).all()
+        test_db.query(Allocation).all()
         
         # Should have consistent data (no duplicates for same date)
         dates = [iv.date for iv in index_values]

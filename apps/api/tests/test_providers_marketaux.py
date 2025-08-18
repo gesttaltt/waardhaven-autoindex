@@ -3,15 +3,12 @@ Unit tests for Marketaux news provider.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timedelta
+from unittest.mock import patch, MagicMock
+from datetime import datetime
 import json
 
 from app.providers.news import (
     MarketauxProvider,
-    NewsArticle,
-    NewsSentiment,
-    NewsEntity,
     NewsSearchParams,
     SentimentLabel
 )

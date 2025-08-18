@@ -5,17 +5,15 @@ Provides financial news with sentiment analysis and entity extraction.
 
 import logging
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional, Any
-from urllib.parse import urlencode
 
 from .interface import (
     NewsProvider,
     NewsArticle,
     NewsSentiment,
     NewsEntity,
-    NewsSearchParams,
-    SentimentLabel
+    NewsSearchParams
 )
 from ..base import ProviderStatus, APIError, RateLimitError
 from ...core.config import settings

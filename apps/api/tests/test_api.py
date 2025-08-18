@@ -1,9 +1,9 @@
 """API endpoint integration tests."""
 import pytest
-from datetime import date, datetime
+from datetime import date
 from unittest.mock import patch
 
-from app.models import User, Asset, Price, IndexValue, Allocation
+from app.models import Asset, Price, IndexValue, Allocation
 
 
 class TestAuthEndpoints:
@@ -167,7 +167,7 @@ class TestIndexEndpoints:
         test_db.commit()
         
         response = client.get(
-            f"/api/v1/index/assets/AAPL/history",
+            "/api/v1/index/assets/AAPL/history",
             headers=auth_headers
         )
         

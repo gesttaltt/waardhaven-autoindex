@@ -1,8 +1,7 @@
 """Unit tests for performance calculation service."""
 import pytest
 import numpy as np
-from datetime import date, timedelta
-from unittest.mock import Mock, patch
+from datetime import date
 
 from app.services.performance import (
     PerformanceCalculator,

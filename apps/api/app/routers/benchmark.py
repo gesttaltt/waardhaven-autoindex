@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from ..core.database import get_db
 from ..models.index import IndexValue
 from ..models.asset import Asset, Price
@@ -51,7 +50,6 @@ def compare_performance(
 ):
     """Compare Autoindex performance against S&P 500 benchmark."""
     import numpy as np
-    from datetime import datetime, timedelta
     
     # Get index values
     query = db.query(IndexValue).order_by(IndexValue.date.asc())

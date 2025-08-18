@@ -6,14 +6,14 @@ Implements MarketDataProvider interface with TwelveData API.
 import time
 import json
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Dict, List, Optional, Any
 import pandas as pd
 from twelvedata import TDClient
 from twelvedata.exceptions import TwelveDataError
 
 from .interface import MarketDataProvider, QuoteData, ExchangeRate
-from ..base import ProviderStatus, RateLimitError, APIError, retry_with_backoff
+from ..base import ProviderStatus, APIError, retry_with_backoff
 from ...core.config import settings
 from ...core.redis_client import get_redis_client
 

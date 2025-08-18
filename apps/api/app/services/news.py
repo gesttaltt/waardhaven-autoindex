@@ -6,7 +6,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc, and_
+from sqlalchemy import func, desc
 
 from ..models.news import (
     NewsArticle as NewsArticleModel,
@@ -19,7 +19,6 @@ from ..models.news import (
 from ..models.asset import Asset
 from ..providers.news import MarketauxProvider, NewsSearchParams
 from ..core.redis_client import get_redis_client
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +72,6 @@ class NewsService:
         
         if published_before:
             query = query.filter(NewsArticleModel.published_at <= published_before)
-        
-        # Get total count before pagination
-        total_count = query.count()
         
         # Apply pagination
         query = query.order_by(desc(NewsArticleModel.published_at))
