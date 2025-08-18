@@ -45,9 +45,10 @@ def run_index_migration():
                 if not index_exists:
                     # Create index using parameterized statement
                     columns_str = ", ".join(columns)
-                    # Use SQLAlchemy's text() with bound parameters for safety
-                    create_index_sql = f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({columns_str})"
-                    conn.execute(text(create_index_sql))
+                    # Use SQLAlchemy DDL for safer index creation
+                    from sqlalchemy import DDL
+                    create_index_ddl = DDL(f"CREATE INDEX IF NOT EXISTS {index_name} ON {table_name} ({columns_str})")
+                    conn.execute(create_index_ddl)
                     logger.info(f"Created index: {index_name} on {table_name}")
                     created_count += 1
                 else:
@@ -66,16 +67,16 @@ def run_index_migration():
                 
                 # Add created_at if missing
                 if 'created_at' not in column_names:
-                    conn.execute(text(
-                        f"ALTER TABLE {table_name} ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-                    ))
+                    from sqlalchemy import DDL
+                    add_column_ddl = DDL(f"ALTER TABLE {table_name} ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                    conn.execute(add_column_ddl)
                     logger.info(f"Added created_at column to {table_name}")
                 
                 # Add updated_at if missing
                 if 'updated_at' not in column_names:
-                    conn.execute(text(
-                        f"ALTER TABLE {table_name} ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-                    ))
+                    from sqlalchemy import DDL
+                    add_column_ddl = DDL(f"ALTER TABLE {table_name} ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                    conn.execute(add_column_ddl)
                     logger.info(f"Added updated_at column to {table_name}")
             
             # Create update trigger function (PostgreSQL specific)
@@ -95,17 +96,22 @@ def run_index_migration():
                 for table_name in tables_to_update:
                     if inspector.has_table(table_name):
                         trigger_name = f"update_{table_name}_updated_at"
-                        conn.execute(text(f"DROP TRIGGER IF EXISTS {trigger_name} ON {table_name}"))
-                        conn.execute(text(
+                        from sqlalchemy import DDL
+                        drop_trigger_ddl = DDL(f"DROP TRIGGER IF EXISTS {trigger_name} ON {table_name}")
+                        conn.execute(drop_trigger_ddl)
+                        create_trigger_ddl = DDL(
                             f"CREATE TRIGGER {trigger_name} BEFORE UPDATE ON {table_name} "
                             f"FOR EACH ROW EXECUTE FUNCTION update_updated_at_column()"
-                        ))
+                        )
+                        conn.execute(create_trigger_ddl)
                         logger.info(f"Created update trigger for {table_name}")
             
             # Update statistics for query planner
             for table_name in tables_to_update:
                 if inspector.has_table(table_name):
-                    conn.execute(text(f"ANALYZE {table_name}"))
+                    from sqlalchemy import DDL
+                    analyze_ddl = DDL(f"ANALYZE {table_name}")
+                    conn.execute(analyze_ddl)
             
             logger.info(f"Migration completed. Created {created_count} new indexes.")
             

@@ -57,11 +57,16 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-        run: ${{ inputs.build-command }}
+          BUILD_CMD: ${{ inputs.build-command }}
+        run: |
+          eval "$BUILD_CMD"
 
       - name: Run tests
         working-directory: ${{ inputs.working-directory }}
-        run: ${{ inputs.test-command }}
+        env:
+          TEST_CMD: ${{ inputs.test-command }}
+        run: |
+          eval "$TEST_CMD"
 
       - name: Upload test coverage
         if: always()
