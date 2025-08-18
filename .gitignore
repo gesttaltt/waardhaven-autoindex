@@ -109,3 +109,7 @@ render-cli-config.yml
 # Temporary Render files
 render-tmp/
 render-cache/
+
+# Local scripts
+install-render-cli.ps1
+run-local-no-docker.bat

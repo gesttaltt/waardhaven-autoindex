@@ -32,7 +32,10 @@
       "WebSearch",
       "Bash(powershell:*)",
       "Bash(curl:*)",
-      "WebFetch(domain:www.marketaux.com)"
+      "WebFetch(domain:www.marketaux.com)",
+      "Bash(gh run list:*)",
+      "Bash(./cli_v2.1.4.exe --help)",
+      "Bash(./cli_v2.1.4.exe whoami)"
     ],
     "deny": [],
     "ask": []
