@@ -13,6 +13,10 @@ import {
   type RiskMetric 
 } from "../services/api";
 import SmartRefresh from "../components/SmartRefresh";
+import AdvancedAnalytics from "../components/dashboard/AdvancedAnalytics";
+import SystemHealthIndicator from "../components/dashboard/SystemHealthIndicator";
+import DataQualityIndicator from "../components/dashboard/DataQualityIndicator";
+import TaskNotifications from "../components/shared/TaskNotifications";
 
 type SeriesPoint = { date: string; value: number };
 type AllocationItem = { symbol: string; weight: number; name?: string; sector?: string };
@@ -42,6 +46,7 @@ export default function Dashboard() {
   const [loadingAssets, setLoadingAssets] = useState<{[key: string]: boolean}>({});
   const [riskMetrics, setRiskMetrics] = useState<RiskMetric | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
   const { isAuthenticated, isLoading } = useAuth();
   
   // Function to refresh dashboard data using new services
@@ -285,26 +290,76 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-8">
+      {/* Task Notifications */}
+      <TaskNotifications />
+      
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto"
       >
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-            Portfolio Dashboard
-          </h1>
+        <div className="mb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 mb-2">
+              Portfolio Dashboard
+            </h1>
+            <SystemHealthIndicator className="w-80" />
+          </div>
           <div className="flex gap-4">
             <SmartRefresh 
               onRefresh={refreshDashboardData}
               className="bg-purple-600 hover:bg-purple-700"
             />
             <button
+              onClick={() => setShowAdvancedAnalytics(!showAdvancedAnalytics)}
+              className={`px-6 py-3 rounded-lg transition-all ${
+                showAdvancedAnalytics 
+                  ? 'bg-purple-700 text-white shadow-lg' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Advanced Analytics
+            </button>
+            <button
               onClick={() => router.push('/news')}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
             >
               Market News
+            </button>
+          </div>
+        </div>
+
+        {/* System Status Row */}
+        <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <DataQualityIndicator 
+            onRefreshNeeded={refreshDashboardData}
+            className="lg:col-span-2"
+          />
+          <div className="space-y-4">
+            <button
+              onClick={() => router.push('/tasks')}
+              className="w-full p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:bg-gray-700/50 transition-all text-left"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Task Center</h3>
+                  <p className="text-sm text-gray-400">Monitor background operations</p>
+                </div>
+                <span className="text-gray-400">→</span>
+              </div>
+            </button>
+            <button
+              onClick={() => router.push('/diagnostics')}
+              className="w-full p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 hover:bg-gray-700/50 transition-all text-left"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">System Health</h3>
+                  <p className="text-sm text-gray-400">Full diagnostics panel</p>
+                </div>
+                <span className="text-gray-400">→</span>
+              </div>
             </button>
           </div>
         </div>
@@ -719,6 +774,24 @@ export default function Dashboard() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        {/* Advanced Analytics Section */}
+        <AnimatePresence>
+          {showAdvancedAnalytics && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: 20 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="mt-8"
+            >
+              <AdvancedAnalytics 
+                allocations={allocations}
+                onRefresh={refreshDashboardData}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );
