@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../core/presentation/contexts/AuthContext";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine, Brush } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -41,7 +42,7 @@ export default function Dashboard() {
   const [loadingAssets, setLoadingAssets] = useState<{[key: string]: boolean}>({});
   const [riskMetrics, setRiskMetrics] = useState<RiskMetric | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const { isAuthenticated, isLoading } = useAuth();
   
   // Function to refresh dashboard data using new services
   const refreshDashboardData = async () => {
@@ -123,13 +124,15 @@ export default function Dashboard() {
   const COLORS = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7'];
 
   useEffect(() => {
-    if (!token) {
+    if (!isLoading && !isAuthenticated) {
       router.push("/login");
       return;
     }
     
-    loadDashboardData().finally(() => setLoading(false));
-  }, [token, router]);
+    if (!isLoading && isAuthenticated) {
+      loadDashboardData().finally(() => setLoading(false));
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   // Fetch asset data when individual assets are selected
   useEffect(() => {
@@ -268,12 +271,16 @@ export default function Dashboard() {
     }));
   }, [allocations]);
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 flex items-center justify-center">
         <div className="text-white text-2xl animate-pulse">Loading dashboard...</div>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
   }
 
   return (

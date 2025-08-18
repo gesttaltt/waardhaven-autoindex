@@ -36,7 +36,10 @@
       "Bash(gh run list:*)",
       "Bash(./cli_v2.1.4.exe --help)",
       "Bash(./cli_v2.1.4.exe whoami)",
-      "Bash(./cli_v2.1.4.exe logs:*)"
+      "Bash(./cli_v2.1.4.exe logs:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run type-check:*)"
     ],
     "deny": [],
     "ask": [],

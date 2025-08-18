@@ -65,7 +65,13 @@ Open: http://localhost:3000
 
 ### API Surface
 The application provides a clean REST API organized by domain:
-- **Authentication** (`/api/v1/auth`): User registration and login with JWT tokens
+- **Authentication** (`/api/v1/auth`): Complete user authentication system
+  - `POST /auth/register` - User registration
+  - `POST /auth/login` - User login  
+  - `POST /auth/google` - Google OAuth
+  - `GET /auth/me` - Current user info
+  - `POST /auth/refresh` - Token refresh
+  - `POST /auth/logout` - User logout
 - **Index Management** (`/api/v1/index`): Portfolio data, allocations, and simulations
 - **Strategy** (`/api/v1/strategy`): Dynamic strategy configuration and risk metrics
 - **Diagnostics** (`/api/v1/diagnostics`): System health and data status monitoring

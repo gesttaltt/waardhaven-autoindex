@@ -8,6 +8,7 @@ from ..models.user import User
 from ..schemas.auth import RegisterRequest, LoginRequest, TokenResponse, GoogleAuthRequest
 from ..utils.security import get_password_hash, verify_password, create_access_token
 from ..utils.password_validator import PasswordValidator
+from ..utils.token_dep import get_current_user
 from ..core.config import settings
 
 router = APIRouter()
@@ -92,3 +93,27 @@ def google_auth(req: GoogleAuthRequest, db: Session = Depends(get_db)):
     # Generate token
     token = create_access_token(str(user.id))
     return TokenResponse(access_token=token)
+
+
+@router.get("/me")
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """Get current user information."""
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "is_google_user": getattr(current_user, 'is_google_user', False),
+        "created_at": current_user.created_at.isoformat() if hasattr(current_user, 'created_at') else None
+    }
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_token(current_user: User = Depends(get_current_user)):
+    """Refresh the access token for the current user."""
+    token = create_access_token(str(current_user.id))
+    return TokenResponse(access_token=token)
+
+
+@router.post("/logout")
+def logout():
+    """Logout endpoint - token invalidation handled on client side."""
+    return {"message": "Successfully logged out"}

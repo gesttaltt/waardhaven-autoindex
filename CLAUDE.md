@@ -50,6 +50,31 @@ cd apps/api && ruff check .
 9. ✅ **Background Tasks**: Celery-based async processing with queues
 10. ✅ **Task Monitoring**: Flower dashboard for task monitoring
 
+## Latest Updates (2025-08-18)
+
+### ✅ Authentication Integration Fixes
+**Issue**: Login auth errors in Render deployment - `useAuth must be used within AuthProvider`
+**Resolution**: Complete auth system integration between frontend and backend
+
+#### Frontend Changes:
+- **Fixed Provider Integration**: `apps/web/app/layout.tsx:3` - Corrected import to use providers with AuthProvider
+- **Dashboard Auth Context**: `apps/web/app/dashboard/page.tsx:5,45,127-135,274-284` - Updated to use `useAuth()` hook instead of localStorage
+- **Proper Auth State Management**: Added loading states and auth checks
+
+#### Backend Changes:
+- **Added Missing Auth Endpoints**: `apps/api/app/routers/auth.py:98-119`
+  - `GET /api/v1/auth/me` - Get current user information
+  - `POST /api/v1/auth/refresh` - Refresh access tokens
+  - `POST /api/v1/auth/logout` - Logout endpoint
+- **JWT Token Integration**: Proper token dependency injection with `get_current_user`
+
+#### Integration Results:
+- ✅ **AuthProvider Context**: Properly wraps all components in React app
+- ✅ **Frontend-Backend Sync**: Auth state synchronized between client and server
+- ✅ **TypeScript Compilation**: No auth-related type errors
+- ✅ **Build Process**: Production build successful
+- ✅ **Deployment Ready**: Render.com deployment auth issues resolved
+
 ## Testing
 ```bash
 # Run all tests
@@ -103,6 +128,12 @@ Base URL: `/api/v1/`
 
 ### Core Endpoints
 - `/auth/*` - Authentication (JWT-based)
+  - `POST /auth/register` - User registration
+  - `POST /auth/login` - User login
+  - `POST /auth/google` - Google OAuth authentication
+  - `GET /auth/me` - Get current user info
+  - `POST /auth/refresh` - Refresh access token
+  - `POST /auth/logout` - User logout
 - `/index/*` - Portfolio index operations
 - `/benchmark/*` - S&P 500 comparison
 - `/strategy/*` - Strategy configuration
@@ -139,6 +170,13 @@ NEXT_PUBLIC_API_URL=<production-api-url>
 3. Follow existing naming conventions
 4. Test API changes with both frontend and direct API calls
 5. Ensure TypeScript types match backend schemas
+
+## Authentication Architecture
+- **Frontend**: React Context API with AuthProvider wrapping the entire app
+- **Backend**: JWT tokens with FastAPI dependency injection
+- **Storage**: Secure token storage in AuthRepository with TokenManager
+- **Flow**: Login → JWT token → Stored in context → Automatic refresh
+- **Protection**: Routes protected with ProtectedRoute component and useAuth hook
 
 ## Performance Considerations
 - Missing database indexes on (asset_id, date) combinations
