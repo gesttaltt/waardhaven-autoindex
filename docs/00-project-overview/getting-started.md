@@ -25,12 +25,21 @@ cd AI-Investment
 ```bash
 cd apps/api
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # For development tools
 ```
 
 #### Frontend Setup
 ```bash
 cd apps/web
 npm install
+```
+
+#### Setup Code Formatting (Recommended)
+```bash
+# From project root - sets up pre-commit hooks
+bash apps/api/scripts/setup-pre-commit.sh  # Unix/Mac
+# OR
+apps\api\scripts\setup-pre-commit.bat     # Windows
 ```
 
 ### 3. Environment Configuration
@@ -193,16 +202,51 @@ The project includes several startup scripts for different scenarios:
 - Check ALLOWED_ORIGINS in production
 - Verify API_URL in frontend config
 
+## Development Tools
+
+### Code Formatting & Linting
+The project enforces code quality through automated formatting:
+
+#### Backend (Python)
+```bash
+cd apps/api
+black .                    # Format code
+ruff check . --fix        # Fix linting issues
+mypy app --ignore-missing-imports  # Type checking
+```
+
+#### Frontend (TypeScript)
+```bash
+cd apps/web
+npm run format            # Format with Prettier
+npm run lint              # Fix ESLint issues
+npm run type-check        # TypeScript checking
+```
+
+#### CI/CD Checks
+Before pushing, ensure your code passes:
+```bash
+# Backend
+black --check .
+ruff check .
+
+# Frontend
+npm run format:check
+npm run lint:check
+```
+
 ## Development Workflow
 
 1. Create feature branch
 2. Make changes
-3. Test locally
-4. Run tests
-5. Create pull request
-6. Deploy to staging (if available)
-7. Merge to main
-8. Deploy to production
+3. Run formatters (`black`, `prettier`)
+4. Test locally
+5. Run tests
+6. Create pull request
+7. CI/CD validates formatting
+8. Deploy to staging (if available)
+9. Merge to main
+10. Deploy to production
 
 ## Useful Resources
 
