@@ -1,4 +1,5 @@
 """Celery application configuration."""
+
 from celery import Celery
 from .config import settings
 
@@ -7,7 +8,7 @@ celery_app = Celery(
     "waardhaven_tasks",
     broker=settings.REDIS_URL or "redis://localhost:6379/1",
     backend=settings.REDIS_URL or "redis://localhost:6379/1",
-    include=["app.tasks.background_tasks"]
+    include=["app.tasks.background_tasks"],
 )
 
 # Configure Celery
@@ -38,16 +39,16 @@ celery_app.conf.beat_schedule = {
     "daily-refresh": {
         "task": "app.tasks.background_tasks.refresh_market_data",
         "schedule": 86400.0,  # Daily (24 hours)
-        "options": {"queue": "high_priority"}
+        "options": {"queue": "high_priority"},
     },
     "hourly-index-computation": {
         "task": "app.tasks.background_tasks.compute_index",
         "schedule": 3600.0,  # Hourly
-        "options": {"queue": "high_priority"}
+        "options": {"queue": "high_priority"},
     },
     "weekly-cleanup": {
         "task": "app.tasks.background_tasks.cleanup_old_data",
         "schedule": 604800.0,  # Weekly
-        "options": {"queue": "low_priority"}
+        "options": {"queue": "low_priority"},
     },
 }

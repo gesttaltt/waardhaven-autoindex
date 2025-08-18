@@ -5,11 +5,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def main():
     """Initialize database with tables and default configuration."""
     Base.metadata.create_all(bind=engine)
     logger.info("DB tables created.")
-    
+
     # Create default strategy configuration if it doesn't exist
     db = SessionLocal()
     try:
@@ -26,13 +27,14 @@ def main():
                 max_forward_fill_days=2,
                 outlier_std_threshold=3.0,
                 rebalance_frequency="weekly",
-                daily_drop_threshold=-0.01
+                daily_drop_threshold=-0.01,
             )
             db.add(config)
             db.commit()
             logger.info("Created default strategy configuration")
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     main()

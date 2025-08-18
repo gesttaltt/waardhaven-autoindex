@@ -12,11 +12,12 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ProviderStatus(Enum):
     """Provider health status."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -25,11 +26,13 @@ class ProviderStatus(Enum):
 
 class ProviderError(Exception):
     """Base exception for provider errors."""
+
     pass
 
 
 class RateLimitError(ProviderError):
     """Raised when rate limit is exceeded."""
+
     def __init__(self, message: str, retry_after: Optional[int] = None):
         super().__init__(message)
         self.retry_after = retry_after
@@ -37,6 +40,7 @@ class RateLimitError(ProviderError):
 
 class APIError(ProviderError):
     """Raised when API returns an error."""
+
     def __init__(self, message: str, status_code: Optional[int] = None):
         super().__init__(message)
         self.status_code = status_code
@@ -44,6 +48,7 @@ class APIError(ProviderError):
 
 class CircuitBreakerError(ProviderError):
     """Raised when circuit breaker is open."""
+
     pass
 
 
@@ -52,14 +57,14 @@ class CircuitBreaker:
     Simple circuit breaker implementation.
     Opens after consecutive failures, prevents unnecessary API calls.
     """
-    
+
     def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failure_count = 0
         self.last_failure_time = None
         self.state = "closed"  # closed, open, half-open
-    
+
     def call(self, func, *args, **kwargs):
         """Execute function with circuit breaker protection."""
         if self.state == "open":
@@ -67,7 +72,7 @@ class CircuitBreaker:
                 self.state = "half-open"
             else:
                 raise CircuitBreakerError("Circuit breaker is open")
-        
+
         try:
             result = func(*args, **kwargs)
             self._on_success()
@@ -75,39 +80,42 @@ class CircuitBreaker:
         except Exception as e:
             self._on_failure()
             raise e
-    
+
     def _should_attempt_reset(self) -> bool:
         """Check if enough time has passed to try again."""
         return (
-            self.last_failure_time and
-            time.time() - self.last_failure_time >= self.recovery_timeout
+            self.last_failure_time
+            and time.time() - self.last_failure_time >= self.recovery_timeout
         )
-    
+
     def _on_success(self):
         """Reset circuit breaker on successful call."""
         self.failure_count = 0
         self.state = "closed"
-    
+
     def _on_failure(self):
         """Handle failure, potentially opening circuit."""
         self.failure_count += 1
         self.last_failure_time = time.time()
-        
+
         if self.failure_count >= self.failure_threshold:
             self.state = "open"
-            logger.warning(f"Circuit breaker opened after {self.failure_count} failures")
+            logger.warning(
+                f"Circuit breaker opened after {self.failure_count} failures"
+            )
 
 
 def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
     """
     Decorator for exponential backoff retry logic.
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             delay = base_delay
             last_exception = None
-            
+
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)
@@ -130,12 +138,13 @@ def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0):
                 except Exception as e:
                     last_exception = e
                     raise
-            
+
             # All retries exhausted
             if last_exception:
                 raise last_exception
-            
+
         return wrapper
+
     return decorator
 
 
@@ -144,7 +153,7 @@ class BaseProvider(ABC, Generic[T]):
     Abstract base class for all data providers.
     Provides common functionality like caching, rate limiting, and error handling.
     """
-    
+
     def __init__(self, api_key: Optional[str] = None, cache_enabled: bool = True):
         self.api_key = api_key
         self.cache_enabled = cache_enabled
@@ -153,22 +162,22 @@ class BaseProvider(ABC, Generic[T]):
         self._request_count = 0
         self._error_count = 0
         self._success_count = 0
-    
+
     @abstractmethod
     def get_provider_name(self) -> str:
         """Return the provider name."""
         pass
-    
+
     @abstractmethod
     def validate_config(self) -> bool:
         """Validate provider configuration."""
         pass
-    
+
     @abstractmethod
     def health_check(self) -> ProviderStatus:
         """Check provider health status."""
         pass
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get provider statistics."""
         return {
@@ -178,22 +187,22 @@ class BaseProvider(ABC, Generic[T]):
             "errors": self._error_count,
             "error_rate": self._error_count / max(self._request_count, 1),
             "circuit_breaker_state": self.circuit_breaker.state,
-            "last_request": self._last_request_time
+            "last_request": self._last_request_time,
         }
-    
+
     def _record_request(self):
         """Record request for statistics."""
         self._request_count += 1
         self._last_request_time = time.time()
-    
+
     def _record_success(self):
         """Record successful request."""
         self._success_count += 1
-    
+
     def _record_error(self):
         """Record failed request."""
         self._error_count += 1
-    
+
     @retry_with_backoff(max_retries=3)
     def make_request(self, endpoint: str, params: Optional[Dict] = None) -> Any:
         """
@@ -201,19 +210,15 @@ class BaseProvider(ABC, Generic[T]):
         Subclasses should implement _execute_request.
         """
         self._record_request()
-        
+
         try:
-            result = self.circuit_breaker.call(
-                self._execute_request,
-                endpoint,
-                params
-            )
+            result = self.circuit_breaker.call(self._execute_request, endpoint, params)
             self._record_success()
             return result
         except Exception:
             self._record_error()
             raise
-    
+
     @abstractmethod
     def _execute_request(self, endpoint: str, params: Optional[Dict] = None) -> Any:
         """

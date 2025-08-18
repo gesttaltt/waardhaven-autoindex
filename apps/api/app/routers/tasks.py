@@ -6,6 +6,7 @@ from ..services.refresh import refresh_all
 
 router = APIRouter()
 
+
 @router.post("/refresh")
 def manual_refresh(x_admin_token: str = Header(None), db: Session = Depends(get_db)):
     if not settings.ADMIN_TOKEN or x_admin_token != settings.ADMIN_TOKEN:

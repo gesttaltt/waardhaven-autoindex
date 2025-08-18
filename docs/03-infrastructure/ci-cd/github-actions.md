@@ -21,9 +21,17 @@ The Waardhaven AutoIndex project uses GitHub Actions for continuous integration 
 2. **reusable-node-test.yml** - Node.js testing (Frontend)
 3. **reusable-python-test.yml** - Python testing (Backend)
 
-## Recent Updates (2025-01-17)
+## Recent Updates
 
-### Fixed Deprecation Issues
+### 2025-01-18 - Code Formatting and Linting Integration
+
+- Added Black formatter with `--check` flag in CI
+- Integrated Prettier for frontend formatting with `--check` flag
+- Enhanced ESLint configuration with zero-warning policy
+- Implemented pre-commit hooks for local auto-formatting
+- Created setup scripts for cross-platform development
+
+### 2025-01-17 - Fixed Deprecation Issues
 
 All deprecated GitHub Actions have been updated:
 - `actions/upload-artifact@v3` → `actions/upload-artifact@v4` ✅
@@ -44,14 +52,18 @@ All deprecated GitHub Actions have been updated:
 
 **Jobs**:
 1. **Setup** - Matrix strategy configuration
-2. **API Tests** - Python backend testing with PostgreSQL
-3. **Web Tests** - Frontend testing with Next.js
-4. **Build API** - Docker image for backend
-5. **Build Web** - Next.js production build
-6. **Security Scan** - Trivy security scanning
+2. **Lint and Format** - Code quality checks
+   - Python: Black `--check`, Ruff, MyPy
+   - Frontend: ESLint `--max-warnings 0`, Prettier `--check`
+3. **API Tests** - Python backend testing with PostgreSQL
+4. **Web Tests** - Frontend testing with Next.js
+5. **Build API** - Docker image for backend
+6. **Build Web** - Next.js production build
+7. **Security Scan** - Trivy security scanning
 
 **Key Features**:
 - Parallel test execution
+- Strict formatting enforcement (CI fails on issues)
 - Docker layer caching
 - Artifact uploads for build outputs
 - PostgreSQL service container for tests

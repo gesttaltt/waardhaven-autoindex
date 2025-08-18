@@ -11,8 +11,11 @@ import traceback
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
 @router.post("/trigger-refresh")
-def trigger_manual_refresh(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def trigger_manual_refresh(
+    background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+):
     """
     Trigger a manual refresh without requiring admin token (for debugging).
     This endpoint should be removed or secured in production.
@@ -21,109 +24,108 @@ def trigger_manual_refresh(background_tasks: BackgroundTasks, db: Session = Depe
         # Check current state
         index_count = db.query(func.count()).select_from(IndexValue).scalar()
         price_count = db.query(func.count()).select_from(Price).scalar()
-        
+
         # Add refresh to background tasks
         background_tasks.add_task(run_refresh_with_logging, db)
-        
+
         return {
             "status": "REFRESH_STARTED",
             "message": "Refresh has been triggered in the background",
-            "current_state": {
-                "index_values": index_count,
-                "prices": price_count
-            },
-            "note": "Check /api/v1/diagnostics/database-status in 30-60 seconds to see results"
+            "current_state": {"index_values": index_count, "prices": price_count},
+            "note": "Check /api/v1/diagnostics/database-status in 30-60 seconds to see results",
         }
     except Exception as e:
         logger.error(f"Failed to trigger refresh: {str(e)}")
-        return {
-            "status": "ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
+        return {"status": "ERROR", "error": str(e), "traceback": traceback.format_exc()}
+
 
 @router.post("/smart-refresh")
-def trigger_smart_refresh(background_tasks: BackgroundTasks, 
-                         mode: str = "auto", 
-                         db: Session = Depends(get_db)):
+def trigger_smart_refresh(
+    background_tasks: BackgroundTasks, mode: str = "auto", db: Session = Depends(get_db)
+):
     """
     Trigger smart refresh with rate limiting protection.
-    
+
     Modes: auto, full, minimal, cached
     """
     valid_modes = ["auto", "full", "minimal", "cached"]
     if mode not in valid_modes:
         return {
             "status": "ERROR",
-            "error": f"Invalid mode. Must be one of: {valid_modes}"
+            "error": f"Invalid mode. Must be one of: {valid_modes}",
         }
-    
+
     try:
         # Add smart refresh to background tasks
         background_tasks.add_task(run_smart_refresh_with_logging, db, mode)
-        
+
         return {
             "status": "SMART_REFRESH_STARTED",
             "message": f"Smart refresh has been triggered in {mode} mode",
             "mode": mode,
             "features": [
                 "Rate limit protection",
-                "Caching support", 
+                "Caching support",
                 "Fallback to cached data",
-                "API tier optimization"
+                "API tier optimization",
             ],
-            "note": "This refresh is optimized for your API plan and will avoid rate limits"
+            "note": "This refresh is optimized for your API plan and will avoid rate limits",
         }
     except Exception as e:
         logger.error(f"Failed to trigger smart refresh: {str(e)}")
-        return {
-            "status": "ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
+        return {"status": "ERROR", "error": str(e), "traceback": traceback.format_exc()}
+
 
 def run_refresh_with_logging(db: Session):
     """Run refresh with detailed logging."""
     try:
         logger.info("Starting manual refresh process...")
         from ..services.refresh import refresh_all
-        
+
         refresh_all(db)
-        
+
         # Verify results
         index_count = db.query(func.count()).select_from(IndexValue).scalar()
         price_count = db.query(func.count()).select_from(Price).scalar()
-        
-        logger.info(f"Refresh completed. Index values: {index_count}, Prices: {price_count}")
-        
+
+        logger.info(
+            f"Refresh completed. Index values: {index_count}, Prices: {price_count}"
+        )
+
     except Exception as e:
         logger.error(f"Refresh failed: {str(e)}")
         logger.error(traceback.format_exc())
+
 
 def run_smart_refresh_with_logging(db: Session, mode: str = "auto"):
     """Run smart refresh with detailed logging."""
     try:
         logger.info(f"Starting smart refresh in {mode} mode...")
-        
+
         try:
             from ..services.refresh_optimized import smart_refresh
+
             result = smart_refresh(db, mode=mode)
             logger.info(f"Smart refresh completed: {result}")
         except ImportError:
             logger.warning("Smart refresh not available, falling back to standard")
             from ..services.refresh import refresh_all
+
             refresh_all(db)
             result = {"success": True, "mode": "fallback"}
-        
+
         # Verify results
         index_count = db.query(func.count()).select_from(IndexValue).scalar()
         price_count = db.query(func.count()).select_from(Price).scalar()
-        
-        logger.info(f"Smart refresh result - Index values: {index_count}, Prices: {price_count}")
-        
+
+        logger.info(
+            f"Smart refresh result - Index values: {index_count}, Prices: {price_count}"
+        )
+
     except Exception as e:
         logger.error(f"Smart refresh failed: {str(e)}")
         logger.error(traceback.format_exc())
+
 
 @router.post("/minimal-refresh")
 def minimal_data_refresh(db: Session = Depends(get_db)):
@@ -136,32 +138,33 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
         from ..models.asset import Asset, Price
         from ..models.index import IndexValue
         from datetime import date, timedelta
-        
-        results = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "steps": []
-        }
-        
+
+        results = {"timestamp": datetime.utcnow().isoformat(), "steps": []}
+
         # Step 1: Ensure assets exist
         ensure_assets(db)
-        assets = db.query(Asset).filter(Asset.symbol.in_(["AAPL", "MSFT", "GOOGL"])).all()
-        results["steps"].append({
-            "step": "assets",
-            "count": len(assets),
-            "symbols": [a.symbol for a in assets]
-        })
-        
+        assets = (
+            db.query(Asset).filter(Asset.symbol.in_(["AAPL", "MSFT", "GOOGL"])).all()
+        )
+        results["steps"].append(
+            {
+                "step": "assets",
+                "count": len(assets),
+                "symbols": [a.symbol for a in assets],
+            }
+        )
+
         # Step 2: Fetch minimal price data (last 7 days)
         symbols = [a.symbol for a in assets]
         start_date = date.today() - timedelta(days=7)
-        
+
         try:
             price_df = fetch_prices(symbols, start=start_date)
-            
+
             # Clear existing recent prices
             db.query(Price).filter(Price.date >= start_date).delete()
             db.commit()
-            
+
             # Store new prices
             stored_count = 0
             for sym in symbols:
@@ -169,16 +172,16 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
                 if asset and sym in price_df.columns.levels[0]:
                     series = price_df[sym]["Close"].dropna()
                     for idx, val in series.items():
-                        db.add(Price(asset_id=asset.id, date=idx.date(), close=float(val)))
+                        db.add(
+                            Price(asset_id=asset.id, date=idx.date(), close=float(val))
+                        )
                         stored_count += 1
-            
+
             db.commit()
-            results["steps"].append({
-                "step": "prices",
-                "fetched": len(price_df),
-                "stored": stored_count
-            })
-            
+            results["steps"].append(
+                {"step": "prices", "fetched": len(price_df), "stored": stored_count}
+            )
+
             # Step 3: Create simple index values
             # For testing, just create a simple average
             dates = price_df.index.unique()
@@ -191,38 +194,35 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
                         if sym in price_df.columns.levels[0]:
                             if dt in price_df[sym]["Close"].index:
                                 prices_on_date.append(price_df[sym]["Close"][dt])
-                    
+
                     if prices_on_date:
                         avg_price = sum(prices_on_date) / len(prices_on_date)
-                    
+
                     # Check if index value exists
-                    existing = db.query(IndexValue).filter(IndexValue.date == dt.date()).first()
+                    existing = (
+                        db.query(IndexValue)
+                        .filter(IndexValue.date == dt.date())
+                        .first()
+                    )
                     if not existing:
                         db.add(IndexValue(date=dt.date(), value=avg_price))
                 except Exception:
                     pass
-            
+
             db.commit()
-            
+
             index_count = db.query(func.count()).select_from(IndexValue).scalar()
-            results["steps"].append({
-                "step": "index_values",
-                "created": index_count
-            })
-            
+            results["steps"].append({"step": "index_values", "created": index_count})
+
             results["status"] = "SUCCESS"
             results["message"] = "Minimal data refresh completed"
-            
+
         except Exception as e:
             results["status"] = "FAILED"
             results["error"] = str(e)
             results["traceback"] = traceback.format_exc()
-            
+
         return results
-        
+
     except Exception as e:
-        return {
-            "status": "ERROR",
-            "error": str(e),
-            "traceback": traceback.format_exc()
-        }
+        return {"status": "ERROR", "error": str(e), "traceback": traceback.format_exc()}

@@ -83,7 +83,8 @@ jobs:
         if: matrix.component == 'api'
         working-directory: ./apps/api
         run: |
-          pip install ruff black mypy
+          pip install -r requirements.txt
+          pip install ruff mypy
           ruff check .
           black --check .
           mypy app --ignore-missing-imports
@@ -93,7 +94,8 @@ jobs:
         working-directory: ./apps/web
         run: |
           npm ci
-          npm run lint
+          npm run lint:check
+          npm run format:check
           npm run type-check
 
   test-api:
