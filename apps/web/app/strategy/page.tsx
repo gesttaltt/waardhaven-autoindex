@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { strategyService } from '../services/api/strategy';
 import { Card } from '../components/shared/Card';
 import { Button } from '../components/shared/Button';
-import LoadingSkeleton from '../components/shared/LoadingSkeleton';
+import { LoadingSkeleton } from '../components/shared/LoadingSkeleton';
 
 interface StrategyConfig {
   min_market_cap?: number;

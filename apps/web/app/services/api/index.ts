@@ -37,7 +37,7 @@ export type {
   PerformanceComparison
 } from './benchmark';
 
-// Strategy types are defined inline in strategy.ts, not exported as types
+export type { RiskMetric, StrategyConfig } from './strategy';
 
 export type {
   RefreshResponse,

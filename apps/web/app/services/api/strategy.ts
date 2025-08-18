@@ -2,7 +2,7 @@
 
 import { ApiService } from './base';
 
-interface StrategyConfig {
+export interface StrategyConfig {
   min_market_cap?: number;
   max_assets?: number;
   rebalance_frequency?: string;
@@ -14,6 +14,15 @@ interface StrategyConfig {
   exclude_sectors?: string[];
   include_commodities?: boolean;
   include_bonds?: boolean;
+}
+
+export interface RiskMetric {
+  volatility: number;
+  sharpe_ratio: number;
+  max_drawdown: number;
+  beta: number;
+  alpha: number;
+  correlation_with_market: number;
 }
 
 interface RiskMetrics {
