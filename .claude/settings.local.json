@@ -41,7 +41,8 @@
       "Bash(npm run lint)",
       "Bash(npm run type-check:*)",
       "Bash(gh run view:*)",
-      "Bash(ruff check:*)"
+      "Bash(ruff check:*)",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": [],
