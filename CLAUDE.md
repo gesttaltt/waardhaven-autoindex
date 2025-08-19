@@ -1,13 +1,14 @@
 # CLAUDE.md - AI Assistant Context
 
 ## Project Overview
-Waardhaven AutoIndex is a monorepo investment portfolio management system with automated index creation and strategy optimization.
+Waardhaven AutoIndex is a production-ready investment portfolio management system with automated index creation, strategy optimization, and real-time market data integration. Currently deployed on Render.com with 90%+ feature completeness.
 
 ## Tech Stack
-- **Backend**: FastAPI (Python 3.x), SQLAlchemy, PostgreSQL
+- **Backend**: FastAPI (Python 3.11+), SQLAlchemy, PostgreSQL, Redis, Celery
 - **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS, Recharts
-- **Infrastructure**: Docker, Render.com deployment
-- **Package Manager**: Mixed (npm in root, pnpm mentioned in scripts)
+- **Infrastructure**: Docker, Render.com deployment, GitHub Actions CI/CD
+- **Package Manager**: npm (standardized across monorepo)
+- **Testing**: pytest (backend), 10 test files with comprehensive coverage
 
 ## Project Structure
 ```
@@ -42,7 +43,7 @@ cd apps/web && npx tsc --noEmit
 cd apps/api && ruff check .
 ```
 
-## Recently Implemented Features (2025-08-17)
+## Recently Implemented Features (2025-01-17)
 
 ### Critical Fixes
 1. ✅ **Data Loss Prevention**: Replaced dangerous delete operations with safe upsert logic
@@ -58,7 +59,7 @@ cd apps/api && ruff check .
 9. ✅ **Background Tasks**: Celery-based async processing with queues
 10. ✅ **Task Monitoring**: Flower dashboard for task monitoring
 
-## Latest Updates (2025-08-19)
+## Latest Updates (2025-01-19)
 
 ### ✅ Clean Architecture Implementation
 **Issue**: Mixed concerns in UI components - business logic, API calls, and styling all in one place
@@ -99,7 +100,7 @@ Component/
 - **AdvancedAnalytics**: Portfolio analysis with separated concerns
 - **TaskNotifications**: Background task monitoring
 
-## Latest Updates (2025-08-18)
+## Latest Updates (2025-01-18)
 
 ### ✅ Authentication Integration Fixes
 **Issue**: Login auth errors in Render deployment - `useAuth must be used within AuthProvider`

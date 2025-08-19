@@ -2,20 +2,21 @@
 
 ## Overview
 
-This repository implements a comprehensive CI/CD pipeline with support for both GitHub Actions and Azure DevOps. The pipeline follows clean architecture practices and is designed to be easily migrated between platforms.
+Production CI/CD pipeline implemented with GitHub Actions providing automated testing, security scanning, and deployment to Render.com. The pipeline ensures code quality, security, and zero-downtime deployments.
 
 ## Pipeline Architecture
 
-### GitHub Actions
+### GitHub Actions (Production)
 - **Location**: `.github/workflows/`
-- **Main Pipeline**: `ci-cd.yml`
-- **Reusable Workflows**: `reusable-*.yml`
-- **Specialized Pipelines**: `deploy.yml`, `security.yml`
-
-### Azure DevOps
-- **Location**: `.azuredevops/`
-- **Main Pipeline**: `azure-pipelines.yml`
-- **Templates**: `templates/*.yml`
+- **Main Pipeline**: `ci-cd.yml` - Complete CI/CD workflow
+- **Reusable Workflows**: 
+  - `reusable-docker-build.yml` - Docker image building
+  - `reusable-node-test.yml` - Frontend testing
+  - `reusable-python-test.yml` - Backend testing
+- **Specialized Pipelines**: 
+  - `deploy.yml` - Production deployment
+  - `security.yml` - Security scanning
+- **Status**: Active and operational
 
 ## Pipeline Stages
 
@@ -30,10 +31,14 @@ This repository implements a comprehensive CI/CD pipeline with support for both 
 - **Type Checking**: Static type analysis
 
 ### 3. Testing
-- **Unit Tests**: Component-level testing
-- **Integration Tests**: API and database testing
-- **Coverage Reports**: Code coverage analysis
-- **Test Results**: JUnit XML reporting
+- **Backend Tests**: 10 test files with pytest
+  - Unit tests for services
+  - Integration tests for API endpoints
+  - Provider tests with mocking
+  - Performance calculation tests
+- **Coverage**: 70%+ target with HTML reports
+- **Database**: PostgreSQL test fixtures
+- **Test Results**: pytest-xml reporting
 
 ### 4. Security Scanning
 - **Dependency Scanning**: Check for vulnerable dependencies
@@ -43,36 +48,47 @@ This repository implements a comprehensive CI/CD pipeline with support for both 
 - **License Compliance**: License checking
 
 ### 5. Build
-- **API**: Docker containerization
-- **Web**: Next.js production build
-- **Artifacts**: Build artifact storage
+- **API**: Docker containerization (`apps/api/Dockerfile.api`)
+- **Web**: Next.js production build with TypeScript
+- **Optimization**: 
+  - Multi-stage Docker builds
+  - Layer caching
+  - Production dependencies only
+- **Artifacts**: Build artifact storage in GitHub
 
-### 6. Deployment
-- **Environments**: Development, Staging, Production
-- **Strategies**: Blue-green deployment with slot swapping
-- **Rollback**: Automatic rollback on failure
-- **Smoke Tests**: Post-deployment validation
+### 6. Deployment (Render.com)
+- **Environment**: Production (waardhaven-*.onrender.com)
+- **Strategy**: Blue-green deployment with zero downtime
+- **Services Deployed**:
+  - API: Docker web service
+  - Web: Docker web service
+  - Database: PostgreSQL managed instance
+- **Automatic**: Triggered on main branch push
+- **Health Checks**: `/api/v1/health` validation
 
 ## Environment Configuration
 
-### GitHub Actions Secrets Required
+### GitHub Actions Secrets (Configured)
 ```yaml
-# Container Registry
-GITHUB_TOKEN         # Automatically provided
-REGISTRY_USERNAME    # For external registries
-REGISTRY_PASSWORD    # For external registries
+# Automatically Provided
+GITHUB_TOKEN         # GitHub API access
 
-# Deployment
-API_URL             # API endpoint for each environment
-DATABASE_URL        # Database connection string
-JWT_SECRET_KEY      # JWT signing key
-TWELVEDATA_API_KEY  # Market data API key
+# Render Deployment
+RENDER_API_KEY      # Render deployment API
+RENDER_SERVICE_ID   # Service identifiers
 
-# Notifications
-SLACK_WEBHOOK       # Slack notifications
+# Application Secrets
+DATABASE_URL        # PostgreSQL connection
+SECRET_KEY          # JWT signing key
+ADMIN_TOKEN         # Admin access token
 
-# Security
-FOSSA_API_KEY       # License scanning
+# External APIs
+TWELVEDATA_API_KEY  # Market data API
+MARKETAUX_API_KEY   # News API (optional)
+
+# Optional
+REDIS_URL           # Redis connection
+GOOGLE_CLIENT_ID    # OAuth configuration
 ```
 
 ### Azure DevOps Variable Groups
