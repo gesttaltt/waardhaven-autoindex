@@ -1,0 +1,170 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": ".claude/statusline.sh",
+    "padding": 0
+  },
+  
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/integration/session-enhancer.sh user-prompt-submit",
+            "timeout": 5
+          },
+          {
+            "type": "command", 
+            "command": "python .claude/hooks/integration/validate-prompt.py",
+            "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/claude-memory-manager.py suggest",
+            "timeout": 4
+          }
+        ]
+      }
+    ],
+    
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/cleanup-todos.py",
+            "timeout": 8
+          },
+          {
+            "type": "command", 
+            "command": "python .claude/hooks/integration/update-progress-docs.py",
+            "timeout": 6
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/integration/session-enhancer.sh post-tool-use Edit",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/cleanup-todos.py", 
+            "timeout": 8
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/update-progress-docs.py",
+            "timeout": 6
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/integration/session-enhancer.sh post-tool-use Write",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/cleanup-todos.py",
+            "timeout": 8
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/update-progress-docs.py", 
+            "timeout": 6
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/integration/session-enhancer.sh post-tool-use MultiEdit",
+            "timeout": 2
+          }
+        ]
+      }
+    ],
+    
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/integration/session-enhancer.sh session-start",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/claude-memory-manager.py context",
+            "timeout": 4
+          }
+        ]
+      }
+    ],
+    
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/integration/generate-session-summary.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python .claude/hooks/monitoring/session-analytics.py collect",
+            "timeout": 8
+          },
+          {
+            "type": "command", 
+            "command": "python .claude/hooks/integration/claude-memory-manager.py learn",
+            "timeout": 6
+          }
+        ]
+      }
+    ]
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(python:*)",
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(uvicorn:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(eslint:*)",
+      "Bash(tsc:*)",
+      "Read(apps/**/*)",
+      "Write(apps/**/*)",
+      "Edit(apps/**/*)",
+      "MultiEdit(apps/**/*)",
+      "Glob(apps/**/*)",
+      "Grep(**/*)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Write(.claude/**/*)",
+      "Edit(.claude/**/*)"
+    ],
+    "defaultMode": "default"
+  },
+
+  "env": {
+    "AI_INVESTMENT_PROJECT": "true",
+    "CLAUDE_HOOKS_ENABLED": "true", 
+    "CLAUDE_SESSION_ANALYTICS": "true",
+    "CLAUDE_MEMORY_LEARNING": "true"
+  },
+
+  "cleanupPeriodDays": 30
+}

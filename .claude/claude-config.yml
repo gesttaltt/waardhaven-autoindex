@@ -1,0 +1,222 @@
+# Claude Code Configuration for AI Investment Project
+# Comprehensive hooks system for enhanced development experience
+
+# System Information
+project:
+  name: "Waardhaven AutoIndex"
+  description: "AI Investment portfolio management system with automated index creation"
+  version: "1.0.0"
+  type: "monorepo"
+
+# Development Environment
+environment:
+  backend:
+    language: "python"
+    framework: "fastapi"
+    directory: "apps/api"
+    command: "uvicorn app.main:app --reload"
+  
+  frontend:
+    language: "typescript"
+    framework: "nextjs"
+    directory: "apps/web"
+    command: "npm run dev"
+  
+  database:
+    type: "postgresql"
+    backup_command: "./hooks/database/backup-before-migration.sh"
+  
+  package_manager: "npm"
+
+# Hook Configuration
+hooks:
+  # User Prompt Submit Hooks
+  user_prompt_submit:
+    - name: "context_injector"
+      script: ".claude/hooks/integration/session-enhancer.sh"
+      args: ["user-prompt-submit"]
+      description: "Inject project context and domain knowledge"
+      
+    - name: "prompt_validator" 
+      script: "python .claude/hooks/integration/validate-prompt.py"
+      description: "Validate and enhance prompt clarity"
+      
+    - name: "memory_context"
+      script: "python .claude/hooks/integration/claude-memory-manager.py"
+      args: ["context"]
+      description: "Load relevant memory patterns"
+
+  # Post Tool Use Hooks
+  post_tool_use:
+    - name: "cleanup_todos"
+      script: "python .claude/hooks/integration/cleanup-todos.py"
+      description: "Auto-archive completed TODOs"
+      trigger_on: ["Edit", "Write", "MultiEdit"]
+      
+    - name: "update_documentation" 
+      script: "python .claude/hooks/integration/update-progress-docs.py"
+      description: "Update progress documentation"
+      trigger_on: ["Edit", "Write", "MultiEdit"]
+      
+    - name: "track_changes"
+      script: ".claude/hooks/integration/session-enhancer.sh"
+      args: ["post-tool-use"]
+      description: "Track tool usage and file changes"
+
+  # Session Management Hooks
+  session_start:
+    - name: "initialize_session"
+      script: ".claude/hooks/integration/session-enhancer.sh"  
+      args: ["session-start"]
+      description: "Initialize session tracking and context"
+      
+    - name: "load_memory"
+      script: "python .claude/hooks/integration/claude-memory-manager.py"
+      args: ["suggest", "session-start"]  
+      description: "Load relevant patterns for new session"
+
+  session_stop:
+    - name: "generate_summary"
+      script: "python .claude/hooks/integration/generate-session-summary.py"
+      description: "Generate comprehensive session summary"
+      
+    - name: "collect_analytics"
+      script: "python .claude/hooks/monitoring/session-analytics.py"
+      args: ["collect"]
+      description: "Collect and store session analytics"
+      
+    - name: "learn_patterns"
+      script: "python .claude/hooks/integration/claude-memory-manager.py"
+      args: ["learn"]
+      description: "Learn from session activity"
+
+  # Pre-commit Hooks (Git Integration)
+  pre_commit:
+    - name: "security_scan"
+      script: "./hooks/pre-commit/check-secrets.sh"
+      description: "Scan for hardcoded secrets"
+      
+    - name: "quality_check"
+      script: "./hooks/quality/code-quality-monitor.sh"
+      args: ["pre-commit"]
+      description: "Run quality checks before commit"
+      
+    - name: "critical_tests"
+      script: "./hooks/testing/automated-test-runner.sh"
+      args: ["critical"]
+      description: "Run critical test suite"
+
+  # Command Enhancement Hooks  
+  command_suggest:
+    - name: "ai_command_enhancer"
+      script: ".claude/hooks/integration/claude-command-enhancer.sh"
+      args: ["suggest"]
+      description: "Intelligent command suggestions"
+
+# AI Investment Domain Configuration
+domain:
+  name: "ai_investment"
+  patterns:
+    financial_terms: 
+      - "portfolio"
+      - "index" 
+      - "sharpe"
+      - "beta"
+      - "correlation"
+      - "drawdown"
+      - "volatility"
+      - "returns"
+    
+    critical_files:
+      - "apps/api/app/services/calculation_service.py"
+      - "apps/api/app/models/"
+      - "apps/web/components/charts/"
+      
+    external_apis:
+      - "twelvedata"
+      - "marketaux" 
+      - "alpha_vantage"
+
+# Quality Standards
+quality:
+  python:
+    linter: "ruff"
+    type_checker: "mypy" 
+    formatter: "black"
+    test_framework: "pytest"
+    
+  typescript:
+    linter: "eslint"
+    type_checker: "tsc"
+    formatter: "prettier"
+    test_framework: "jest"
+    
+  thresholds:
+    quality_score: 75
+    test_coverage: 80
+    type_coverage: 90
+
+# Monitoring Configuration
+monitoring:
+  session_analytics: true
+  performance_tracking: true
+  error_rate_monitoring: true
+  api_usage_tracking: true
+  
+  alerts:
+    high_error_rate: 20  # percent
+    low_quality_score: 70
+    api_rate_limit_warning: 80  # percent
+
+# Cache and Memory Management
+cache:
+  directory: ".claude/cache"
+  retention_days: 30
+  max_size_mb: 100
+  
+memory:
+  directory: ".claude/memory"
+  learning_enabled: true
+  pattern_confidence_threshold: 0.3
+  cleanup_days: 30
+
+# Shell Integration
+shell:
+  command_database: ".claude/hooks/integration/claude-command-enhancer.sh"
+  auto_suggestions: true
+  context_awareness: true
+  
+# Deployment Configuration  
+deployment:
+  pre_checks:
+    - "./hooks/deployment/pre-deploy-checks.sh"
+    - "./hooks/testing/automated-test-runner.sh comprehensive"
+    - "./hooks/quality/code-quality-monitor.sh deploy"
+    
+  post_checks:
+    - "./hooks/deployment/post-deploy-verification.sh"
+    - "./hooks/monitoring/health-checker.sh"
+
+# Documentation Auto-generation
+documentation:
+  auto_update: true
+  formats: ["markdown", "json"]
+  generators:
+    - "python .claude/hooks/documentation/auto-doc-generator.py"
+    - "python .claude/hooks/integration/update-progress-docs.py"
+
+# Development Workflow Preferences
+workflow:
+  preferred_tools: ["Edit", "Read", "Bash", "Grep"]
+  quality_first: true
+  test_driven: true
+  documentation_required: true
+  
+# Feature Flags
+features:
+  session_analytics: true
+  memory_learning: true 
+  command_enhancement: true
+  auto_documentation: true
+  quality_monitoring: true
+  deployment_safety: true

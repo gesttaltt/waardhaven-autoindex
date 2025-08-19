@@ -6,146 +6,138 @@ Manages investment strategy configuration and parameters.
 ## Location
 `apps/api/app/routers/strategy.py`
 
-## Endpoints
+## Actual Implementation
 
 ### GET /api/v1/strategy/config
-- Get current strategy configuration
-- Active parameters
-- Weight allocations
-- Threshold settings
+Get current strategy configuration.
 
-### PUT /api/v1/strategy/config
-- Update strategy parameters
-- Validation checks
-- Apply changes
-- Trigger rebalancing
+**Response includes:**
+- Weight allocations (momentum, market_cap, risk_parity)
+- Price and return thresholds
+- Rebalancing settings
+- AI adjustment metadata
+- Last update timestamps
 
-### GET /api/v1/strategy/available
-- List available strategies
-- Strategy descriptions
-- Parameter ranges
-- Performance history
-
-### POST /api/v1/strategy/backtest
-- Run strategy backtest
-- Historical simulation
-- Performance metrics
-- Risk analysis
-
-### GET /api/v1/strategy/performance
-- Strategy performance metrics
-- Attribution analysis
-- Comparison data
-- Historical results
-
-## Strategy Types
-
-### Momentum Strategy
-- Performance-based filtering
-- Lookback periods
-- Threshold configuration
-- Trend following
-
-### Market Cap Strategy
-- Size-based weighting
-- Cap limits
-- Rebalancing rules
-- Index tracking
-
-### Risk Parity Strategy
-- Volatility weighting
-- Risk budgeting
-- Correlation consideration
-- Portfolio balance
-
-### Custom Strategies
-- User-defined rules
-- Parameter combinations
-- Constraint settings
-- Optimization goals
-
-## Configuration Parameters
-
-### Weight Settings
-- Strategy weights (0-1)
-- Minimum allocations
-- Maximum concentrations
-- Rebalancing bands
-
-### Risk Parameters
-- Volatility targets
-- Drawdown limits
-- Correlation thresholds
-- Risk budgets
-
-### Timing Parameters
-- Rebalancing frequency
-- Lookback periods
-- Signal delays
-- Execution windows
-
-## Validation Rules
-
-### Parameter Validation
-- Range checking
-- Sum constraints
-- Logical consistency
-- Business rules
-
-### Strategy Validation
-- Minimum diversification
-- Risk limits
-- Regulatory compliance
-- Performance targets
-
-## Backtesting Engine
-
-### Simulation Parameters
-- Start/end dates
-- Initial capital
-- Transaction costs
-- Slippage assumptions
-
-### Performance Metrics
-- Total return
-- Sharpe ratio
-- Maximum drawdown
-- Win rate
-
-### Risk Analysis
-- VaR calculations
-- Stress testing
-- Scenario analysis
-- Sensitivity testing
-
-## Response Formats
-
-### Config Response
+**Response format:**
 ```json
 {
   "momentum_weight": 0.4,
   "market_cap_weight": 0.3,
   "risk_parity_weight": 0.3,
+  "min_price_threshold": 5.0,
+  "max_daily_return": 0.5,
+  "min_daily_return": -0.5,
+  "max_forward_fill_days": 5,
+  "outlier_std_threshold": 3.0,
   "rebalance_frequency": "monthly",
-  "performance_threshold": -0.01
+  "daily_drop_threshold": -0.01,
+  "ai_adjusted": false,
+  "ai_adjustment_reason": null,
+  "ai_confidence_score": null,
+  "last_rebalance": "2024-01-01T00:00:00",
+  "updated_at": "2024-01-15T10:30:00"
 }
 ```
 
-### Backtest Response
+### PUT /api/v1/strategy/config
+Update strategy configuration with validation.
+
+**Request Body:** `SecureStrategyConfig` schema
+- Validates weight sum equals 1.0
+- Ensures thresholds are within valid ranges
+- Prevents invalid configurations
+
+**Query Parameters:**
+- `recompute` (bool, default=true): Whether to recompute index after update
+
+**Features:**
+- Input validation via Pydantic schema
+- Stores adjustment history
+- Optional index recomputation
+- Returns updated configuration
+
+### POST /api/v1/strategy/config/ai-adjust
+Apply AI-suggested strategy adjustments.
+
+**Request Body:**
 ```json
 {
-  "returns": [...],
-  "metrics": {
-    "total_return": 0.25,
-    "sharpe_ratio": 1.2,
-    "max_drawdown": -0.15
+  "adjustments": {
+    "momentum_weight": 0.5,
+    "market_cap_weight": 0.25
   },
-  "trades": [...]
+  "reason": "Market volatility detected",
+  "confidence": 0.85
 }
 ```
 
+**Features:**
+- Accepts AI-generated adjustments
+- Tracks confidence scores
+- Stores reason for adjustments
+- Updates adjustment history
+
+### GET /api/v1/strategy/risk-metrics
+Get current risk metrics for the portfolio.
+
+**Response includes:**
+- Volatility measures
+- Sharpe ratio
+- Maximum drawdown
+- Value at Risk (VaR)
+- Other risk indicators
+
+### POST /api/v1/strategy/rebalance
+Trigger portfolio rebalancing.
+
+**Features:**
+- Forces immediate rebalancing
+- Updates allocations
+- Refreshes index values
+- Returns rebalancing results
+
+## Configuration Parameters
+
+### Weight Settings
+All weights must sum to 1.0:
+- `momentum_weight`: Weight for momentum strategy (0-1)
+- `market_cap_weight`: Weight for market cap strategy (0-1)
+- `risk_parity_weight`: Weight for risk parity strategy (0-1)
+
+### Data Quality Parameters
+- `min_price_threshold`: Minimum valid price (default: 5.0)
+- `max_daily_return`: Maximum allowed daily return
+- `min_daily_return`: Minimum allowed daily return
+- `max_forward_fill_days`: Max days to forward-fill missing data
+- `outlier_std_threshold`: Standard deviations for outlier detection
+
+### Rebalancing Parameters
+- `rebalance_frequency`: How often to rebalance ("daily", "weekly", "monthly")
+- `daily_drop_threshold`: Threshold for filtering daily drops
+
+## Validation Rules
+
+### Automatic Validation
+- Weights must sum to exactly 1.0
+- All weights must be between 0 and 1
+- Thresholds must be within reasonable ranges
+- Frequency must be valid option
+
+### Business Logic
+- At least one strategy must have non-zero weight
+- Configuration changes trigger audit log entry
+- AI adjustments tracked separately
+
+## Adjustment History
+All configuration changes are stored with:
+- Timestamp
+- Changed fields
+- User ID or AI indicator
+- Reason for change (if AI-adjusted)
+
 ## Dependencies
-- Strategy service
-- Database models
-- Calculation engine
-- Validation utilities
+- StrategyConfig model
+- RiskMetrics model
+- SecureStrategyConfig schema for validation
+- Database session
+- User authentication

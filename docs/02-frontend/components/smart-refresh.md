@@ -1,177 +1,213 @@
 # SmartRefresh Component
 
 ## Overview
-Intelligent data refresh component with automatic and manual refresh capabilities.
+Interactive component for intelligent market data refresh with multiple modes and real-time status display.
 
 ## Location
 `apps/web/app/components/SmartRefresh.tsx`
 
-## Purpose
-Provides smart data refresh functionality with user controls and automatic updates.
-
 ## Features
 
-### Auto-Refresh
-- Configurable intervals
-- Market hours awareness
-- Pause/resume controls
-- Resource optimization
+### Core Functionality
+- **Multi-mode refresh**: Auto, Minimal, Cached, and Full modes
+- **Real-time status display**: Shows current database and refresh status
+- **Error handling**: Graceful error display and recovery
+- **Two display modes**: Simple button and detailed modal
 
-### Manual Refresh
-- On-demand updates
-- Loading indicators
-- Error handling
-- Success feedback
+### Refresh Modes
 
-### Smart Logic
-- Activity detection
-- Visibility API usage
-- Network status check
-- Battery awareness
+#### Auto Mode 🤖
+- Intelligently chooses the best strategy based on API plan
+- Default mode for most users
+- Balances speed and completeness
+
+#### Minimal Mode ⚡
+- Fetches only priority assets
+- Optimized for free tier API plans
+- Reduces API calls to stay within rate limits
+
+#### Cached Mode 💾
+- Uses cached data only
+- No external API calls
+- Instant results from Redis cache
+
+#### Full Mode 🔄
+- Complete refresh of all data
+- Includes rate limiting protection
+- Most comprehensive but slowest
 
 ## Component Props
 
-### Required Props
-- `onRefresh`: Callback function
-- `interval`: Update frequency
-- `enabled`: Auto-refresh toggle
+```typescript
+interface SmartRefreshProps {
+  onRefresh?: () => void;          // Callback when refresh starts
+  onRefreshComplete?: () => void;  // Callback when refresh completes
+  className?: string;               // Custom CSS classes for button
+}
+```
 
-### Optional Props
-- `showControls`: Display UI controls
-- `showStatus`: Status indicators
-- `marketHoursOnly`: Market hours check
-- `className`: Custom styling
+## Usage Examples
 
-## State Management
-
-### Local State
-- Refresh status
-- Last update time
-- Error state
-- Loading state
-
-### Context Integration
-- Global refresh coordination
-- Settings persistence
-- User preferences
-
-## UI Elements
-
-### Controls
-- Refresh button
-- Auto-refresh toggle
-- Interval selector
-- Status display
-
-### Indicators
-- Loading spinner
-- Success checkmark
-- Error messages
-- Last update time
-
-## Smart Features
-
-### Market Hours Detection
-- Trading hours check
-- Weekend handling
-- Holiday calendar
-- Time zone support
-
-### Performance Optimization
-- Debouncing
-- Request batching
-- Cache awareness
-- Resource monitoring
-
-### User Activity
-- Idle detection
-- Tab visibility
-- Focus tracking
-- Interaction monitoring
-
-## Error Handling
-
-### Network Errors
-- Retry logic
-- Offline detection
-- Fallback behavior
-- User notification
-
-### API Errors
-- Error display
-- Retry options
-- Manual override
-- Debug information
-
-## Accessibility
-
-### ARIA Labels
-- Button descriptions
-- Status announcements
-- Loading states
-- Error messages
-
-### Keyboard Support
-- Tab navigation
-- Enter/Space activation
-- Escape cancellation
-- Focus management
-
-## Styling
-
-### TailwindCSS Classes
-- Responsive design
-- Dark mode support
-- Animation classes
-- Custom themes
-
-### Customization
-- Color schemes
-- Size variants
-- Icon options
-- Layout flexibility
-
-## Performance
-
-### Optimization
-- React.memo usage
-- useCallback hooks
-- Conditional rendering
-- Event cleanup
-
-### Memory Management
-- Timer cleanup
-- Event listener removal
-- State reset
-- Reference management
-
-## Testing
-
-### Unit Tests
-- Refresh logic
-- Timer management
-- Error scenarios
-- User interactions
-
-### Integration Tests
-- API calls
-- State updates
-- UI feedback
-- Error recovery
-
-## Usage Example
+### Basic Usage
 ```tsx
-<SmartRefresh
-  onRefresh={fetchData}
-  interval={60000}
-  enabled={true}
-  showControls={true}
-  marketHoursOnly={true}
+import SmartRefresh from '@/components/SmartRefresh';
+
+function Dashboard() {
+  return (
+    <SmartRefresh 
+      onRefresh={() => console.log('Refresh started')}
+      onRefreshComplete={() => console.log('Refresh complete')}
+    />
+  );
+}
+```
+
+### Custom Styling
+```tsx
+<SmartRefresh 
+  className="bg-gradient-to-r from-purple-600 to-pink-600"
 />
 ```
 
+## Component States
+
+### Simple Mode
+- Single button with refresh action
+- Settings gear icon to open detailed view
+- Loading spinner during refresh
+- Compact for dashboard integration
+
+### Detailed Mode
+- Full-screen modal overlay
+- Current status display
+- Mode selection grid
+- Real-time feedback
+- Error messages
+- Help tips
+
+## Status Information
+
+### Database Status
+- Tables row counts (assets, prices, indexes, etc.)
+- Simulation readiness indicator
+- Color-coded status (OK/EMPTY/ERROR)
+
+### Refresh Status
+- Asset count
+- Latest data date
+- Data age in days
+- Update recommendation
+- Stale data warnings
+
+## API Integration
+
+### Services Used
+- `diagnosticsService.getRefreshStatus()` - Get current refresh status
+- `diagnosticsService.getDatabaseStatus()` - Get database status
+- `manualService.smartRefresh()` - Trigger smart refresh
+
+### Response Handling
+```typescript
+interface RefreshResponse {
+  message: string;
+  mode?: string;
+  features?: string[];
+  note?: string;
+}
+```
+
+## UI/UX Features
+
+### Visual Feedback
+- Loading spinners during operations
+- Color-coded status indicators:
+  - Green: OK/Ready
+  - Yellow: Warning/Stale
+  - Red: Error
+  - Orange: Action needed
+- Animated buttons with hover effects
+- Gradient backgrounds for CTAs
+
+### User Guidance
+- Helpful tooltips and descriptions
+- Mode recommendations based on API plan
+- Performance tips in footer
+- Clear error messages
+
+## Error Handling
+
+### Common Errors
+- API connection failures
+- Rate limit exceeded
+- Database unavailable
+- Network timeouts
+
+### Error Display
+- Red alert box with error details
+- Maintains previous state
+- Retry options available
+- Console logging for debugging
+
+## Performance Considerations
+
+### Optimizations
+- Parallel API calls for status loading
+- Debounced status refresh (2-second delay)
+- Conditional rendering for modal
+- Efficient re-renders with state management
+
+### Background Processing
+- Refresh runs asynchronously
+- UI remains responsive
+- Progress indicated by spinner
+- Can close modal during refresh
+
+## Styling
+
+### Tailwind Classes
+- Dark theme optimized (gray-800/900 backgrounds)
+- Responsive grid layouts
+- Smooth transitions and animations
+- Hover and active states
+- Backdrop blur for modal
+
+### Customization
+- Accepts custom className prop
+- Gradient button variants
+- Icon-based visual hints
+- Flexible layout options
+
 ## Dependencies
-- React hooks
-- Axios/fetch
-- Date utilities
-- Icon library
+
+### External
+- React (useState, useEffect)
+- Next.js client component
+
+### Internal
+- `services/api` - API service layer
+- Type definitions for responses
+
+## Best Practices
+
+### Usage Guidelines
+1. Use "Minimal" mode for free API tiers
+2. Schedule "Full" refreshes during off-hours
+3. Monitor rate limits in production
+4. Cache data when possible
+
+### Integration Tips
+1. Place prominently in dashboard
+2. Provide visual feedback for all states
+3. Handle errors gracefully
+4. Log operations for debugging
+
+## Related Components
+- `Dashboard.tsx` - Main dashboard integration
+- `services/api.ts` - API service definitions
+- `DataStatus.tsx` - Status display component
+
+## Notes
+- Component auto-loads status on mount
+- Modal can be closed during refresh
+- Refresh continues in background
+- Status updates automatically after completion

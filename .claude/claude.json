@@ -1,0 +1,71 @@
+{
+  "name": "AI-Investment Documentation Assistant",
+  "version": "1.0.0",
+  "description": "Enhanced Claude configuration for AI-Investment project with documentation validation",
+  "settings": {
+    "hooks": {
+      "enabled": true,
+      "pre-write": {
+        "enabled": true,
+        "scripts": [
+          ".claude/hooks/pre-write-docs.sh"
+        ]
+      },
+      "post-read": {
+        "enabled": true,
+        "scripts": [
+          ".claude/hooks/post-read-validate.sh"
+        ]
+      },
+      "custom": {
+        "find-duplicates": ".claude/hooks/find-duplicates.py"
+      }
+    },
+    "mcp": {
+      "enabled": true,
+      "servers": {
+        "ide": {
+          "enabled": true,
+          "features": [
+            "getDiagnostics",
+            "executeCode"
+          ]
+        }
+      }
+    },
+    "validation": {
+      "markdown": {
+        "check_broken_links": true,
+        "check_todos": true,
+        "check_placeholders": true
+      },
+      "documentation": {
+        "warn_outdated": true,
+        "check_duplicates": true,
+        "validate_references": true
+      }
+    },
+    "automation": {
+      "documentation": {
+        "auto_update_dates": true,
+        "auto_fix_links": false,
+        "suggest_consolidation": true
+      }
+    }
+  },
+  "project": {
+    "type": "monorepo",
+    "language": ["python", "typescript"],
+    "framework": ["fastapi", "nextjs"],
+    "documentation": {
+      "root": "docs",
+      "format": "markdown",
+      "structure": "hierarchical"
+    }
+  },
+  "shortcuts": {
+    "find-duplicates": "python .claude/hooks/find-duplicates.py",
+    "validate-docs": "bash .claude/hooks/post-read-validate.sh",
+    "check-api": "mcp__ide__getDiagnostics"
+  }
+}

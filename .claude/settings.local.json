@@ -37,11 +37,9 @@
       "Bash(./cli_v2.1.4.exe --help)",
       "Bash(./cli_v2.1.4.exe whoami)",
       "Bash(./cli_v2.1.4.exe logs:*)",
-      "Bash(npm audit:*)",
-      "Bash(npm run lint)",
-      "Bash(npm run type-check:*)",
-      "Bash(gh run view:*)",
-      "Bash(ruff check:*)"
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": [],
     "ask": [],

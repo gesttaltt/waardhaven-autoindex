@@ -93,7 +93,18 @@ from ..models import Asset, Price, IndexValue, Allocation  # Works the same
 
 ### Step 3: Database Migrations
 
-No database changes are required as the table structures remain the same.
+**Current Migration Approach:**
+- Manual SQL migrations in `apps/api/migrations/` folder
+- Migrations run automatically on startup via `app/utils/run_migrations.py`
+- No Alembic configuration (planned for future)
+
+**Migration Files:**
+- `add_composite_indexes.sql` - Performance indexes
+- `add_performance_indexes.sql` - Additional indexes
+- `add_google_auth.py` - Google OAuth support
+- `add_news_tables.py` - News feature tables
+
+**Note:** Alembic integration is planned but not yet implemented. Currently using manual migration scripts.
 
 ### Step 4: Testing
 

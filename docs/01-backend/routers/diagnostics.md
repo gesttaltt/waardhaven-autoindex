@@ -7,196 +7,198 @@ System diagnostics and health monitoring endpoints for operational visibility.
 `apps/api/app/routers/diagnostics.py`
 
 ## Purpose
-Provides system health checks, performance metrics, and debugging information.
+Provides system health checks, database status, cache metrics, and debugging tools.
 
-## Endpoints
+## Actual Implementation
 
-### GET /api/v1/diagnostics/health
-- System health status
-- Component availability
-- Database connectivity
-- External service status
+### GET /api/v1/diagnostics/database-status
+Check database connectivity and data status.
 
-### GET /api/v1/diagnostics/metrics
-- Performance metrics
-- Resource utilization
-- Request statistics
-- Error rates
+**Response includes:**
+- Database connection status
+- Table row counts (users, assets, prices, index values, etc.)
+- Data freshness information
+- Connection pool statistics
 
-### GET /api/v1/diagnostics/cache
-- Cache statistics
-- Hit/miss rates
-- Memory usage
-- Key distribution
-
-### GET /api/v1/diagnostics/database
-- Connection pool status
-- Query performance
-- Active connections
-- Slow query log
-
-### GET /api/v1/diagnostics/services
-- TwelveData API status
-- Service availability
-- Rate limit status
-- Response times
-
-## Health Check Response
-
-### Status Codes
-- **200 OK**: All systems operational
-- **503 Service Unavailable**: Critical component down
-- **206 Partial Content**: Degraded performance
-
-### Response Format
+**Response example:**
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2024-01-01T00:00:00Z",
-  "components": {
-    "database": "healthy",
-    "cache": "healthy",
-    "market_data": "healthy",
-    "api": "healthy"
+  "status": "connected",
+  "tables": {
+    "users": 5,
+    "assets": 500,
+    "prices": 125000,
+    "index_values": 365,
+    "strategy_configs": 1,
+    "allocations": 5000,
+    "news_articles": 1000
   },
-  "version": "1.0.0",
-  "uptime": 86400
+  "latest_data": {
+    "latest_price_date": "2024-01-15",
+    "latest_index_date": "2024-01-15"
+  },
+  "pool_status": {
+    "size": 5,
+    "checked_in": 4,
+    "overflow": 0,
+    "total": 5
+  }
 }
 ```
 
-## Performance Metrics
+### GET /api/v1/diagnostics/refresh-status
+Get status of recent data refresh operations.
 
-### System Metrics
-- CPU usage
-- Memory utilization
-- Disk I/O
-- Network traffic
+**Response includes:**
+- Last refresh timestamp
+- Assets refreshed count
+- Price records added
+- Success/failure status
+- Error messages if any
 
-### Application Metrics
-- Request rate
-- Response times
-- Error rates
-- Active users
+### GET /api/v1/diagnostics/cache-status
+Check Redis cache connectivity and statistics.
 
-### Business Metrics
-- Portfolio updates/hour
-- Data refresh success rate
-- Strategy execution time
-- API calls remaining
-
-## Monitoring Integration
-
-### Prometheus Metrics
-- Custom metrics export
-- Standard metrics
-- Histogram data
-- Counter values
-
-### Logging
-- Structured logs
-- Log levels
-- Error tracking
-- Performance logs
-
-## Debugging Features
-
-### Debug Endpoints
-- `/api/v1/diagnostics/debug/config` - Configuration dump
-- `/api/v1/diagnostics/debug/env` - Environment variables
-- `/api/v1/diagnostics/debug/routes` - Available routes
-- `/api/v1/diagnostics/debug/dependencies` - Dependency versions
-
-### Profiling
-- Request profiling
-- Memory profiling
-- Database query analysis
-- CPU profiling
-
-## Cache Diagnostics
-
-### Cache Information
-- Total keys
+**Response includes:**
+- Redis connection status
 - Memory usage
-- Eviction statistics
-- TTL distribution
+- Key count
+- Cache hit/miss statistics
+- TTL information
 
-### Cache Operations
-- Clear cache
-- Invalidate keys
-- Refresh cache
-- Export cache data
+**Response example:**
+```json
+{
+  "redis_available": true,
+  "stats": {
+    "used_memory": "1.5MB",
+    "connected_clients": 2,
+    "total_keys": 150,
+    "expired_keys": 10
+  },
+  "cache_info": {
+    "market_data_keys": 50,
+    "news_keys": 30,
+    "strategy_keys": 5
+  }
+}
+```
 
-## Database Diagnostics
+### POST /api/v1/diagnostics/cache-invalidate
+Invalidate cache entries by pattern.
 
-### Connection Pool
-- Active connections
-- Idle connections
-- Pool size
-- Wait queue
+**Request Body:**
+```json
+{
+  "pattern": "market_data:*",
+  "confirm": true
+}
+```
 
-### Query Analysis
-- Slow queries
-- Most frequent queries
-- Index usage
-- Lock statistics
+**Response:**
+```json
+{
+  "status": "success",
+  "keys_deleted": 50,
+  "pattern": "market_data:*"
+}
+```
 
-## Service Dependencies
+### POST /api/v1/diagnostics/test-refresh
+Test data refresh with a small subset of data.
 
-### External Services
-- TwelveData API health
-- Database server status
-- Cache server status
-- Message queue status
+**Features:**
+- Fetches data for 3 test symbols
+- Limited date range (7 days)
+- Verbose logging
+- Returns detailed results
 
-### Internal Services
-- Background tasks
-- Scheduled jobs
-- Worker processes
-- Queue status
+**Response includes:**
+- Fetch status
+- Records processed
+- Errors encountered
+- Performance metrics
 
-## Error Tracking
+### POST /api/v1/diagnostics/recalculate-index
+Force recalculation of index values.
 
-### Error Statistics
-- Error counts by type
-- Error trends
-- Stack traces
-- User impact
+**Query Parameters:**
+- `start_date`: Beginning date for recalculation
+- `end_date`: End date for recalculation
 
-### Alert Triggers
-- High error rate
-- Service downtime
-- Performance degradation
-- Resource exhaustion
+**Features:**
+- Recalculates portfolio values
+- Updates allocations
+- Refreshes performance metrics
+- Returns calculation summary
+
+### GET /api/v1/diagnostics/twelvedata-status
+Check TwelveData API connectivity and quota.
+
+**Response includes:**
+- API connectivity status
+- Rate limit information
+- Credits used/remaining
+- Current plan details
+- Recent API call statistics
+
+**Response example:**
+```json
+{
+  "status": "connected",
+  "api_key_configured": true,
+  "plan": "free",
+  "rate_limit": {
+    "limit": 8,
+    "remaining": 5,
+    "reset_at": "2024-01-15T10:30:00Z"
+  },
+  "test_response": {
+    "symbol": "AAPL",
+    "price": 195.89,
+    "timestamp": "2024-01-15T10:00:00Z"
+  }
+}
+```
+
+### POST /api/v1/diagnostics/clear-market-cache
+Clear all market data from cache.
+
+**Features:**
+- Removes all market data cache entries
+- Forces fresh data on next request
+- Returns count of cleared entries
+
+**Response:**
+```json
+{
+  "status": "success",
+  "cleared_entries": 150,
+  "cache_type": "market_data"
+}
+```
+
+## Authentication
+All endpoints require user authentication via JWT token.
+
+## Error Handling
+- Returns detailed error messages for debugging
+- Includes stack traces in debug mode
+- Graceful handling of service unavailability
+
+## Use Cases
+1. **Health Monitoring**: Check system components are operational
+2. **Debugging**: Investigate data issues or refresh problems
+3. **Performance Tuning**: Monitor cache effectiveness
+4. **Maintenance**: Clear caches, force recalculations
 
 ## Security Considerations
-
-### Access Control
-- Admin-only endpoints
-- IP whitelisting
-- Authentication required
-- Rate limiting
-
-### Data Privacy
-- No sensitive data in logs
-- PII redaction
-- Secure transmission
-- Audit logging
-
-## Usage Examples
-
-### Health Check
-```bash
-curl http://api.example.com/api/v1/diagnostics/health
-```
-
-### Metrics Export
-```bash
-curl http://api.example.com/api/v1/diagnostics/metrics \
-  -H "Authorization: Bearer <admin-token>"
-```
+- Exposes internal system state
+- Should have restricted access in production
+- Consider rate limiting to prevent abuse
 
 ## Dependencies
-- System monitoring libraries
-- Database connection pool
-- Cache client
-- External service clients
+- Database models and session
+- Redis client
+- TwelveData service
+- User authentication
