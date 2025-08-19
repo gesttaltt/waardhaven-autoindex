@@ -1,7 +1,9 @@
-# Client Insights and Concepts
+# Client Insights and Development Methodologies
+
+## ⚠️ STATUS: METHODOLOGY DOCUMENTATION - NOT PRODUCT FEATURES
 
 ## Overview
-This section contains organized insights, methodologies, and concepts extracted from client discussions about AI-driven development workflows and automation strategies.
+This section contains development methodologies, workflow insights, and conceptual approaches extracted from client discussions about AI-driven development. **These are process documents, not implemented features of the Waardhaven platform.**
 
 ## Key Themes
 

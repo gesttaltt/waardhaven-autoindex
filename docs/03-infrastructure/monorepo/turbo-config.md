@@ -14,21 +14,16 @@ Root configuration file for Turborepo pipeline.
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": [".next/**"]
     },
     "dev": {
       "cache": false
-    },
-    "lint": {
-      "outputs": []
-    },
-    "test": {
-      "outputs": ["coverage/**"],
-      "dependsOn": ["build"]
     }
   }
 }
 ```
+
+**Note**: The current configuration is minimal, focusing only on `build` and `dev` tasks. The `lint` and `test` pipelines shown in some documentation are planned but not yet implemented.
 
 ## Workspace Structure
 

@@ -6,151 +6,107 @@ Docker configuration for the FastAPI backend application.
 ## Location
 `apps/api/Dockerfile`
 
-## Build Stages
+## Actual Implementation
 
-### Stage 1: Dependencies
-- Python 3.11 base image
-- System dependencies
-- Python packages
-- Requirements installation
-
-### Stage 2: Application
-- Code copying
-- Environment setup
-- User configuration
-- Entry point
-
-## Base Image
+### Base Image
 - Python 3.11-slim
-- Debian-based
-- Minimal footprint
-- Security updates
+- Lightweight Debian-based image
+- No multi-stage build (single stage)
 
-## Dependencies Installation
+### Build Process
+```dockerfile
+FROM python:3.11-slim
 
-### System Packages
-- PostgreSQL client
-- Build essentials
-- Security updates
-- Cleanup after install
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-### Python Packages
-- requirements.txt
-- Pip upgrade
-- No cache dir
-- Version pinning
+WORKDIR /app
+```
 
-## Application Setup
+### Dependencies Installation
+```dockerfile
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+```
 
-### File Structure
+**Features:**
+- No system packages installed (uses pure Python)
+- Direct pip install from requirements.txt
+- No cache to reduce image size
+
+### Application Setup
+```dockerfile
+COPY app ./app
+COPY scripts ./scripts
+RUN chmod +x scripts/startup.sh
+```
+
+**File Structure:**
 ```
 /app
-├── app/
-│   ├── core/
-│   ├── routers/
-│   ├── services/
-│   └── ...
-├── requirements.txt
-└── startup.sh
+├── app/          # Application code
+├── scripts/      # Startup scripts
+└── requirements.txt
 ```
 
-### Environment Variables
-- DATABASE_URL
-- SECRET_KEY
-- TWELVEDATA_API_KEY
-- NODE_ENV
+### Environment Configuration
+- `PORT`: Default 10000 (for Render deployment)
+- `PYTHONDONTWRITEBYTECODE`: Prevents .pyc files
+- `PYTHONUNBUFFERED`: Ensures stdout/stderr are unbuffered
 
-## Security Configuration
-
-### User Setup
-- Non-root user
-- Minimal permissions
-- Read-only filesystem
-- No shell access
-
-### Network Security
-- Single port exposure (8000)
-- No unnecessary services
-- Firewall ready
-
-## Optimization
-
-### Layer Caching
-- Dependency layer
-- Code layer separation
-- Cache bust strategies
-- Build optimization
-
-### Size Reduction
-- Multi-stage builds
-- Slim base image
-- Package cleanup
-- No dev dependencies
-
-## Health Check
-- Endpoint: /health
-- Interval: 30s
-- Timeout: 10s
-- Retries: 3
-
-## Entry Point
-
-### Startup Script
-- Database initialization
-- Migration check
-- Server launch
-- Error handling
-
-### Command
-```bash
-uvicorn app.main:app \
-  --host 0.0.0.0 \
-  --port 8000 \
-  --workers 4
+### Startup Configuration
+```dockerfile
+CMD ["./scripts/startup.sh"]
 ```
 
-## Build Process
+Uses `scripts/startup.sh` for environment-based configuration:
+- Determines worker count based on environment
+- Configures uvicorn with appropriate settings
+- Handles different deployment scenarios
+
+## Port Configuration
+- Exposed port: Uses `${PORT}` environment variable
+- Default: 10000 (Render.com standard)
+- Configurable via environment
+
+## Build Commands
 
 ### Local Build
 ```bash
 docker build -t waardhaven-api .
 ```
 
-### Production Build
+### Run Locally
 ```bash
-docker build \
-  --build-arg NODE_ENV=production \
-  -t waardhaven-api:prod .
+docker run -p 8000:10000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e SECRET_KEY="..." \
+  waardhaven-api
 ```
 
-## Runtime Configuration
+## Security Notes
+- Runs as root user (no non-root user configured)
+- No health check configured in Dockerfile
+- Relies on deployment platform for health monitoring
 
-### Port Mapping
-- Container: 8000
-- Host: configurable
-- Protocol: HTTP
-
-### Volume Mounts
-- Logs: /app/logs
-- Static files: /app/static
-- Temp files: /tmp
-
-## Debugging
-
-### Debug Mode
-- Hot reload enabled
-- Verbose logging
-- Debug endpoints
-- Stack traces
-
-### Logging
-- Stdout/stderr
-- JSON format
-- Log levels
-- Rotation strategy
+## Differences from Documentation
+The actual Dockerfile is much simpler than previously documented:
+- No multi-stage build
+- No system packages installation
+- No health check configuration
+- No volume mounts defined
+- No debug mode configuration
+- Uses startup script for flexibility
 
 ## Dependencies
-- Python 3.11
+All dependencies managed via `requirements.txt`:
 - FastAPI
-- PostgreSQL client
-- Uvicorn server
+- SQLAlchemy
+- Uvicorn
+- Other Python packages
+
+## Deployment
+Optimized for Render.com deployment:
+- Uses PORT environment variable
+- Startup script handles configuration
+- No hardcoded values

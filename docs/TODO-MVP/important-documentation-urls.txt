@@ -1,2 +1,0 @@
-Fundamental analysis dataset origin from the financial news API "Marketaux": https://www.marketaux.com/documentation
-Technical analysis dataset origin from the financial historical assets API "TwelveData" (Python implemented) at this repo: https://github.com/twelvedata/twelvedata-python

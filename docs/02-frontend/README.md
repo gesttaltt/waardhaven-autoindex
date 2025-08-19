@@ -1,31 +1,24 @@
 # Waardhaven AutoIndex Web Application
 
 ## Overview
-The Waardhaven AutoIndex frontend is a production-ready Next.js 14 application implementing Clean Architecture with Domain-Driven Design. It provides a comprehensive interface for portfolio management, featuring real-time data visualization, investment strategy configuration, and system monitoring.
+The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a modern, responsive interface for automated index fund management. It features real-time portfolio tracking, investment simulation, AI-driven strategy optimization, and comprehensive system monitoring.
 
-**Status**: Production-Ready (90%+ feature complete)
-**Architecture**: Clean Architecture with SOLID principles
-**Type Safety**: Full TypeScript implementation
+**Coverage Status**: 85% Complete (3 new pages added in latest update)
 
-## Implemented Features
+## Features
 
-### Core Pages (9 Routes)
-- **Dashboard** (`/dashboard`): Portfolio overview with performance charts
-- **Login/Register** (`/login`, `/register`): JWT authentication with Google OAuth
-- **Strategy** (`/strategy`): Investment strategy configuration
-- **News** (`/news`): Financial news feed with sentiment analysis
-- **Tasks** (`/tasks`): Background task monitoring
-- **Diagnostics** (`/diagnostics`): System health and cache status
-- **Admin** (`/admin`): Administrative functions
-- **Landing** (`/`): Public landing page
+### Core Functionality
+- **Portfolio Dashboard**: Real-time visualization of index performance and allocations
+- **Investment Simulation**: Test investment strategies with historical data
+- **Multi-Currency Support**: Simulate investments in various currencies
+- **Performance Analytics**: Comprehensive risk metrics and performance indicators
+- **Strategy Configuration**: Adjust index composition strategies with live rebalancing
 
-### Technical Capabilities
-- **Authentication**: JWT with refresh tokens, AuthProvider context
-- **State Management**: React Query for server state
-- **API Integration**: Type-safe service layer with HttpClient
-- **Clean Architecture**: Domain, Application, Infrastructure, Presentation layers
-- **Performance**: React memoization, lazy loading, optimized re-renders
-- **Error Handling**: Error boundaries with user-friendly messages
+### System Operations ✨ NEW
+- **Task Management**: Monitor and control background operations
+- **System Diagnostics**: Health monitoring and cache management
+- **Report Generation**: Backend capability for report generation (no frontend UI yet)
+- **Real-time Monitoring**: Live task progress and system status updates
 
 ### Technical Features
 - **Real-time Data**: WebSocket-ready architecture for live updates
@@ -36,111 +29,218 @@ The Waardhaven AutoIndex frontend is a production-ready Next.js 14 application i
 - **Background Tasks**: Celery integration for async operations
 
 ## Tech Stack
-- **Framework**: Next.js 14 (App Router with SSR)
-- **Language**: TypeScript 5.x
-- **UI Library**: React 18
-- **Styling**: Tailwind CSS 3.x
-- **Charts**: Recharts for financial visualizations
-- **State Management**: React Context + React Query
-- **HTTP Client**: Custom HttpClient with interceptors
-- **Authentication**: JWT with secure token management
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Charts**: Recharts
+- **Animations**: Framer Motion
+- **HTTP Client**: Axios
+- **State Management**: React Hooks
 
-## Clean Architecture Implementation (2025-01-19)
+## Actual Project Structure
 
-The frontend has been refactored to follow Clean Architecture principles with clear separation of concerns:
+The frontend uses a simplified structure focused on functionality:
 
 ```
-apps/web/app/
-├── core/                    # Clean Architecture Layers
-│   ├── domain/             # Business entities and rules
-│   │   ├── entities/       # Pure business objects
-│   │   ├── repositories/   # Repository interfaces
-│   │   └── use-cases/      # Business use cases
-│   ├── application/        # Application-specific logic
-│   │   ├── auth/          # Authentication use cases
-│   │   └── portfolio/     # Portfolio management
-│   ├── infrastructure/     # External service implementations
-│   │   ├── api/           # API clients
-│   │   ├── repositories/  # Concrete repositories
-│   │   └── token/         # Token management
-│   └── presentation/       # React-specific code
-│       ├── hooks/         # Custom React hooks
-│       ├── contexts/      # React contexts
-│       └── components/    # UI components
+apps/web/
+├── app/
+│   ├── components/          # Reusable Components
+│   │   ├── dashboard/     # Dashboard-specific components
+│   │   │   ├── PerformanceCards.tsx
+│   │   │   ├── PerformanceChart.tsx
+│   │   │   ├── PortfolioAllocation.tsx
+│   │   │   └── SimulationPanel.tsx
+│   │   ├── shared/        # Shared UI components
+│   │   │   ├── Button/
+│   │   │   ├── Card/
+│   │   │   └── ErrorBoundary.tsx
+│   │   ├── SmartRefresh.tsx
+│   │   └── StrategyConfig.tsx
 │   │
-├── components/             # Shared UI Components
-│   ├── Button/            # Typed button component
-│   ├── Card/              # Reusable card component
-│   ├── SystemHealthIndicator/ # Health monitoring
-│   └── DataQualityIndicator/ # Data quality display
-│
-├── services/              # API Service Layer
-│   ├── api/              # Direct API calls
-│   │   ├── client.ts     # HttpClient configuration
-│   │   ├── auth.ts       # Authentication endpoints
-│   │   ├── portfolio.ts  # Portfolio endpoints
-│   │   └── tasks.ts      # Task management
+│   ├── hooks/              # Custom React Hooks
+│   │   ├── api/           
+│   │   │   └── useApiCall.ts
+│   │   ├── useChartData.ts
+│   │   ├── usePortfolioData.ts
+│   │   └── useSimulation.ts
 │   │
-│   ├── lib/               # Core Business Logic
-│   │   ├── calculations/ # Business calculations
-│   │   ├── validators/   # Input validation
-│   │   └── formatters/   # Data formatting
+│   ├── services/           # API Service Layer
+│   │   └── api/           
+│   │       ├── base.ts
+│   │       ├── client.ts
+│   │       ├── portfolio.ts
+│   │       ├── market.ts
+│   │       ├── strategy.ts
+│   │       ├── background.ts
+│   │       ├── diagnostics.ts
+│   │       ├── manual.ts
+│   │       ├── news.ts
+│   │       └── types.ts
 │   │
-│   ├── types/             # Type Definitions
-│   │   ├── api/          # API response types
-│   │   ├── domain/       # Domain models
-│   │   └── ui/           # UI component props
+│   ├── lib/               # Utilities
+│   │   ├── calculations/
+│   │   │   └── portfolio.ts
+│   │   └── utils.ts
 │   │
-│   ├── styles/            # Styling
-│   │   ├── components/   # Component-specific styles
-│   │   ├── themes/       # Theme definitions
-│   │   └── globals.css   # Global styles
+│   ├── types/             # TypeScript Types
+│   │   ├── api.ts
+│   │   ├── chart.ts
+│   │   └── portfolio.ts
 │   │
 │   ├── constants/         # Application Constants
 │   │   ├── config.ts
-│   │   ├── routes.ts
 │   │   └── theme.ts
 │   │
-│   └── [pages]/          # Page Components (Smart Components)
+│   ├── core/              # Clean Architecture Implementation (Active)
+│   │   ├── application/   # Application-specific use cases
+│   │   │   └── usecases/auth/  # Authentication use cases
+│   │   ├── domain/        # Business entities and rules
+│   │   │   ├── entities/  # Domain models (User, Portfolio, SystemHealth, DataQuality)
+│   │   │   ├── repositories/  # Repository interfaces
+│   │   │   └── usecases/  # Domain use cases
+│   │   ├── infrastructure/  # External service implementations
+│   │   │   ├── api/       # HTTP client and API client
+│   │   │   ├── auth/      # Auth providers and token management
+│   │   │   └── repositories/  # Concrete repository implementations
+│   │   └── presentation/  # React-specific code
+│   │       ├── components/  # Clean architecture UI components
+│   │       ├── contexts/  # AuthContext (actively used)
+│   │       └── hooks/     # Custom hooks for clean components
+│   │
+│   └── [pages]/          # Next.js Page Routes
 │       ├── dashboard/
 │       ├── tasks/
 │       ├── diagnostics/
-│       └── reports/
+│       ├── news/
+│       ├── strategy/
+│       ├── login/
+│       └── register/
 ├── public/               # Static assets
 └── tests/               # Test files
 
 ```
 
-### Architecture Principles (SOLID)
+## Pages & Routes
 
-#### 1. Single Responsibility Principle
-- **Domain Layer**: Pure business logic only
-- **Infrastructure**: External service integration only
-- **Presentation**: UI rendering and user interaction only
-- **Application**: Use case orchestration only
+The application includes the following pages, each serving a specific purpose in the platform:
 
-#### 2. Dependency Inversion Principle
-- Domain defines interfaces (repositories)
-- Infrastructure implements interfaces
-- Presentation depends on abstractions
-- No direct dependencies on external services
+### Public Pages
+- **`/` (Landing)** - Landing page with platform introduction and feature highlights
+- **`/login`** - User authentication page with email/password and Google OAuth support
+- **`/register`** - New user registration with validation
 
-#### 3. Component Structure Pattern
+### Protected Pages (Authentication Required)
+- **`/dashboard`** - Main portfolio dashboard showing:
+  - Real-time index performance
+  - Portfolio allocation charts
+  - Performance metrics cards
+  - Investment simulation panel
+  - Historical performance charts
+  
+- **`/strategy`** - Strategy configuration page for:
+  - Adjusting index composition rules
+  - Setting rebalancing parameters
+  - Volatility and risk management
+  - Strategy backtesting
 
-Each component follows a consistent structure:
-```
-ComponentName/
-├── index.ts              # Public API export
-├── ComponentName.tsx     # Component implementation
-├── ComponentName.types.ts # TypeScript interfaces
-└── ComponentName.styles.ts # Styling constants
-```
+- **`/admin`** - Administrative interface for:
+  - User management
+  - System configuration
+  - Advanced settings
+  - Platform monitoring
 
-**Benefits:**
-- Clear separation of concerns
-- Type safety throughout
-- Easy testing and maintenance
-- Consistent codebase structure
+- **`/tasks`** - Background task management:
+  - View running tasks
+  - Monitor task history
+  - Trigger manual operations
+  - Task scheduling status
+
+- **`/diagnostics`** - System health monitoring:
+  - API connectivity status
+  - Database health checks
+  - Cache performance metrics
+  - Service availability monitoring
+
+- **`/news`** - Market news and insights:
+  - Real-time market news feed
+  - AI-powered analysis
+  - Sentiment tracking
+  - News impact on portfolio
+
+## Clean Architecture Implementation
+
+The `core/` directory implements Clean Architecture principles with clear separation of concerns. This architecture is **actively used** in the application, particularly for authentication and system monitoring features.
+
+### Layer Structure
+
+#### Domain Layer (`core/domain/`)
+**Purpose**: Contains business logic independent of any framework or external dependencies.
+
+- **Entities**: Pure business objects (`User`, `Portfolio`, `SystemHealth`, `DataQuality`)
+- **Repository Interfaces**: Contracts for data access (dependency inversion)
+- **Use Cases**: Business rules and operations
+
+#### Application Layer (`core/application/`)
+**Purpose**: Application-specific business rules and orchestration.
+
+- **Authentication Use Cases**: `LoginUseCase`, `GoogleAuthUseCase`
+- Orchestrates between domain and infrastructure layers
+
+#### Infrastructure Layer (`core/infrastructure/`)
+**Purpose**: Concrete implementations of external services and data access.
+
+- **API Clients**: `HttpClient`, `ApiClient` for backend communication
+- **Auth Providers**: `GoogleAuthProvider`, `TokenManager` for authentication
+- **Repository Implementations**: Concrete implementations of domain interfaces
+  - `AuthRepository`: Manages authentication state and tokens
+  - `DataQualityRepository`: Fetches data quality metrics
+  - `SystemHealthRepository`: Retrieves system health status
+
+#### Presentation Layer (`core/presentation/`)
+**Purpose**: React-specific components and hooks following clean architecture.
+
+**Active Components**:
+- **`AuthContext`**: Global authentication state management (used throughout the app)
+- **`SystemHealthIndicator`**: Displays system health metrics (used in dashboard)
+- **`DataQualityIndicator`**: Shows data quality status (used in dashboard)
+- **`ProtectedRoute`**: Route protection wrapper
+
+**Custom Hooks**:
+- `useSystemHealth`: Monitors system health with auto-refresh
+- `useDataQuality`: Tracks data quality metrics
+- `useApiRequest`: Generic API request handler with error management
+
+### Implementation Status
+
+✅ **Fully Implemented**:
+- Authentication flow with clean architecture
+- System health monitoring
+- Data quality assessment
+- Repository pattern for data access
+
+⚠️ **Partially Implemented**:
+- Portfolio management (entities defined, repositories pending)
+- Some use cases defined but not fully integrated
+
+❌ **Not Yet Implemented**:
+- Full portfolio repository implementation
+- Complete migration of all API calls to clean architecture
+
+### Architecture Principles
+
+#### 1. Separation of Concerns
+- **UI Components**: Pure, reusable components with no business logic
+- **Hooks**: Encapsulate business logic and state management
+- **Services**: Handle external API communication
+- **Lib**: Core business logic independent of React
+
+#### 2. Component Categories
+
+**Presentational Components (Dumb)**
+- Located in `components/ui/`
+- Pure functions with props
+- No direct API calls
+- Fully reusable across features
 - Example:
 ```typescript
 // components/ui/Button/Button.tsx
@@ -364,13 +464,9 @@ System health monitoring with:
 - Cache management controls
 - System action buttons
 
-### Reports & Analytics (`/reports`) ✨ NEW
-Report generation center offering:
-- Multiple report types (performance, allocation, risk)
-- Custom time period selection
-- Report generation progress tracking
-- Historical report archive
-- Quick report templates
+### Reports & Analytics (`/reports`) ❌ NOT IMPLEMENTED
+This page is documented but does not exist in the codebase.
+Report generation is available via backend API but has no frontend interface.
 
 ### Admin Panel (`/admin`)
 Administrative interface for:

@@ -9,73 +9,54 @@ Handles user authentication, registration, and token management.
 ## Endpoints
 
 ### POST /api/v1/auth/register
-- User registration with email and password
-- Password strength validation
+- User registration
+- Password validation with security requirements
 - Password hashing with bcrypt
 - Returns JWT access token
 
 ### POST /api/v1/auth/login
-- User authentication with email/password
-- Password verification against hash
+- User authentication
+- Password verification
 - JWT token generation
 - Returns access token
 
 ### POST /api/v1/auth/google
 - Google OAuth authentication
-- Creates account if user doesn't exist
-- Links existing accounts to Google
+- Creates new user or links existing account
+- Marks user as Google user
 - Returns JWT access token
 
-### GET /api/v1/auth/me
-- Get current authenticated user information
-- Requires valid JWT token
-- Returns user profile (id, email, is_google_user, created_at)
-
-### POST /api/v1/auth/refresh
-- Refresh JWT access token for current user
-- Requires valid existing token
-- Returns new access token
-- Extends session without re-login
-
-### POST /api/v1/auth/logout
-- User logout endpoint
-- Token invalidation handled client-side
-- Returns success message
+### OPTIONS endpoints
+- Handles CORS preflight requests for all auth endpoints
+- Returns 200 OK for browser compatibility
 
 ## Authentication Flow
 
 1. **Registration**
-   - Validate user input (email format, password strength)
-   - Check for existing user with same email
+   - Validate password strength requirements
+   - Check for existing user by email
    - Hash password with bcrypt
-   - Create user record in database
-   - Generate JWT token with user ID
-   - Return access token
+   - Create user record
+   - Generate JWT token
 
 2. **Login**
-   - Verify email/password credentials
-   - Check password hash with bcrypt
-   - Generate JWT token with user ID
-   - Return access token to client
+   - Verify email and password
+   - Check password hash
+   - Generate JWT token
+   - Return token to client
 
 3. **Google OAuth**
-   - Verify Google token (handled client-side)
-   - Check if user exists by email
-   - Create new user if doesn't exist
-   - Link existing user to Google if needed
+   - Receive verified email from frontend
+   - Check if user exists
+   - Create new user or link existing
+   - Mark as Google user (is_google_user flag)
    - Generate JWT token
 
 4. **Protected Routes**
-   - Extract Bearer token from Authorization header
-   - Verify JWT signature using secret key
-   - Decode user ID from token payload
-   - Fetch user from database
+   - Extract token from header
+   - Verify JWT signature
+   - Decode user information
    - Grant access to resource
-
-5. **Token Refresh**
-   - Validate current token
-   - Generate new token with same user ID
-   - Return refreshed access token
 
 ## Security Features
 

@@ -3,16 +3,13 @@
 ## Prerequisites
 
 ### Required Software
-- Node.js 20+ and npm
+- Node.js 18+ and npm
 - Python 3.11+
 - PostgreSQL 14+
-- Redis 6+ (optional, for caching and background tasks)
 - Docker (optional, for containerized deployment)
 
-### Required API Keys
-- **TwelveData**: Market data integration (https://twelvedata.com)
-- **MarketAux**: Financial news (optional, https://marketaux.com)
-- **Google OAuth**: For social authentication (optional)
+### API Keys
+- TwelveData API key for market data
 
 ## Local Development Setup
 
@@ -27,14 +24,7 @@ cd waardhaven-autoindex
 #### Backend Setup
 ```bash
 cd apps/api
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-test.txt  # For testing
 ```
 
 #### Frontend Setup
@@ -43,46 +33,19 @@ cd apps/web
 npm install
 ```
 
-#### Setup Code Formatting (Recommended)
-```bash
-# From project root - sets up pre-commit hooks
-bash apps/api/scripts/setup-pre-commit.sh  # Unix/Mac
-# OR
-apps\api\scripts\setup-pre-commit.bat     # Windows
-```
-
 ### 3. Environment Configuration
 
 #### Backend (.env in apps/api)
-```env
-# Database
+```
 DATABASE_URL=postgresql://user:password@localhost/waardhaven
-
-# Authentication
-SECRET_KEY=your-secret-key-min-32-chars
-ADMIN_TOKEN=your-admin-token
-
-# External APIs
-TWELVEDATA_API_KEY=your-twelvedata-api-key
-MARKETAUX_API_KEY=your-marketaux-api-key  # Optional
-
-# Redis (optional)
-REDIS_URL=redis://localhost:6379
-
-# Frontend URL for CORS
-FRONTEND_URL=http://localhost:3000
-
-# Development
-SKIP_STARTUP_REFRESH=true  # Skip data refresh on startup
+SECRET_KEY=your-secret-key
+TWELVEDATA_API_KEY=your-api-key
+NODE_ENV=development
 ```
 
 #### Frontend (.env.local in apps/web)
-```env
-# API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-
-# Optional: Google OAuth
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### 4. Database Setup
@@ -92,106 +55,36 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 CREATE DATABASE waardhaven;
 ```
 
-#### Initialize Database
+#### Run Initialization
 ```bash
 cd apps/api
-
-# Initialize database schema
-python -m app.db_init
-
-# Optional: Seed initial assets
-python -m app.seed_assets
-
-# Optional: Run initial data refresh
-python -m app.tasks_refresh
+python app/db_init.py
+python app/seed_assets.py
 ```
 
 ### 5. Start Development Servers
 
-#### Backend API Server
+#### Backend Server
 ```bash
 cd apps/api
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --port 8000
 ```
 
-#### Optional: Background Workers
-```bash
-# In separate terminals:
-
-# Celery Worker
-celery -A app.core.celery_app worker --loglevel=info
-
-# Celery Beat (for periodic tasks)
-celery -A app.core.celery_app beat --loglevel=info
-
-# Flower Monitoring (http://localhost:5555)
-celery -A app.core.celery_app flower
-```
-
-#### Frontend Development Server
+#### Frontend Server
 ```bash
 cd apps/web
 npm run dev
 ```
 
 ### 6. Access the Application
-- **Frontend**: http://localhost:3000
-- **API Documentation**: http://localhost:8000/docs
-- **API Redoc**: http://localhost:8000/redoc
-- **Flower Dashboard**: http://localhost:5555 (if running)
-
-### 7. Default Credentials
-Register a new account or use:
-- Email: user@example.com
-- Password: Test123!@#
-
-## Testing
-
-### Backend Tests
-```bash
-cd apps/api
-
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=app --cov-report=html
-
-# Run specific test file
-pytest tests/test_auth.py
-```
-
-### Type Checking
-```bash
-# Frontend
-cd apps/web
-npx tsc --noEmit
-
-# Backend
-cd apps/api
-mypy app/
-```
-
-### Linting
-```bash
-# Backend
-cd apps/api
-ruff check .
-
-# Frontend
-cd apps/web
-npm run lint
-```
+- Frontend: http://localhost:3000
+- API Documentation: http://localhost:8000/docs
 
 ## Docker Development
 
 ### Using Docker Compose
 ```bash
-# Build and start all services
-docker-compose up --build
-
-# Run in background
-docker-compose up -d
+docker-compose up
 ```
 
 ### Individual Containers
@@ -236,8 +129,10 @@ The project includes a `render.yaml` configuration for easy deployment:
 ### Backend Commands
 ```bash
 # Run tests
-python test_twelvedata.py
-python test_rate_limits.py
+npm run test:api
+npm run test:api:coverage
+npm run test:api:unit
+npm run test:api:integration
 
 # Database initialization
 python app/db_init.py
@@ -245,6 +140,11 @@ python app/seed_assets.py
 
 # Start server
 uvicorn app.main:app --reload
+
+# Start background services (in separate terminals)
+celery -A app.core.celery_app worker --loglevel=info
+celery -A app.core.celery_app beat --loglevel=info
+celery -A app.core.celery_app flower --port=5555
 ```
 
 ### Frontend Commands
@@ -273,12 +173,12 @@ npm run build
 
 ## Startup Scripts
 
-The project includes several startup scripts for different scenarios:
+The project includes startup scripts in `apps/api/scripts/`:
 
-1. **startup.sh** - Basic startup
-2. **startup_debug.sh** - With debug output
-3. **startup_improved.sh** - Enhanced error handling
-4. **startup_smart.sh** - Intelligent startup with checks
+1. **startup.sh** - Main startup script with database initialization and health checks
+2. **start_worker.sh** - Start Celery worker for background tasks
+3. **start_beat.sh** - Start Celery beat scheduler for periodic tasks
+4. **start_flower.sh** - Start Flower monitoring dashboard for Celery
 
 ## Common Issues
 
@@ -300,51 +200,16 @@ The project includes several startup scripts for different scenarios:
 - Check ALLOWED_ORIGINS in production
 - Verify API_URL in frontend config
 
-## Development Tools
-
-### Code Formatting & Linting
-The project enforces code quality through automated formatting:
-
-#### Backend (Python)
-```bash
-cd apps/api
-black .                    # Format code
-ruff check . --fix        # Fix linting issues
-mypy app --ignore-missing-imports  # Type checking
-```
-
-#### Frontend (TypeScript)
-```bash
-cd apps/web
-npm run format            # Format with Prettier
-npm run lint              # Fix ESLint issues
-npm run type-check        # TypeScript checking
-```
-
-#### CI/CD Checks
-Before pushing, ensure your code passes:
-```bash
-# Backend
-black --check .
-ruff check .
-
-# Frontend
-npm run format:check
-npm run lint:check
-```
-
 ## Development Workflow
 
 1. Create feature branch
 2. Make changes
-3. Run formatters (`black`, `prettier`)
-4. Test locally
-5. Run tests
-6. Create pull request
-7. CI/CD validates formatting
-8. Deploy to staging (if available)
-9. Merge to main
-10. Deploy to production
+3. Test locally
+4. Run tests
+5. Create pull request
+6. Deploy to staging (if available)
+7. Merge to main
+8. Deploy to production
 
 ## Useful Resources
 

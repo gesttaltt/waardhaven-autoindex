@@ -2,19 +2,21 @@
 
 ## What is Waardhaven AutoIndex?
 
-Waardhaven AutoIndex is a production-ready investment portfolio management system with automated index creation, strategy optimization, and real-time market data integration. Built with modern technologies and clean architecture principles, it provides institutional-grade portfolio management capabilities for individual investors.
+Waardhaven AutoIndex is an intelligent automated investment platform that manages portfolios using dynamic index strategies. It analyzes market data, applies quantitative investment strategies, and automatically rebalances portfolios to optimize returns while managing risk.
 
 ## Project Structure
 
 ```
 waardhaven-autoindex/
 ├── apps/
-│   ├── api/          # FastAPI backend with clean architecture
-│   └── web/          # Next.js frontend with domain-driven design
-├── docs/             # Comprehensive documentation (132 files)
-├── .github/          # CI/CD workflows (6 GitHub Actions)
-├── render.yaml       # Production deployment configuration
-└── turbo.json        # Turborepo monorepo configuration
+│   ├── api/          # Backend FastAPI application
+│   └── web/          # Frontend Next.js application
+├── docs/             # Comprehensive project documentation
+├── tools/            # Development and utility tools
+├── .github/          # GitHub Actions workflows
+├── render.yaml       # Render.com deployment configuration
+├── turbo.json        # Turborepo monorepo configuration
+└── package.json      # Root package configuration
 ```
 
 ## Core Functionality
@@ -29,6 +31,8 @@ waardhaven-autoindex/
 - Real-time price data from TwelveData API
 - Historical data analysis
 - Market benchmarking against S&P 500
+- News aggregation via MarketAux API
+- Provider architecture for extensible data sources
 
 ### 3. Investment Strategies
 - Momentum-based filtering
@@ -37,123 +41,95 @@ waardhaven-autoindex/
 - Configurable strategy parameters
 
 ### 4. User Features
-- JWT authentication with Google OAuth
-- Interactive dashboard with real-time data
-- Advanced performance analytics
-- Financial news integration
-- Background task monitoring
-- System health diagnostics
+- Secure authentication system
+- Interactive dashboard
+- Performance analytics
+- AI-powered insights
 
 ## Technology Overview
 
 ### Backend (FastAPI)
-- Python 3.11+ with async/await
-- PostgreSQL with SQLAlchemy ORM
+- Python 3.11+ with async support
+- PostgreSQL database with SQLAlchemy ORM
+- JWT-based authentication
+- RESTful API design
 - Redis caching layer
-- Celery background tasks
-- JWT authentication with refresh tokens
-- RESTful API with OpenAPI documentation
+- Celery for background tasks
+- Provider pattern for external integrations
 
-### Frontend (Next.js 14)
+### Frontend (Next.js)
 - React 18 with TypeScript
+- Server-side rendering
+- TailwindCSS for styling
+- Recharts for data visualization
 - Clean Architecture implementation
-- Server-side rendering (SSR)
-- TailwindCSS for responsive design
-- Recharts for financial visualizations
-- React Query for server state
+- AuthContext for authentication state
 
 ### Infrastructure
 - Docker containerization
-- Render.com production deployment
-- GitHub Actions CI/CD pipeline
-- Turborepo for monorepo management
-- PostgreSQL with automatic migrations
-- Redis for caching and queues
+- Render.com deployment
+- Turborepo monorepo management
 
 ## Key Modules
 
-### Backend Modules (Production-Ready)
-- **Core** (4 modules): Database, Redis, Celery, configuration
-- **Models** (6 domains): User, Asset, Price, Index, Strategy, News
-- **Routers** (10 endpoints): Auth, Index, Strategy, Tasks, Diagnostics, etc.
-- **Services** (6 services): Performance, Refresh, Strategy, Currency, News
-- **Providers**: TwelveData, MarketAux with clean interfaces
-- **Tests** (10 files): Comprehensive unit and integration tests
+### Backend Modules
+- **Core**: Configuration, database setup, Redis, and Celery
+- **Models**: Database models (User, Asset, Price, IndexValue, etc.)
+- **Routers**: API endpoints (auth, index, benchmark, strategy, news, tasks, diagnostics)
+- **Services**: Business logic and integrations
+- **Providers**: External API integrations (TwelveData, MarketAux)
+- **Tasks**: Background task definitions
+- **Utils**: Security, caching, and helper functions
 
-### Frontend Modules (Clean Architecture)
-- **Core Domain**: Business entities and rules
-- **Application Layer**: Use cases and business logic
-- **Infrastructure**: API clients, repositories, token management
-- **Presentation**: React components, hooks, contexts
-- **Pages** (9 routes): Dashboard, Strategy, News, Tasks, Diagnostics
-- **Services**: Type-safe API communication layer
+### Frontend Modules
+- **Pages**: Application routes (dashboard, strategy, tasks, diagnostics, news, admin)
+- **Components**: Dashboard components, shared UI, Clean Architecture components
+- **Core**: Clean Architecture layers (domain, application, infrastructure, presentation)
+- **Services**: API communication layer
+- **Hooks**: Custom React hooks for business logic
+- **Utils**: Helper functions and utilities
 
-## Current Capabilities (90%+ Complete)
+## Current Capabilities
 
-1. **Authentication & Security**
-   - JWT with refresh token mechanism
-   - Google OAuth integration
-   - Password strength validation
-   - Rate limiting and CORS protection
-   - Security headers middleware
+1. **User Management**
+   - Registration and login
+   - JWT token authentication
+   - Secure password storage
 
-2. **Portfolio Management**
-   - Automated index creation
-   - Dynamic strategy configuration
-   - Multi-currency support
-   - Risk metrics (Sharpe, Sortino, drawdown)
-   - S&P 500 benchmark comparison
+2. **Portfolio Operations**
+   - Create and manage investment portfolios
+   - Track performance over time
+   - Compare against market benchmarks
 
-3. **Data Integration**
-   - TwelveData market data API
-   - MarketAux financial news
-   - Redis caching with invalidation
-   - Background data refresh
-   - Composite database indexes
+3. **Data Processing**
+   - Fetch real-time market data
+   - Calculate portfolio metrics
+   - Generate investment insights
 
-4. **Advanced Features**
-   - Celery background task processing
-   - Flower task monitoring dashboard
-   - System health diagnostics
-   - Data quality indicators
-   - Real-time performance tracking
+4. **Visualization**
+   - Interactive performance charts
+   - Asset allocation displays
+   - Historical trend analysis
 
 ## Development Status
 
-**Production-Ready**: The platform is fully deployed and operational on Render.com.
-
-### Completed Features
-- ✅ Full authentication system with JWT and OAuth
-- ✅ Portfolio index calculation and management
-- ✅ Investment strategy configuration
-- ✅ Market data integration (TwelveData)
-- ✅ Financial news aggregation (MarketAux)
-- ✅ Background task processing (Celery)
-- ✅ Redis caching layer
-- ✅ Clean architecture implementation
-- ✅ CI/CD pipeline with GitHub Actions
-- ✅ Docker containerization
-- ✅ Production deployment
-
-### Pending Enhancements
-- ⏳ WebSocket real-time updates
-- ⏳ Advanced monitoring (Prometheus/Grafana)
-- ⏳ Frontend unit tests
-- ⏳ E2E testing suite
+The project is currently in active development with core features implemented and operational. The platform successfully:
+- Manages user authentication
+- Fetches and processes market data
+- Implements investment strategies
+- Provides real-time portfolio tracking
+- Generates AI-powered insights
 
 ## Documentation Organization
 
 This documentation is organized into the following sections:
 
 1. **00-project-overview**: High-level project information
-2. **01-backend**: Backend architecture, services, and APIs
-3. **02-frontend**: Frontend architecture and components
-4. **03-infrastructure**: CI/CD, Docker, deployment
-5. **04-current-features**: Implemented feature details
-6. **05-ideas-and-concepts**: Future enhancements (not yet implemented)
-7. **06-client-insights**: Development methodology and patterns
-8. **frontend-web-integration**: Full integration guide (16 documents)
-9. **logs**: Deployment and audit logs
+2. **01-backend**: Backend module documentation
+3. **02-frontend**: Frontend module documentation
+4. **03-infrastructure**: Deployment and infrastructure
+5. **04-current-features**: Detailed feature documentation
+6. **05-ideas-and-concepts**: Future plans and concepts
 
 ## Getting Started
 

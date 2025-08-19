@@ -1,6 +1,10 @@
 # RIVL - Real-time Information Velocity & Latent Consensus Platform
 
+## ⚠️ STATUS: CONCEPTUAL DOCUMENTATION - NOT IMPLEMENTED
+
 ## Overview
+**This is a conceptual design document for a potential future evolution of the platform. None of the features described here are currently implemented.**
+
 RIVL represents a potential future evolution of the Waardhaven AutoIndex platform into a sophisticated belief-revision intelligence system for institutional investors. This comprehensive documentation outlines the complete vision, architecture, and implementation strategy for transforming the current MVP into a market-leading investment intelligence platform.
 
 ## Vision Statement
