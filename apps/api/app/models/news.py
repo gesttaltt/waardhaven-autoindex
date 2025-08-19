@@ -28,7 +28,7 @@ from ..core.database import Base
 asset_news_association = Table(
     "asset_news",
     Base.metadata,
-    Column("asset_id", UUID(as_uuid=True), ForeignKey("assets.id"), primary_key=True),
+    Column("asset_id", Integer, ForeignKey("assets.id"), primary_key=True),
     Column(
         "article_id",
         UUID(as_uuid=True),

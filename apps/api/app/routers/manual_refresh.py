@@ -169,13 +169,26 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
             stored_count = 0
             for sym in symbols:
                 asset = next((a for a in assets if a.symbol == sym), None)
-                if asset and sym in price_df.columns.levels[0]:
-                    series = price_df[sym]["Close"].dropna()
-                    for idx, val in series.items():
-                        db.add(
-                            Price(asset_id=asset.id, date=idx.date(), close=float(val))
-                        )
-                        stored_count += 1
+                if asset:
+                    # Handle both MultiIndex and regular columns
+                    if hasattr(price_df.columns, 'levels'):
+                        # MultiIndex columns (symbol, metric)
+                        if sym in price_df.columns.levels[0]:
+                            series = price_df[sym]["close"].dropna()
+                            for idx, val in series.items():
+                                db.add(
+                                    Price(asset_id=asset.id, date=idx.date(), close=float(val))
+                                )
+                                stored_count += 1
+                    else:
+                        # Regular columns or single symbol
+                        if "close" in price_df.columns:
+                            series = price_df["close"].dropna()
+                            for idx, val in series.items():
+                                db.add(
+                                    Price(asset_id=asset.id, date=idx.date(), close=float(val))
+                                )
+                                stored_count += 1
 
             db.commit()
             results["steps"].append(
@@ -191,9 +204,16 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
                 try:
                     prices_on_date = []
                     for sym in symbols:
-                        if sym in price_df.columns.levels[0]:
-                            if dt in price_df[sym]["Close"].index:
-                                prices_on_date.append(price_df[sym]["Close"][dt])
+                        if hasattr(price_df.columns, 'levels'):
+                            # MultiIndex columns
+                            if sym in price_df.columns.levels[0]:
+                                if dt in price_df[sym]["close"].index:
+                                    prices_on_date.append(price_df[sym]["close"][dt])
+                        else:
+                            # Regular columns
+                            if "close" in price_df.columns:
+                                if dt in price_df.index:
+                                    prices_on_date.append(price_df.loc[dt, "close"])
 
                     if prices_on_date:
                         avg_price = sum(prices_on_date) / len(prices_on_date)
@@ -206,8 +226,8 @@ def minimal_data_refresh(db: Session = Depends(get_db)):
                     )
                     if not existing:
                         db.add(IndexValue(date=dt.date(), value=avg_price))
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Skipping date {dt}: {e}")
 
             db.commit()
 

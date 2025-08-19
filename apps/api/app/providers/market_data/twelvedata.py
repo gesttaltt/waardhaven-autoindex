@@ -254,10 +254,23 @@ class TwelveDataProvider(MarketDataProvider):
 
                     if batch_data:
                         for symbol in uncached_symbols:
-                            if symbol in batch_data and "values" in batch_data[symbol]:
-                                df = pd.DataFrame(batch_data[symbol]["values"])
-                                df["datetime"] = pd.to_datetime(df["datetime"])
-                                df.set_index("datetime", inplace=True)
+                            if symbol in batch_data:
+                                symbol_data = batch_data[symbol]
+                                
+                                # Handle different response formats
+                                if isinstance(symbol_data, dict) and "values" in symbol_data:
+                                    # Standard format with "values" key
+                                    df = pd.DataFrame(symbol_data["values"])
+                                elif isinstance(symbol_data, (list, tuple)):
+                                    # Batch format returns tuple/list of dicts
+                                    df = pd.DataFrame(symbol_data)
+                                else:
+                                    logger.warning(f"Unexpected data format for {symbol}")
+                                    continue
+                                
+                                if "datetime" in df.columns:
+                                    df["datetime"] = pd.to_datetime(df["datetime"])
+                                    df.set_index("datetime", inplace=True)
 
                                 df = self._process_price_data(df, symbol)
                                 if not df.empty:
