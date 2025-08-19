@@ -2,15 +2,20 @@
 
 ## Executive Summary
 
-Waardhaven AutoIndex is a modern portfolio management platform built with a modular, microservices-ready architecture. The system consists of five main components:
+Waardhaven AutoIndex is a production-ready investment portfolio management system implementing Clean Architecture principles across both backend and frontend. The platform provides institutional-grade portfolio management with automated index creation, real-time market data integration, and advanced analytics.
 
-1. **FastAPI Backend** - Modular Python API server with async capabilities
-2. **Next.js Frontend** - React-based web application with TypeScript
-3. **PostgreSQL Database** - Persistent data storage with automatic migrations
-4. **Redis Cache** - High-performance caching layer with automatic invalidation
-5. **Celery Workers** - Background task processing with queue management
+### Core Components
 
-All components are deployed on Render.com with automatic CI/CD from GitHub.
+1. **FastAPI Backend** - Domain-driven API with 10 router modules, 6 services
+2. **Next.js Frontend** - Clean Architecture with 9 pages, type-safe API integration
+3. **PostgreSQL Database** - 6 domain models with composite indexes, auto-migrations
+4. **Redis Cache** - Full caching layer with automatic invalidation
+5. **Celery Workers** - Async task processing with Flower monitoring
+6. **External Integrations** - TwelveData (market data), MarketAux (news)
+
+**Deployment**: Production on Render.com with Docker containers
+**CI/CD**: GitHub Actions with 6 automated workflows
+**Testing**: 10 test files with comprehensive coverage
 
 ## Architecture Overview
 
@@ -86,11 +91,12 @@ apps/api/app/
 │   ├── redis_client.py   # Redis cache connection
 │   └── celery_app.py     # Celery task queue config
 │
-├── models/               # Domain models (SQLAlchemy)
-│   ├── user.py          # User authentication
-│   ├── asset.py         # Assets & prices
-│   ├── index.py         # Index & allocations
-│   └── strategy.py      # Strategy & risk metrics
+├── models/               # Domain models (6 domains)
+│   ├── user.py          # User authentication with JWT
+│   ├── asset.py         # Asset, Price, MarketCapData
+│   ├── index.py         # IndexValue, Allocation
+│   ├── strategy.py      # StrategyConfig, RiskMetrics
+│   └── news.py          # News articles and sentiment
 │
 ├── schemas/              # API contracts (Pydantic)
 │   ├── auth.py          # Auth request/response

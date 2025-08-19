@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from .routers import (
     root,
     auth,
@@ -20,6 +22,7 @@ from typing import Dict
 from collections import defaultdict
 import logging
 import os
+import traceback
 
 # Import models to ensure they're registered with SQLAlchemy
 
@@ -67,16 +70,16 @@ else:  # Local development
         "http://127.0.0.1:3000",
     ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods including OPTIONS
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,  # Cache preflight requests for 1 hour
-)
-
+# Helper function to add CORS headers to responses
+def add_cors_headers(response: JSONResponse, request: Request) -> JSONResponse:
+    """Add CORS headers to a response based on the request origin."""
+    origin = request.headers.get("origin")
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 # Security Headers Middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -94,9 +97,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             )
 
         return response
-
-
-app.add_middleware(SecurityHeadersMiddleware)
 
 
 # Simple Rate Limiting
@@ -138,8 +138,66 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return response
 
 
-# Add rate limiting (100 requests per minute)
+# Add middleware in correct order (CORS should be added LAST so it executes FIRST)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add CORS middleware LAST (so it executes FIRST due to middleware reverse order)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods including OPTIONS
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
+)
+
+# Exception handlers that preserve CORS headers
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTPException and ensure CORS headers are added."""
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+    return add_cors_headers(response, request)
+
+@app.exception_handler(StarletteHTTPException)
+async def starlette_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Handle Starlette HTTPException and ensure CORS headers are added."""
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+    return add_cors_headers(response, request)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors and ensure CORS headers are added."""
+    response = JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+    return add_cors_headers(response, request)
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handle general exceptions and ensure CORS headers are added."""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    logger.error(f"Traceback: {traceback.format_exc()}")
+    
+    # In production, don't expose internal error details
+    if os.getenv("RENDER"):
+        error_detail = "Internal server error"
+    else:
+        error_detail = str(exc)
+    
+    response = JSONResponse(
+        status_code=500,
+        content={"detail": error_detail},
+    )
+    return add_cors_headers(response, request)
 
 # CORS Debug Middleware (only in debug mode or when CORS_DEBUG is set)
 if settings.DEBUG or os.getenv("CORS_DEBUG"):

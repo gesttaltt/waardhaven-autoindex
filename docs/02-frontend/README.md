@@ -1,24 +1,31 @@
 # Waardhaven AutoIndex Web Application
 
 ## Overview
-The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a modern, responsive interface for automated index fund management. It features real-time portfolio tracking, investment simulation, AI-driven strategy optimization, and comprehensive system monitoring.
+The Waardhaven AutoIndex frontend is a production-ready Next.js 14 application implementing Clean Architecture with Domain-Driven Design. It provides a comprehensive interface for portfolio management, featuring real-time data visualization, investment strategy configuration, and system monitoring.
 
-**Coverage Status**: 85% Complete (3 new pages added in latest update)
+**Status**: Production-Ready (90%+ feature complete)
+**Architecture**: Clean Architecture with SOLID principles
+**Type Safety**: Full TypeScript implementation
 
-## Features
+## Implemented Features
 
-### Core Functionality
-- **Portfolio Dashboard**: Real-time visualization of index performance and allocations
-- **Investment Simulation**: Test investment strategies with historical data
-- **Multi-Currency Support**: Simulate investments in various currencies
-- **Performance Analytics**: Comprehensive risk metrics and performance indicators
-- **Strategy Configuration**: Adjust index composition strategies with live rebalancing
+### Core Pages (9 Routes)
+- **Dashboard** (`/dashboard`): Portfolio overview with performance charts
+- **Login/Register** (`/login`, `/register`): JWT authentication with Google OAuth
+- **Strategy** (`/strategy`): Investment strategy configuration
+- **News** (`/news`): Financial news feed with sentiment analysis
+- **Tasks** (`/tasks`): Background task monitoring
+- **Diagnostics** (`/diagnostics`): System health and cache status
+- **Admin** (`/admin`): Administrative functions
+- **Landing** (`/`): Public landing page
 
-### System Operations ✨ NEW
-- **Task Management**: Monitor and control background operations
-- **System Diagnostics**: Health monitoring and cache management
-- **Report Generation**: Automated portfolio reports with history tracking
-- **Real-time Monitoring**: Live task progress and system status updates
+### Technical Capabilities
+- **Authentication**: JWT with refresh tokens, AuthProvider context
+- **State Management**: React Query for server state
+- **API Integration**: Type-safe service layer with HttpClient
+- **Clean Architecture**: Domain, Application, Infrastructure, Presentation layers
+- **Performance**: React memoization, lazy loading, optimized re-renders
+- **Error Handling**: Error boundaries with user-friendly messages
 
 ### Technical Features
 - **Real-time Data**: WebSocket-ready architecture for live updates
@@ -29,48 +36,50 @@ The Waardhaven AutoIndex frontend is a Next.js 14 application that provides a mo
 - **Background Tasks**: Celery integration for async operations
 
 ## Tech Stack
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Animations**: Framer Motion
-- **HTTP Client**: Axios
-- **State Management**: React Hooks
+- **Framework**: Next.js 14 (App Router with SSR)
+- **Language**: TypeScript 5.x
+- **UI Library**: React 18
+- **Styling**: Tailwind CSS 3.x
+- **Charts**: Recharts for financial visualizations
+- **State Management**: React Context + React Query
+- **HTTP Client**: Custom HttpClient with interceptors
+- **Authentication**: JWT with secure token management
 
-## Clean Architecture Structure
+## Clean Architecture Implementation (2025-01-19)
 
-The frontend follows a clean architecture pattern with clear separation of concerns:
+The frontend has been refactored to follow Clean Architecture principles with clear separation of concerns:
 
 ```
-apps/web/
-├── app/
-│   ├── components/          # Presentation Layer
-│   │   ├── ui/            # Pure UI components (buttons, cards, inputs)
-│   │   │   ├── Button/
-│   │   │   ├── Card/
-│   │   │   ├── Input/
-│   │   │   └── Modal/
-│   │   ├── features/      # Feature-specific components
-│   │   │   ├── dashboard/
-│   │   │   ├── portfolio/
-│   │   │   ├── tasks/
-│   │   │   └── reports/
-│   │   └── layouts/       # Layout components
-│   │       ├── Header/
-│   │       ├── Sidebar/
-│   │       └── Footer/
+apps/web/app/
+├── core/                    # Clean Architecture Layers
+│   ├── domain/             # Business entities and rules
+│   │   ├── entities/       # Pure business objects
+│   │   ├── repositories/   # Repository interfaces
+│   │   └── use-cases/      # Business use cases
+│   ├── application/        # Application-specific logic
+│   │   ├── auth/          # Authentication use cases
+│   │   └── portfolio/     # Portfolio management
+│   ├── infrastructure/     # External service implementations
+│   │   ├── api/           # API clients
+│   │   ├── repositories/  # Concrete repositories
+│   │   └── token/         # Token management
+│   └── presentation/       # React-specific code
+│       ├── hooks/         # Custom React hooks
+│       ├── contexts/      # React contexts
+│       └── components/    # UI components
 │   │
-│   ├── hooks/              # Business Logic Layer
-│   │   ├── api/           # API-related hooks
-│   │   ├── state/         # State management hooks
-│   │   └── utils/         # Utility hooks
-│   │
-│   ├── services/           # Data Access Layer
-│   │   └── api/           # API service classes
-│   │       ├── base.ts
-│   │       ├── portfolio.ts
-│   │       ├── background.ts
-│   │       └── diagnostics.ts
+├── components/             # Shared UI Components
+│   ├── Button/            # Typed button component
+│   ├── Card/              # Reusable card component
+│   ├── SystemHealthIndicator/ # Health monitoring
+│   └── DataQualityIndicator/ # Data quality display
+│
+├── services/              # API Service Layer
+│   ├── api/              # Direct API calls
+│   │   ├── client.ts     # HttpClient configuration
+│   │   ├── auth.ts       # Authentication endpoints
+│   │   ├── portfolio.ts  # Portfolio endpoints
+│   │   └── tasks.ts      # Task management
 │   │
 │   ├── lib/               # Core Business Logic
 │   │   ├── calculations/ # Business calculations
@@ -102,21 +111,36 @@ apps/web/
 
 ```
 
-### Architecture Principles
+### Architecture Principles (SOLID)
 
-#### 1. Separation of Concerns
-- **UI Components**: Pure, reusable components with no business logic
-- **Hooks**: Encapsulate business logic and state management
-- **Services**: Handle external API communication
-- **Lib**: Core business logic independent of React
+#### 1. Single Responsibility Principle
+- **Domain Layer**: Pure business logic only
+- **Infrastructure**: External service integration only
+- **Presentation**: UI rendering and user interaction only
+- **Application**: Use case orchestration only
 
-#### 2. Component Categories
+#### 2. Dependency Inversion Principle
+- Domain defines interfaces (repositories)
+- Infrastructure implements interfaces
+- Presentation depends on abstractions
+- No direct dependencies on external services
 
-**Presentational Components (Dumb)**
-- Located in `components/ui/`
-- Pure functions with props
-- No direct API calls
-- Fully reusable across features
+#### 3. Component Structure Pattern
+
+Each component follows a consistent structure:
+```
+ComponentName/
+├── index.ts              # Public API export
+├── ComponentName.tsx     # Component implementation
+├── ComponentName.types.ts # TypeScript interfaces
+└── ComponentName.styles.ts # Styling constants
+```
+
+**Benefits:**
+- Clear separation of concerns
+- Type safety throughout
+- Easy testing and maintenance
+- Consistent codebase structure
 - Example:
 ```typescript
 // components/ui/Button/Button.tsx

@@ -3,20 +3,23 @@
 ## Prerequisites
 
 ### Required Software
-- Node.js 18+ and npm
+- Node.js 20+ and npm
 - Python 3.11+
 - PostgreSQL 14+
+- Redis 6+ (optional, for caching and background tasks)
 - Docker (optional, for containerized deployment)
 
-### API Keys
-- TwelveData API key for market data
+### Required API Keys
+- **TwelveData**: Market data integration (https://twelvedata.com)
+- **MarketAux**: Financial news (optional, https://marketaux.com)
+- **Google OAuth**: For social authentication (optional)
 
 ## Local Development Setup
 
 ### 1. Clone the Repository
 ```bash
 git clone [repository-url]
-cd AI-Investment
+cd waardhaven-autoindex
 ```
 
 ### 2. Install Dependencies
@@ -24,8 +27,14 @@ cd AI-Investment
 #### Backend Setup
 ```bash
 cd apps/api
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt  # For development tools
+pip install -r requirements-test.txt  # For testing
 ```
 
 #### Frontend Setup
@@ -45,16 +54,35 @@ apps\api\scripts\setup-pre-commit.bat     # Windows
 ### 3. Environment Configuration
 
 #### Backend (.env in apps/api)
-```
+```env
+# Database
 DATABASE_URL=postgresql://user:password@localhost/waardhaven
-SECRET_KEY=your-secret-key
-TWELVEDATA_API_KEY=your-api-key
-NODE_ENV=development
+
+# Authentication
+SECRET_KEY=your-secret-key-min-32-chars
+ADMIN_TOKEN=your-admin-token
+
+# External APIs
+TWELVEDATA_API_KEY=your-twelvedata-api-key
+MARKETAUX_API_KEY=your-marketaux-api-key  # Optional
+
+# Redis (optional)
+REDIS_URL=redis://localhost:6379
+
+# Frontend URL for CORS
+FRONTEND_URL=http://localhost:3000
+
+# Development
+SKIP_STARTUP_REFRESH=true  # Skip data refresh on startup
 ```
 
 #### Frontend (.env.local in apps/web)
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+```env
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+
+# Optional: Google OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
 ### 4. Database Setup
@@ -64,36 +92,106 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 CREATE DATABASE waardhaven;
 ```
 
-#### Run Initialization
+#### Initialize Database
 ```bash
 cd apps/api
-python app/db_init.py
-python app/seed_assets.py
+
+# Initialize database schema
+python -m app.db_init
+
+# Optional: Seed initial assets
+python -m app.seed_assets
+
+# Optional: Run initial data refresh
+python -m app.tasks_refresh
 ```
 
 ### 5. Start Development Servers
 
-#### Backend Server
+#### Backend API Server
 ```bash
 cd apps/api
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### Frontend Server
+#### Optional: Background Workers
+```bash
+# In separate terminals:
+
+# Celery Worker
+celery -A app.core.celery_app worker --loglevel=info
+
+# Celery Beat (for periodic tasks)
+celery -A app.core.celery_app beat --loglevel=info
+
+# Flower Monitoring (http://localhost:5555)
+celery -A app.core.celery_app flower
+```
+
+#### Frontend Development Server
 ```bash
 cd apps/web
 npm run dev
 ```
 
 ### 6. Access the Application
-- Frontend: http://localhost:3000
-- API Documentation: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000
+- **API Documentation**: http://localhost:8000/docs
+- **API Redoc**: http://localhost:8000/redoc
+- **Flower Dashboard**: http://localhost:5555 (if running)
+
+### 7. Default Credentials
+Register a new account or use:
+- Email: user@example.com
+- Password: Test123!@#
+
+## Testing
+
+### Backend Tests
+```bash
+cd apps/api
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+
+# Run specific test file
+pytest tests/test_auth.py
+```
+
+### Type Checking
+```bash
+# Frontend
+cd apps/web
+npx tsc --noEmit
+
+# Backend
+cd apps/api
+mypy app/
+```
+
+### Linting
+```bash
+# Backend
+cd apps/api
+ruff check .
+
+# Frontend
+cd apps/web
+npm run lint
+```
 
 ## Docker Development
 
 ### Using Docker Compose
 ```bash
-docker-compose up
+# Build and start all services
+docker-compose up --build
+
+# Run in background
+docker-compose up -d
 ```
 
 ### Individual Containers
