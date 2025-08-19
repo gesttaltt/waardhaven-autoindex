@@ -14,7 +14,15 @@ Waardhaven AutoIndex is a monorepo investment portfolio management system with a
 waardhaven-autoindex/
 ├── apps/
 │   ├── api/          # FastAPI backend
-│   └── web/          # Next.js frontend
+│   └── web/          # Next.js frontend (Clean Architecture)
+│       └── app/
+│           ├── core/           # Clean Architecture layers
+│           │   ├── domain/     # Business entities & use cases
+│           │   ├── application/# Application-specific use cases
+│           │   ├── infrastructure/# API clients, repositories
+│           │   └── presentation/  # React components, hooks
+│           ├── services/api/   # Direct API service calls
+│           └── components/     # Shared UI components
 ├── docs/             # Comprehensive documentation
 └── turbo.json        # Turborepo configuration
 ```
@@ -49,6 +57,47 @@ cd apps/api && ruff check .
 8. ✅ **Redis Caching**: Full caching layer with automatic invalidation
 9. ✅ **Background Tasks**: Celery-based async processing with queues
 10. ✅ **Task Monitoring**: Flower dashboard for task monitoring
+
+## Latest Updates (2025-08-19)
+
+### ✅ Clean Architecture Implementation
+**Issue**: Mixed concerns in UI components - business logic, API calls, and styling all in one place
+**Resolution**: Refactored to follow SOLID principles and clean architecture
+
+#### Frontend Architecture:
+- **Domain Layer** (`core/domain/`): Pure business entities and rules
+  - Entities: `SystemHealth`, `DataQuality`, `Portfolio`, `User`
+  - Use Cases: Business logic independent of framework
+  - Repository Interfaces: Dependency inversion principle
+- **Infrastructure Layer** (`core/infrastructure/`): External service implementations
+  - Concrete repositories implementing domain interfaces
+  - API clients and data sources
+- **Presentation Layer** (`core/presentation/`): React-specific code
+  - Custom hooks for state management
+  - Pure UI components with separated styles
+  - Type-safe component props
+
+#### Component Structure Pattern:
+```
+Component/
+├── index.ts              # Public API
+├── Component.tsx         # UI logic only
+├── Component.types.ts    # TypeScript interfaces
+└── Component.styles.ts   # Styling constants
+```
+
+#### Benefits Achieved:
+- ✅ **Single Responsibility**: Each layer has one clear purpose
+- ✅ **Testability**: Business logic testable without UI
+- ✅ **Maintainability**: Changes isolated to relevant layers
+- ✅ **Type Safety**: Full TypeScript compliance
+- ✅ **Reusability**: Business logic shared across components
+
+### ✅ Enhanced UI Components
+- **SystemHealthIndicator**: Real-time monitoring with clean architecture
+- **DataQualityIndicator**: Quality assessment with business rules in domain
+- **AdvancedAnalytics**: Portfolio analysis with separated concerns
+- **TaskNotifications**: Background task monitoring
 
 ## Latest Updates (2025-08-18)
 

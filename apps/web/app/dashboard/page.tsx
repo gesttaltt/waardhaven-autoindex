@@ -14,8 +14,8 @@ import {
 } from "../services/api";
 import SmartRefresh from "../components/SmartRefresh";
 import AdvancedAnalytics from "../components/dashboard/AdvancedAnalytics";
-import SystemHealthIndicator from "../components/dashboard/SystemHealthIndicator";
-import DataQualityIndicator from "../components/dashboard/DataQualityIndicator";
+import { SystemHealthIndicator } from "../core/presentation/components/SystemHealthIndicator";
+import { DataQualityIndicator } from "../core/presentation/components/DataQualityIndicator";
 import TaskNotifications from "../components/shared/TaskNotifications";
 
 type SeriesPoint = { date: string; value: number };
